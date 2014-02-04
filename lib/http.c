@@ -775,30 +775,23 @@ static int sock_cb(CURL* e,curl_socket_t s,int what,void* cbp,void* sockp)
     }
     return 0;
 }
-static void delay_add_handle()
-{
-    #ifdef WITH_LIBEV
-    write(global.pipe_fd[1],"ok",3);
-    #else
-    lwqq_async_dispatch(_C_(p,delay_add_handle_cb,NULL));
-    #endif
-}
 
 static void check_handle_and_add_to_conn_link()
 {
     D_ITEM* di,*tvar;
     LIST_FOREACH_SAFE(di,&global.add_link,entries,tvar){
-		if(global.conn_length >= global.cache_size) break;
+        if(global.conn_length >= global.cache_size) break;
         LIST_REMOVE(di,entries);
         LIST_INSERT_HEAD(&global.conn_link,di,entries);
         CURLMcode rc = curl_multi_add_handle(global.multi,di->req->req);
-		global.conn_length ++;
+        global.conn_length ++;
 
         if(rc != CURLM_OK){
             lwqq_puts(curl_multi_strerror(rc));
         }
     }
 }
+
 
 #ifdef WITH_LIBEV
 static void delay_add_handle_cb(LwqqAsyncIoHandle io,int fd,int act,void* data)
@@ -812,10 +805,20 @@ static void delay_add_handle_cb(void* noused)
 {
     pthread_mutex_lock(&add_lock);
 #endif
-    
-	check_handle_and_add_to_conn_link();
+    check_handle_and_add_to_conn_link();
     pthread_mutex_unlock(&add_lock);
 }
+
+static void delay_add_handle()
+{
+    #ifdef WITH_LIBEV
+    write(global.pipe_fd[1],"ok",3);
+    #else
+    lwqq_async_dispatch(_C_(p,delay_add_handle_cb,NULL));
+    #endif
+}
+
+
 
 
 static LwqqAsyncEvent* lwqq_http_do_request_async(LwqqHttpRequest *request, int method,
