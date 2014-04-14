@@ -10,7 +10,6 @@ add_definitions(-Wall)
 add_definitions(-DINST_PREFIX="${CMAKE_INSTALL_PREFIX}")
 option(SSL "Enable SSL Support " On)
 option(WITHOUT_ASYNC "Fully Disable Async Ability, Only Sync mode" Off)
-option(LWQQ_INSTALL "Install Lwqq Library" On)
 
 find_package(Sphinx)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
