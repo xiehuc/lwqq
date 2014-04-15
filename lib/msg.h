@@ -435,6 +435,15 @@ int lwqq_msg_send_simple(LwqqClient* lc,int type,const char* to,const char* mess
  */
 int lwqq_msg_check_lost(LwqqClient* lc,LwqqMsg** p_msg,LwqqGroup* g);
 
+/**
+ * extension functional, check group member has changed by using info_seq,
+ * designed for support LwqqEvents
+ * @param : p_msg --> pass a pointer to a group message
+ *          g     --> pass NULL to find a group from p_msg
+ * @event : trigger group_member_chg event
+ */
+void lwqq_msg_check_member_chg(LwqqClient* lc,LwqqMsg** p_msg,LwqqGroup* g);
+
 /* LwqqRecvMsg API end */
 //
 //-----------------------------LWQQ MSG UPLOAD API---------------------------------///

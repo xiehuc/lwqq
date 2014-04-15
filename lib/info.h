@@ -103,10 +103,8 @@ LwqqAsyncEvent* lwqq_info_get_qqnumber(LwqqClient* lc,const char* uin_gcode,char
 
 /**
  * Get QQ groups detail information. 
- * 
- * @param lc 
- * @param group
- * @param err 
+ * Inside use LwqqAsyncQueue means you can call this function many times before
+ * didn't load list complete and only occur one real network request
  */
 LwqqAsyncEvent* lwqq_info_get_group_detail_info(LwqqClient *lc, LwqqGroup *group,
                                      LwqqErrorCode *err);
@@ -236,7 +234,10 @@ void lwqq_discu_mem_change_free(LwqqDiscuMemChange* chg);
 LwqqErrorCode lwqq_discu_add_buddy(LwqqDiscuMemChange* mem,LwqqBuddy* b);
 /** add a group member to change operate */
 LwqqErrorCode lwqq_discu_add_group_member(LwqqDiscuMemChange* mem,LwqqSimpleBuddy* sb,LwqqGroup* g);
-/** do real change member work . chg would be freed automaticly */
+/** 
+ * do real change member work . chg would be freed automaticly 
+ * trigger group_member_chg event
+ */
 LwqqAsyncEvent* lwqq_info_change_discu_mem(LwqqClient* lc,LwqqGroup* discu,LwqqDiscuMemChange* chg);
 /** 
  * create a new discu with members in chg 

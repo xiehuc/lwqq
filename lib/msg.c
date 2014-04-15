@@ -79,6 +79,11 @@ static struct LwqqTypeMap msg_type_map[] = {
 };
 
 
+static void group_member_has_chged(LwqqClient* lc,LwqqGroup* g)
+{
+	lc->args->group = g;
+	vp_do_repeat(lc->events->group_member_chg, NULL);
+}
 
 static int parse_content(json_t *json,const char* key, LwqqMsgMessage* opaque)
 {
@@ -2184,6 +2189,25 @@ int lwqq_msg_check_lost(LwqqClient* lc, LwqqMsg** p_msg, LwqqGroup* g)
 	}
 	g->last_seq = seq;
    return ret;
+}
+void lwqq_msg_check_member_chg(LwqqClient* lc, LwqqMsg** p_msg, LwqqGroup* g)
+{
+	LwqqMsg* msg = *p_msg;
+   if(msg->type != LWQQ_MS_GROUP_MSG && msg->type != LWQQ_MS_DISCU_MSG) return ;
+
+	LwqqMsgMessage* message = (LwqqMsgMessage*)msg;
+	int info_seq = message->group.info_seq;
+	if(g == NULL)
+		g = lwqq_group_find_group_by_gid(lc, (msg->type == LWQQ_MS_DISCU_MSG) ?
+				message->discu.did : message->super.from);
+   if(!g) return ;
+
+	if(g->info_seq == 0) return; // doesn't load complete in first time
+	if(g->info_seq != info_seq){
+		LwqqAsyncEvent* ev = lwqq_info_get_group_detail_info(lc, g, NULL);
+		lwqq_async_add_event_listener(ev, _C_(2p,group_member_has_chged, lc, g));
+	}
+
 }
 
 const char* lwqq_msg_offfile_get_url(LwqqMsgOffFile* msg)
