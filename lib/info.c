@@ -1191,6 +1191,13 @@ static void parse_groups_minfo_child(LwqqClient *lc, LwqqGroup *group,  json_t *
         return ;
     }
 
+	 //simple buddy can be safely removed
+	 LwqqSimpleBuddy* sb,* bsb;
+	 LIST_FOREACH_SAFE(sb, &group->members, entries, bsb){
+		 LIST_REMOVE(sb, entries);
+		 lwqq_simple_buddy_free(sb);
+	 }
+
     json = json->child;    //point to the array.[]
     for (cur = json->child; cur != NULL; cur = cur->next) {
         uin = json_parse_simple_value(cur, "uin");
@@ -1199,17 +1206,13 @@ static void parse_groups_minfo_child(LwqqClient *lc, LwqqGroup *group,  json_t *
         if (!uin || !nick)
             continue;
 
-        //may solve group member duplicated problem
-        if(lwqq_group_find_group_member_by_uin(group,uin)==NULL){
+		  //may solve group member duplicated problem
 
-            member = lwqq_simple_buddy_new();
-
-            member->uin = s_strdup(uin);
-            member->nick = ibmpc_ascii_character_convert(json_unescape(nick));
-
-            /* Add to members list */
-            LIST_INSERT_HEAD(&group->members, member, entries);
-        }
+		  member = lwqq_simple_buddy_new();
+		  member->uin = s_strdup(uin);
+		  member->nick = ibmpc_ascii_character_convert(json_unescape(nick));
+		  /* Add to members list */
+		  LIST_INSERT_HEAD(&group->members, member, entries);
     }
 }
 static void parse_groups_ginfo_members_child(LwqqClient *lc, LwqqGroup *group,  json_t *json)
@@ -1423,9 +1426,7 @@ static int group_detail_back(LwqqHttpRequest* req,LwqqClient* lc,LwqqGroup* grou
         goto json_error;
     }
 
-    /** It seems everything is ok, we start parsing information
-     * now
-     */
+    // It seems everything is ok, we start parsing information now
     if (json_tmp->child ) {
         json_tmp = json_tmp->child;
 
@@ -1463,6 +1464,13 @@ static void parse_discus_info_child(LwqqClient* lc,LwqqGroup* discu,json_t* root
 
     discu->owner = s_strdup(json_parse_simple_value(json,"discu_owner"));
     discu->info_seq = lwqq__json_get_int(json, "info_seq", 0);
+
+	 //simple buddy can be safely removed
+	 LwqqSimpleBuddy* sb,* bsb;
+	 LIST_FOREACH_SAFE(sb, &discu->members, entries, bsb){
+		 LIST_REMOVE(sb, entries);
+		 lwqq_simple_buddy_free(sb);
+	 }
 
     json = json_find_first_label(json,"mem_list");
     json = json->child->child;
