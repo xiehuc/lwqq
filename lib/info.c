@@ -834,13 +834,13 @@ LwqqAsyncEvent* lwqq_info_get_avatar(LwqqClient* lc,LwqqBuddy* buddy,LwqqGroup* 
     char host[32];
     int type = (isgroup)?4:1;
     //there are face 1 to face 10 server to accelerate speed.
-    snprintf(host,sizeof(host),"face%d.qun.qq.com",++serv_id);
+    snprintf(host,sizeof(host),"face%d.web.qq.com",++serv_id);
     serv_id %= 10;
     snprintf(url, sizeof(url),
              "http://%s/cgi/svr/face/getface?cache=0&type=%d&fid=0&uin=%s&vfwebqq=%s",
              host,type,uin, lc->vfwebqq);
     req = lwqq_http_create_default_request(lc,url, &error);
-    req->set_header(req, "Referer", "http://web2.qq.com/");
+    req->set_header(req, "Referer", "http://web2.qq.com/webqq.html");
     req->set_header(req,"Host",host);
 
     return req->do_request_async(req, lwqq__hasnot_post(),_C_(3p_i,get_avatar_back,req,buddy,group));
