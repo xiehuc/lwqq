@@ -209,7 +209,8 @@ class GroupMessage(Message):
             ('send',ctypes.c_char_p),
             ('group_code',ctypes.c_char_p),
             ('info_seq',ctypes.c_int),
-            ('seq',ctypes.c_int)
+            ('seq',ctypes.c_int),
+            ('from',ctypes.c_void_p)
             ]
     PT = ctypes.POINTER(T)
     TypeID = MsgType.MS_GROUP_MSG
