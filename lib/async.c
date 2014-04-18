@@ -169,11 +169,11 @@ void lwqq_async_evset_wait(LwqqAsyncEvset* set)
 void lwqq_async_evset_add_event(LwqqAsyncEvset* host,LwqqAsyncEvent *handle)
 {
     if(!host || !handle) return;
-    LwqqAsyncEvset_* internal = (LwqqAsyncEvset_*) host;
-    pthread_mutex_lock(&internal->lock);
+    LwqqAsyncEvset_* set_ = (LwqqAsyncEvset_*) host;
+    pthread_mutex_lock(&set_->lock);
     ((LwqqAsyncEvent_*)handle)->host_lock = host;
-    internal->ref_count++;
-    pthread_mutex_unlock(&internal->lock);
+    ++set_->ref_count;
+    pthread_mutex_unlock(&set_->lock);
 }
 
 void lwqq_async_add_event_listener(LwqqAsyncEvent* event,LwqqCommand cmd)
@@ -219,15 +219,15 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 }
 void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd)
 {
-    LwqqAsyncEvset_* _evset = (LwqqAsyncEvset_*)evset;
+    LwqqAsyncEvset_* set_ = (LwqqAsyncEvset_*)evset;
     if(evset == NULL){
         vp_cancel(cmd);
         return ;
-    }else if(_evset->cmd.func== NULL)
-        _evset->cmd = cmd;
+    }else if(set_->cmd.func== NULL)
+        set_->cmd = cmd;
     else
-        vp_link(&_evset->cmd,&cmd);
-    if(_evset->ref_count == 0) lwqq_async_evset_free(evset);
+        vp_link(&set_->cmd,&cmd);
+    if(set_->ref_count == 0) lwqq_async_evset_free(evset);
 }
 
 LwqqAsyncEvent* lwqq_async_queue_find(LwqqAsyncQueue* queue,void* func)

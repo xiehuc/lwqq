@@ -7,7 +7,7 @@ struct vp_d_table{
 };
 vp_command vp_make_command(VP_DISPATCH dsph,VP_CALLBACK func,...)
 {
-    vp_command ret;
+    vp_command ret = {0};
     ret.dsph = dsph;
     ret.func = func;
     ret.next = NULL;

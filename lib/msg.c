@@ -1348,6 +1348,7 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 			 if(type == LWQQ_MS_GROUP_MSG){
 				 g = lwqq_group_new(LWQQ_GROUP_QUN);
 				 g->gid = s_strdup(serv_id);
+				 g->code = s_strdup(msg->group.group_code);
 				 event = lwqq_info_get_group_qqnumber(lc, g);
 				 lwqq_async_evset_add_event(set, event);
 			 }else{
