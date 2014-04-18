@@ -135,48 +135,51 @@ typedef enum {
 #define lwqq_bit_get(var,bit) ((var&bit)>0)
 
 typedef struct LwqqMsgMessage {
-    LwqqMsgSeq super;
-    time_t time;
-    int upload_retry;
+	LwqqMsgSeq super;
+	time_t time;
+	int upload_retry;
 
 
-	 int reply_ip;
+	int reply_ip;
 
-    /* For font  */
-    char *f_name;
-    int f_size;
-    LwqqFontStyle f_style;
-    char f_color[7];
+	/* For font  */
+	char *f_name;
+	int f_size;
+	LwqqFontStyle f_style;
+	char f_color[7];
 
-    LwqqMsgContentHead content;
+	LwqqMsgContentHead content;
 
-    union{
-        struct {
-				LwqqBuddy* from;  // bind a buddy from friend list or trigger
-				                  // new_friend event to create new (in case of passerby)
-				}buddy;
-				struct {
-				char *send;       // only group use it to identify who send the group message
-				char *group_code; // only avaliable in group message
-				int info_seq;
-				int seq;          // conversation message sequence
-				}group;
-				struct {
-				char* send;
-            char* group_code;
-        }group_web;
-        struct {
-            char *id;   /* only sess msg use it.means gid */
-            char *group_sig; /* you should fill it before send */
-            LwqqGroupType service_type;
-        }sess;
-        struct {
-            char *send;
-            char *did;
-            int info_seq;
-            int seq;      // conversation message sequence
-        }discu;
-    };
+	union{
+		struct {
+			LwqqBuddy* from;  // bind a buddy from friend list or trigger
+									// new_friend event to create new (in case of passerby)
+		}buddy;
+		struct {
+			char *send;       // only group use it to identify who send the group message
+			char *group_code; // only avaliable in group message
+			int info_seq;
+			int seq;          // conversation message sequence
+			LwqqGroup* from;  // bind a group from group list or trigger
+									// new_group event to create new 
+									// (when you added by others into a newly group)
+		}group;
+		struct {
+			char* send;
+			char* group_code;
+		}group_web;
+		struct {
+			char *id;   /* only sess msg use it.means gid */
+			char *group_sig; /* you should fill it before send */
+			LwqqGroupType service_type;
+		}sess;
+		struct {
+			char *send;
+			char *did;
+			int info_seq;
+			int seq;      // conversation message sequence
+		}discu;
+	};
 } LwqqMsgMessage;
 
 typedef struct LwqqMsgStatusChange {

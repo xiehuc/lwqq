@@ -254,12 +254,22 @@ static void insert_msg_delay_by_request_content(LwqqRecvMsgList* list,LwqqMsg* m
 	LwqqClient* lc = list->lc;
 	lwqq_client_dispatch(lc, _C_(p,dispatch_poll_msg,lc));
 }
-static void add_passerby(LwqqClient* lc,LwqqBuddy* buddy)
+static void add_passerby(LwqqClient* lc,LwqqBuddy* buddy,LwqqGroup* g)
 {
-    buddy->cate_index = LWQQ_FRIEND_CATE_IDX_PASSERBY;
-	 LIST_INSERT_HEAD(&lc->friends,buddy,entries);
-	 lc->args->buddy = buddy;
-	 vp_do_repeat(lc->events->new_friend, NULL);
+	if(buddy){
+		buddy->cate_index = LWQQ_FRIEND_CATE_IDX_PASSERBY;
+		LIST_INSERT_HEAD(&lc->friends,buddy,entries);
+		lc->args->buddy = buddy;
+		vp_do_repeat(lc->events->new_friend, NULL);
+	}
+	if(g){
+		if(g->type == LWQQ_GROUP_QUN)
+			LIST_INSERT_HEAD(&lc->groups, g, entries);
+		else
+			LIST_INSERT_HEAD(&lc->discus, g, entries);
+		lc->args->group = g;
+		vp_do_repeat(lc->events->new_group, NULL);
+	}
 }
 static int process_simple_response(LwqqHttpRequest* req)
 {
@@ -1311,23 +1321,50 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 {
     LwqqAsyncEvset* set=*ptr;
     LwqqAsyncEvent* event=NULL;
+	 LwqqBuddy* buddy = NULL;
+	 LwqqGroup* g = NULL;
     const char* serv_id = msg->super.from;
-    LwqqBuddy* buddy = lc->find_buddy_by_uin(lc,serv_id);
-    if(buddy == NULL){
-        buddy = lwqq_buddy_new();
-        buddy->uin = s_strdup(serv_id);
-        if(set == NULL) set = lwqq_async_evset_new();
-        event = lwqq_info_get_stranger_info(lc, serv_id, buddy);
-        lwqq_async_evset_add_event(set, event);
-        event = lwqq_info_get_friend_qqnumber(lc,buddy);
-        lwqq_async_add_evset_listener(set, _C_(2p,add_passerby,lc,buddy));
-        lwqq_async_evset_add_event(set, event);
-        msg->buddy.from = buddy;
-    }else{
-        msg->buddy.from = buddy;
-    }
+	 const LwqqMsgType type = msg->super.super.type;
+
+	 if(type == LWQQ_MS_BUDDY_MSG){
+		 buddy = lc->find_buddy_by_uin(lc,serv_id);
+		 if(buddy == NULL){
+			 buddy = lwqq_buddy_new();
+			 buddy->uin = s_strdup(serv_id);
+			 if(set == NULL) set = lwqq_async_evset_new();
+			 event = lwqq_info_get_stranger_info(lc, serv_id, buddy);
+			 lwqq_async_evset_add_event(set, event);
+			 event = lwqq_info_get_friend_qqnumber(lc,buddy);
+			 lwqq_async_evset_add_event(set, event);
+			 lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
+			 msg->buddy.from = buddy;
+		 }else{
+			 msg->buddy.from = buddy;
+		 }
+	 }else if(type == LWQQ_MS_GROUP_MSG || type == LWQQ_MS_DISCU_MSG){
+		 g = lwqq_group_find_group_by_gid(lc, serv_id);
+		 if(g == NULL){
+			 if(set == NULL) set = lwqq_async_evset_new();
+			 if(type == LWQQ_MS_GROUP_MSG){
+				 g = lwqq_group_new(LWQQ_GROUP_QUN);
+				 g->gid = s_strdup(serv_id);
+				 event = lwqq_info_get_group_qqnumber(lc, g);
+				 lwqq_async_evset_add_event(set, event);
+			 }else{
+				 g = lwqq_group_new(LWQQ_GROUP_DISCU);
+				 g->did = s_strdup(msg->discu.did);
+			 }
+			 event = lwqq_info_get_group_detail_info(lc, g, NULL);
+			 lwqq_async_evset_add_event(set, event);
+			 lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
+			 msg->group.from = g;
+		 }else{
+			 msg->group.from = g;
+		 }
+	 }
     *ptr = set;
 }
+
 static int parse_msg_seq(json_t* json,LwqqMsg* msg)
 {
     LwqqMsgSeq* seq = (LwqqMsgSeq*)msg;
@@ -1400,10 +1437,11 @@ static int parse_recvmsg_from_json(LwqqRecvMsgList *list, const char *str)
             case LWQQ_MT_MESSAGE:
                 ret = parse_new_msg(cur,msg);
                 LwqqAsyncEvset* set = NULL;
-                if(ret == RET_WELLFORM_MSG)
+                if(ret == RET_WELLFORM_MSG){
                     lwqq_msg_request_picture(list->lc, (LwqqMsgMessage*)msg,&set);
-                if(ret == RET_WELLFORM_MSG && msg->type == LWQQ_MS_BUDDY_MSG)
-                    lwqq_msg_message_bind_buddy(list->lc,(LwqqMsgMessage*)msg,&set);
+						  if(msg->type != LWQQ_MS_SESS_MSG && msg->type != LWQQ_MS_GROUP_WEB_MSG)
+							  lwqq_msg_message_bind_buddy(list->lc,(LwqqMsgMessage*)msg,&set);
+					 }
                 if(set){
                     lwqq_async_add_evset_listener(set, _C_(2p,insert_msg_delay_by_request_content,list,msg));
                     ret = RET_DELAYINS_MSG;

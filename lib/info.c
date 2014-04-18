@@ -1462,8 +1462,9 @@ static void parse_discus_info_child(LwqqClient* lc,LwqqGroup* discu,json_t* root
     json_t* json = json_find_first_label(root,"info");
     json = json->child;
 
-    discu->owner = s_strdup(json_parse_simple_value(json,"discu_owner"));
-    discu->info_seq = lwqq__json_get_int(json, "info_seq", 0);
+	 lwqq_override(discu->name , lwqq__json_get_string(json, "discu_name"));
+	 lwqq_override(discu->owner , lwqq__json_get_value(json, "discu_owner"));
+	 discu->info_seq = lwqq__json_get_int(json, "info_seq", 0);
 
 	 //simple buddy can be safely removed
 	 LwqqSimpleBuddy* sb,* bsb;
