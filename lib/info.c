@@ -2251,7 +2251,7 @@ LwqqAsyncEvent* lwqq_info_change_discu_mem(LwqqClient* lc,LwqqGroup* discu,LwqqD
     LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
     req->set_header(req,"Referer",WEBQQ_D_REF_URL);
 
-    LwqqAsyncEvent* ev = req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
+    LwqqAsyncEvent* ev = req->do_request_async(req,lwqq__has_post(),_C_(p_i,process_simple_response,req));
     lwqq_async_add_event_listener(ev, _C_(3p,do_change_discu_mem,ev,discu,chg));
     return ev;
 }

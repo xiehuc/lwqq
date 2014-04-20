@@ -140,6 +140,9 @@ LwqqAsyncEvent* lwqq_info_delete_friend(LwqqClient* lc,LwqqBuddy* buddy,LwqqDelF
 /** 
  * after call this. before real delete. lwqq would call async_opt->delete_group.
  * in this ui should delete linked group info
+ *
+ * because if you directly use async event api, lwqq would remove LwqqGroup
+ * first, then do callback, which makes data crashs. so we need use events api
  */
 LwqqAsyncEvent* lwqq_info_delete_group(LwqqClient* lc,LwqqGroup* group);
 //no necessary to call
