@@ -493,6 +493,9 @@ void lwqq_simple_buddy_free(LwqqSimpleBuddy* buddy);
  */
 LwqqBuddy *lwqq_buddy_find_buddy_by_uin(LwqqClient *lc, const char *uin);
 LwqqBuddy *lwqq_buddy_find_buddy_by_qqnumber(LwqqClient *lc, const char *qqnumber);
+/**
+ * Find buddy object by buddy's nick or mark name
+ */
 LwqqBuddy* lwqq_buddy_find_buddy_by_name(LwqqClient* lc,const char* name);
 
 
