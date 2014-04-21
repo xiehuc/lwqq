@@ -737,9 +737,7 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, vo
     s_free(ptwebqq);
     /* Create post data: {"h":"hello","vfwebqq":"4354j53h45j34"} */
     snprintf(post, sizeof(post), "r={\"h\":\"hello\",\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",h,lc->vfwebqq);
-	 char* urle = url_encode(post+2);
-	 strcpy(post+2, urle);
-	 s_free(urle);
+	 urlencode(post, 2);
 	 s_free(h);
 
     /* Create a POST request */
@@ -1013,9 +1011,7 @@ LwqqAsyncEvent* lwqq_info_get_group_name_list(LwqqClient *lc, LwqqErrorCode *err
 	/* Create a POST request */
 	/* Create post data: {"h":"hello","vfwebqq":"4354j53h45j34"} */
 	snprintf(post, sizeof(post), "r={\"vfwebqq\":\"%s\"}",lc->vfwebqq);
-	char* upost = url_encode(post+2);
-	strcpy(post+2, upost);
-	s_free(upost);
+	urlencode(post, 2);
 
 	req = lwqq_http_create_default_request(lc,url, err);
 	req->set_header(req, "Referer", WEBQQ_S_REF_URL);
@@ -1803,7 +1799,6 @@ static void add_friend_stage_2(LwqqAsyncEvent* called,LwqqVerifyCode* code,char*
     s_free(verifysession);
     LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
     req->set_header(req,"Referer",WEBQQ_S_REF_URL);
-    req->set_header(req,"Connection","keep-alive");
 
     LwqqAsyncEvent* ev = req->do_request_async(req,lwqq__hasnot_post(),_C_(2p_i,process_friend_detail,req,out));
     lwqq_async_add_event_chain(ev, called);
@@ -1841,9 +1836,11 @@ LwqqAsyncEvent* lwqq_info_add_friend(LwqqClient* lc,LwqqBuddy* buddy,const char*
                 "\"groupid\":%d,\"msg\":\"%s\","
                 "\"token\":\"%s\",\"vfwebqq\":\"%s\"}",buddy->qqnumber,buddy->cate_index,message,buddy->token,lc->vfwebqq);
     }
+	 urlencode(post, 2);
 
     LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
-    req->set_header(req,"Referer",WEBQQ_S_REF_URL);
+    req->set_header(req, "Content-Type", "application/x-www-form-urlencoded");
+    req->set_header(req, "Referer", WEBQQ_S_REF_URL);
 
     LwqqAsyncEvent* ev = req->do_request_async(req,lwqq__has_post(),_C_(p_i,process_simple_response,req));
     return ev;

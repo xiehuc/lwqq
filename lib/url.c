@@ -52,6 +52,13 @@ char *url_encode(char *str)
     *pbuf = '\0';
     return buf;
 }
+
+void urlencode(char* str, int beg)
+{
+	char* encode = url_encode(str+beg);
+	strcpy(str+beg,encode);
+	s_free(encode);
+}
 char *url_whole_encode(char *str)
 {
     if (!str)

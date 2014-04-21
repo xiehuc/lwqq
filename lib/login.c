@@ -490,8 +490,7 @@ static char *generate_clientid()
 static LwqqAsyncEvent* set_online_status(LwqqClient *lc,const char *status)
 {
     char msg[1024] ={0};
-    char *buf;
-	char* post = msg;
+	 char* post = msg;
     LwqqHttpRequest *req = NULL;  
 
     if (!status) {
@@ -505,14 +504,12 @@ static LwqqAsyncEvent* set_online_status(LwqqClient *lc,const char *status)
     }
     char* ptwebqq = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "ptwebqq");
 
-    snprintf(msg, sizeof(msg), "{\"status\":\"%s\",\"ptwebqq\":\"%s\","
+    snprintf(msg, sizeof(msg), "r={\"status\":\"%s\",\"ptwebqq\":\"%s\","
              "\"passwd_sig\":""\"\",\"clientid\":\"%s\""
              ", \"psessionid\":null}"
              ,status, ptwebqq
              ,lc->clientid);
-    buf = url_encode(msg);
-    snprintf(msg, sizeof(msg), "r=%s", buf);
-    s_free(buf);
+	 urlencode(msg, 2);
     s_free(ptwebqq);
 
     /* Create a POST request */

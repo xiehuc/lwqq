@@ -15,11 +15,16 @@
 /** 
  * NB: be sure to free() the returned string after use
  * 
- * @param str 
- * 
  * @return A url-encoded version of str
  */
 char *url_encode(char *str);
+/**
+ * encode str inplace with beg
+ * @example: 
+ *		  snprintf(post,sizeof(post),"r={......}");
+ *		  urlencode(post,2);
+ */
+void urlencode(char* str,int beg);
 
 /** 
  * NB: be sure to free() the returned string after use

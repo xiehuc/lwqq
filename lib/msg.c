@@ -1634,18 +1634,15 @@ static void *start_poll_msg(void *msg_list)
 {
     LwqqClient *lc;
     LwqqHttpRequest *req = NULL;  
-    char *s;
     char msg[1024];
     LwqqRecvMsgList *list = (LwqqRecvMsgList *)msg_list;
     LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*) list;
 
     lc = (LwqqClient *)(list->lc);
     if (!lc) return NULL;
-    snprintf(msg, sizeof(msg), "{\"clientid\":\"%s\",\"psessionid\":\"%s\"}",
+    snprintf(msg, sizeof(msg), "r={\"clientid\":\"%s\",\"psessionid\":\"%s\"}",
              lc->clientid, lc->psessionid);
-    s = url_encode(msg);
-    snprintf(msg, sizeof(msg), "r=%s", s);
-    s_free(s);
+	 urlencode(msg, 2);
 
     /* Create a POST request */
     char url[512];
@@ -1654,7 +1651,7 @@ static void *start_poll_msg(void *msg_list)
     list_->req = req;
     req->set_header(req, "Referer", WEBQQ_D_REF_URL);
     req->set_header(req, "Content-Transfer-Encoding", "binary");
-    req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
+    req->set_header(req, "Content-Type", "application/x-www-form-urlencoded");
     //long poll timeout is 90s.official value
     lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT,90);
 	 lwqq_http_set_option(req, LWQQ_HTTP_CANCELABLE,1L);
