@@ -1323,8 +1323,8 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
     LwqqAsyncEvent* event=NULL;
 	 LwqqBuddy* buddy = NULL;
 	 LwqqGroup* g = NULL;
-    const char* serv_id = msg->super.from;
 	 const LwqqMsgType type = msg->super.super.type;
+    const char* serv_id = (type == LWQQ_MS_DISCU_MSG)?msg->discu.did:msg->super.from;
 
 	 if(type == LWQQ_MS_BUDDY_MSG){
 		 buddy = lc->find_buddy_by_uin(lc,serv_id);
