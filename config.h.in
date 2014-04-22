@@ -14,13 +14,13 @@
 #define USE_MSG_THREAD 1
 
 //detach thread without join it
-#define DETACH_THREAD 1
+#define DETACH_THREAD 0
 
 //enable additional debug function
 #define USE_DEBUG @USE_DEBUG@
 
 //write discu into database
-#define DISCU_READ_DB 0
+#define DISCU_READ_DB 1
 
 #endif /* __CONFIG_H__ */
 
