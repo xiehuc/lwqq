@@ -1675,13 +1675,13 @@ static void *start_poll_msg(void *msg_list)
 void lwqq_msglist_poll(LwqqRecvMsgList *list,LwqqPollOption flags)
 {
 	static pthread_attr_t attr;
-	static int init = 0;
 	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)list;
 	list_->flags = flags;
 	list_->running = 1;
 	pthread_attr_init(&attr);
 #if USE_MSG_THREAD
 #if DETACH_THREAD
+	static int init = 0;
 	if(!init){
 		init=1;
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);

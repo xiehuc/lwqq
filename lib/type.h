@@ -129,7 +129,12 @@ typedef enum {
 
 /* Lwqq Error Code */
 typedef enum {
+	//db error
 	LWQQ_EC_DB_EXEC_FAILED   = -50,
+	//login error
+	LWQQ_EC_FAILD_VERIFY     = -42,
+	LWQQ_EC_WRONG_VERIFY     = -41,
+	LWQQ_EC_WRONG_PASS       = -40,
 	//response unexpected
 	LWQQ_EC_NOT_JSON_FORMAT  = -30,
 	//upload error code
@@ -289,7 +294,7 @@ Discu: (with lwdb) the only one and stable key reference
 #define lwqq_group_is_discu(group) (group->type==LWQQ_GROUP_DISCU)
 
 typedef struct LwqqVerifyCode {
-	char *str;
+	char *str; // input
 	char *uin;
 	//{image
 	char *data;

@@ -5,7 +5,6 @@
 #cmakedefine WITH_LIBUV
 #cmakedefine WITH_SQLITE
 #cmakedefine WITHOUT_ASYNC
-#cmakedefine ENABLE_SSL
 #cmakedefine WITH_MOZJS
 #cmakedefine MOZJS_185
 #cmakedefine MOZJS_17

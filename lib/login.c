@@ -349,20 +349,20 @@ static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)
 
 		case 3:
 			lwqq_log(LOG_ERROR, "Wrong password\n");
-			err = LWQQ_EC_ERROR;
+			err = LWQQ_EC_WRONG_PASS;
 			lc->last_err = "Wrong username or password";
 			goto done;
 
 		case 4:
 			lwqq_log(LOG_ERROR, "Wrong verify code\n");
-			err = LWQQ_EC_ERROR;
+			err = LWQQ_EC_WRONG_VERIFY;
 			lc->last_err = "Wrong verify code";
 			goto done;
 
 		case 5:
 			lwqq_log(LOG_ERROR, "Verify failed\n");
 			lc->last_err = "Verify failed";
-			err = LWQQ_EC_ERROR;
+			err = LWQQ_EC_FAILD_VERIFY;
 			goto done;
 
 		case 6:
