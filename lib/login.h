@@ -34,3 +34,5 @@ void lwqq_logout(LwqqClient *client, LwqqErrorCode *err);
 
 LwqqAsyncEvent* lwqq_get_version(LwqqClient *lc, LwqqErrorCode *err);
 #endif  /* LWQQ_LOGIN_H */
+
+// vim: ts=3 sw=3 sts=3 noet

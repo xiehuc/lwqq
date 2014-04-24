@@ -39,7 +39,7 @@ typedef void (*LwqqLogRedirectFunc)(int l,const char* str);
  * @param msg Log message
  */
 void lwqq_log(int level, const char *file, int line,
-              const char *function, const char* msg, ...);
+		const char *function, const char* msg, ...);
 const char* lwqq_log_time();
 #define TIME_ lwqq_log_time()
 /**============VERBOSE LEVEL=============**/
@@ -62,3 +62,5 @@ void lwqq_log_redirect(LwqqLogRedirectFunc func);
 
 
 #endif  /* LWQQ_LOGGER_H */
+
+// vim: ts=3 sw=3 sts=3 noet

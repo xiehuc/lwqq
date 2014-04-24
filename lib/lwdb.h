@@ -22,13 +22,13 @@ const char* lwdb_get_config_dir();
 //========================= USER DB API =======================================/
 #define LWDB_CACHE_LEN 15
 typedef struct LwdbUserDB {
-    SwsDB *db;
-    struct{
-        SwsStmt* stmt;
-        char* sql;
-    }cache[LWDB_CACHE_LEN];
-    LwqqBuddy * (*query_buddy_info)(struct LwdbUserDB *db, const char *qqnumber);
-    //LwqqErrorCode (*update_buddy_info)(struct LwdbUserDB *db, LwqqBuddy *buddy);
+	SwsDB *db;
+	struct{
+		SwsStmt* stmt;
+		char* sql;
+	}cache[LWDB_CACHE_LEN];
+	LwqqBuddy * (*query_buddy_info)(struct LwdbUserDB *db, const char *qqnumber);
+	//LwqqErrorCode (*update_buddy_info)(struct LwdbUserDB *db, LwqqBuddy *buddy);
 } LwdbUserDB;
 
 /** 
@@ -133,22 +133,22 @@ void lwdb_finalize();
 /************************************************************************/
 /* LwdbGlobalDB API */
 typedef struct LwdbGlobalUserEntry {
-    char *qqnumber;
-    char *db_name;
-    char *password;
-    char *status;
-    char *rempwd;
-    LIST_ENTRY(LwdbGlobalUserEntry) entries;
+	char *qqnumber;
+	char *db_name;
+	char *password;
+	char *status;
+	char *rempwd;
+	LIST_ENTRY(LwdbGlobalUserEntry) entries;
 } LwdbGlobalUserEntry;
 
 typedef struct LwdbGlobalDB {
-    SwsDB *db;                  /**< Pointer sqlite3 db */
-    LwqqErrorCode (*add_new_user)(struct LwdbGlobalDB *db, const char *qqnumber);
-    LwdbGlobalUserEntry * (*query_user_info)(struct LwdbGlobalDB *db,
-                                             const char *qqnumber);
-    LIST_HEAD(, LwdbGlobalUserEntry) head; /**< QQ friends */
-    LwqqErrorCode (*update_user_info)(struct LwdbGlobalDB *db, const char *qqnumber,
-                                      const char *key, const char *value);
+	SwsDB *db;                  /**< Pointer sqlite3 db */
+	LwqqErrorCode (*add_new_user)(struct LwdbGlobalDB *db, const char *qqnumber);
+	LwdbGlobalUserEntry * (*query_user_info)(struct LwdbGlobalDB *db,
+			const char *qqnumber);
+	LIST_HEAD(, LwdbGlobalUserEntry) head; /**< QQ friends */
+	LwqqErrorCode (*update_user_info)(struct LwdbGlobalDB *db, const char *qqnumber,
+			const char *key, const char *value);
 } LwdbGlobalDB;
 
 /** 
@@ -187,3 +187,5 @@ void lwdb_userdb_read_from_client(LwqqClient* from,LwdbUserDB* to);
 #endif
 
 #endif
+
+// vim: ts=3 sw=3 sts=3 noet

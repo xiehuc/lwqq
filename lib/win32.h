@@ -14,3 +14,5 @@ int ev_pipe (int filedes [2]);
 #endif
 
 #endif
+
+// vim: ts=3 sw=3 sts=3 noet

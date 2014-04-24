@@ -19,20 +19,20 @@ typedef char* (*LwqqHashFunc)(const char* uin,const char* ptwebqq,void* userdata
 typedef struct LwqqDiscuMemChange LwqqDiscuMemChange;
 /**群名片*/
 typedef struct LwqqBusinessCard {
-    char* phone;
-    char* uin;
-    char* email;
-    char* remark;
-    char* gcode;
-    char* name;
-    LwqqGender gender;
+	char* phone;
+	char* uin;
+	char* email;
+	char* remark;
+	char* gcode;
+	char* name;
+	LwqqGender gender;
 } LwqqBusinessCard;
 
 /**最近联系人*/
 typedef struct LwqqRecentItem {
-    LwqqMessageType type;
-    char* uin;
-    LIST_ENTRY(LwqqRecentItem) entries;
+	LwqqMessageType type;
+	char* uin;
+	LIST_ENTRY(LwqqRecentItem) entries;
 } LwqqRecentItem;
 
 /**最近联系人列表*/
@@ -76,10 +76,10 @@ LwqqAsyncEvent* lwqq_info_get_friend_detail_info(LwqqClient *lc, LwqqBuddy *budd
  * @param err the pointer of LwqqErrorCode
  */
 #define lwqq_info_get_friend_avatar(lc,buddy) \
-((buddy!=NULL) ? lwqq_info_get_avatar(lc,buddy,NULL):NULL) 
+	((buddy!=NULL) ? lwqq_info_get_avatar(lc,buddy,NULL):NULL) 
 
 #define lwqq_info_get_group_avatar(lc,group) \
-((group!=NULL) ? lwqq_info_get_avatar(lc,NULL,group):NULL) 
+	((group!=NULL) ? lwqq_info_get_avatar(lc,NULL,group):NULL) 
 
 
 LwqqAsyncEvent* lwqq_info_get_avatar(LwqqClient* lc,LwqqBuddy* buddy,LwqqGroup* group);
@@ -107,7 +107,7 @@ LwqqAsyncEvent* lwqq_info_get_qqnumber(LwqqClient* lc,const char* uin_gcode,char
  * didn't load list complete and only occur one real network request
  */
 LwqqAsyncEvent* lwqq_info_get_group_detail_info(LwqqClient *lc, LwqqGroup *group,
-                                     LwqqErrorCode *err);
+		LwqqErrorCode *err);
 #define lwqq_info_get_discu_detail_info(lc,group) (lwqq_info_get_group_detail_info(lc,group,NULL));
 
 /** 
@@ -249,3 +249,5 @@ LwqqAsyncEvent* lwqq_info_change_discu_mem(LwqqClient* lc,LwqqGroup* discu,LwqqD
 LwqqAsyncEvent* lwqq_info_create_discu(LwqqClient* lc,LwqqDiscuMemChange* chg,const char* dname);
 
 #endif  /* LWQQ_INFO_H */
+
+// vim: ts=3 sw=3 sts=3 noet

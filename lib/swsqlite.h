@@ -15,14 +15,14 @@ typedef void SwsDB;
 typedef void SwsStmt;
 
 typedef enum {
-    SWS_BIND_INT,
-    SWS_BIND_TEXT
+	SWS_BIND_INT,
+	SWS_BIND_TEXT
 }SwsBindType;
 
 typedef enum {
-    SWS_OK,             /* there are no error or there are data */
-    SWS_FAILED,         /* failed */
-    //SWS_NEXT            /* when there are next line */
+	SWS_OK,             /* there are no error or there are data */
+	SWS_FAILED,         /* failed */
+	//SWS_NEXT            /* when there are next line */
 }SwsRetCode;
 /** 
  * Open a sqlite3 database
@@ -116,7 +116,7 @@ SwsRetCode sws_query_next(SwsStmt *stmt, char **errmsg);
  *         information in errmsg if errmsg is not null.
  */
 int sws_query_column(SwsStmt *stmt, int clm_index, char *buf, int buflen,
-                     char **errmsg);
+		char **errmsg);
 /** 
  * 
  * 
@@ -140,3 +140,5 @@ int sws_query_end(SwsStmt *stmt, char **errmsg);
 int sws_exec_sql_directly(const char *filename, const char *sql, char **errmsg);
 
 #endif
+
+// vim: ts=3 sw=3 sts=3 noet

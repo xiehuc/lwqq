@@ -32,3 +32,5 @@ int s_asprintf(char **buf, const char *format, ...);
 #endif
 
 #endif  /* SMEMORY_H */
+
+// vim: ts=3 sw=3 sts=3 noet

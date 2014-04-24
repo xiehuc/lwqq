@@ -34,16 +34,16 @@
  *            use s_free to free event or evset when necessary
  */
 typedef struct LwqqAsyncEvent {
-    /** 0 : success
-     *  >0: errno form webqq server
-     *  <0: errno from lwqq inner
-     */
-    int result;
-    LwqqCallbackCode failcode; ///< would be depreciate
-    LwqqClient* lc;
+	/** 0 : success
+	 *  >0: errno form webqq server
+	 *  <0: errno from lwqq inner
+	 */
+	int result;
+	LwqqCallbackCode failcode; ///< would be depreciate
+	LwqqClient* lc;
 }LwqqAsyncEvent;
 typedef struct LwqqAsyncEvset{
-    int err_count;
+	int err_count;
 }LwqqAsyncEvset;
 /** 
  * create a new evset. 
@@ -222,3 +222,5 @@ void lwqq_async_timer_repeat(LwqqAsyncTimerHandle timer);
 //=========================LWQQ ASYNC LOW LEVEL EVENT LOOP API====================//
 
 #endif
+
+// vim: ts=3 sw=3 sts=3 noet

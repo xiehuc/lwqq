@@ -57,3 +57,5 @@ void vp_func_pi   ( VP_CALLBACK,vp_list*,void*);
 void vp_func_p_i  ( VP_CALLBACK,vp_list*,void*);
 void vp_func_2p_i ( VP_CALLBACK,vp_list*,void*);
 void vp_func_3p_i ( VP_CALLBACK,vp_list*,void*);
+
+// vim: ts=3 sw=3 sts=3 noet

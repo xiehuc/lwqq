@@ -16,3 +16,5 @@ void lwqq_js_unload(lwqq_js_t* js,lwqq_jso_t* obj);
 
 char* lwqq_js_hash(const char* uin,const char* ptwebqq,lwqq_js_t* js);
 #endif
+
+// vim: ts=3 sw=3 sts=3 noet

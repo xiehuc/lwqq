@@ -39,3 +39,5 @@ char *url_whole_encode(char *str);
 //char* to_gbk(const char* utf8);
 
 #endif  /* LWQQ_URL_H */
+
+// vim: ts=3 sw=3 sts=3 noet

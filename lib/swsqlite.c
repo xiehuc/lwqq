@@ -27,31 +27,31 @@
  */
 SwsDB *sws_open_db(const char *filename, char **errmsg)
 {
-    int ret;
-    sqlite3 *db = NULL;
-    
-    if (!filename) {
-        if (errmsg) {
-            SET_ERRMSG(errmsg, "Filename is null");
-        }
-        return NULL;
-    }
+	int ret;
+	sqlite3 *db = NULL;
 
-    ret = sqlite3_open(filename, &db);
-    if (ret != SQLITE_OK) {
-        char msg[128];
-        snprintf(msg, sizeof(msg), "Open file: %s failed, errcode is %d, %s",
-                 filename, ret,sqlite3_errmsg(db));
-        SET_ERRMSG(errmsg, msg);
-        /**
-         * NB: should close db though we open this db failed,
-         * or else a memory will leak
-         */
-        sqlite3_close(db);
-        return NULL;
-    }
-    
-    return db;
+	if (!filename) {
+		if (errmsg) {
+			SET_ERRMSG(errmsg, "Filename is null");
+		}
+		return NULL;
+	}
+
+	ret = sqlite3_open(filename, &db);
+	if (ret != SQLITE_OK) {
+		char msg[128];
+		snprintf(msg, sizeof(msg), "Open file: %s failed, errcode is %d, %s",
+				filename, ret,sqlite3_errmsg(db));
+		SET_ERRMSG(errmsg, msg);
+		/**
+		 * NB: should close db though we open this db failed,
+		 * or else a memory will leak
+		 */
+		sqlite3_close(db);
+		return NULL;
+	}
+
+	return db;
 }
 
 /** 
@@ -62,18 +62,18 @@ SwsDB *sws_open_db(const char *filename, char **errmsg)
  */
 void sws_close_db(SwsDB *db, char **errmsg)
 {
-    int ret;
-    
-    if (!db) {
-        SET_ERRMSG(errmsg, "Filename is null");
-        return ;
-    }
+	int ret;
 
-    ret = sqlite3_close(db);
-    if (ret != SQLITE_OK) {
-        char msg[128];
-        snprintf(msg, sizeof(msg), "Close DB failed: %s", sqlite3_errmsg(db));
-        SET_ERRMSG(errmsg, msg);
+	if (!db) {
+		SET_ERRMSG(errmsg, "Filename is null");
+		return ;
+	}
+
+	ret = sqlite3_close(db);
+	if (ret != SQLITE_OK) {
+		char msg[128];
+		snprintf(msg, sizeof(msg), "Close DB failed: %s", sqlite3_errmsg(db));
+		SET_ERRMSG(errmsg, msg);
 		return ;
 	}
 }
@@ -89,24 +89,24 @@ void sws_close_db(SwsDB *db, char **errmsg)
  */
 int sws_exec_sql(SwsDB *db, const char *sql, char **errmsg)
 {
-    char *err = NULL;
-    int ret = 0;
+	char *err = NULL;
+	int ret = 0;
 
-    if (!db || !sql) {
-        SET_ERRMSG(errmsg, "Some parameterment is null");
-        return -1;
-    }
+	if (!db || !sql) {
+		SET_ERRMSG(errmsg, "Some parameterment is null");
+		return -1;
+	}
 
-    ret = sqlite3_exec(db, sql, NULL, NULL, &err);
-    if (ret != SQLITE_OK) {
-        char msg[512];
-        snprintf(msg, sizeof(msg), "\"%s\" failed: %s", sql, err);
-        SET_ERRMSG(errmsg, msg);
-        sqlite3_free(err);
-        return -1;
-    }
+	ret = sqlite3_exec(db, sql, NULL, NULL, &err);
+	if (ret != SQLITE_OK) {
+		char msg[512];
+		snprintf(msg, sizeof(msg), "\"%s\" failed: %s", sql, err);
+		SET_ERRMSG(errmsg, msg);
+		sqlite3_free(err);
+		return -1;
+	}
 
-    return 0;
+	return 0;
 }
 
 /** 
@@ -122,50 +122,50 @@ int sws_exec_sql(SwsDB *db, const char *sql, char **errmsg)
  */
 int sws_query_start(SwsDB *db, const char *sql, SwsStmt **stmt, char **errmsg)
 {
-    int ret;
-    
-    if (!db || !sql || !stmt) {
-        SET_ERRMSG(errmsg, "Some parameterment is null");
-        return -1;
-    }
+	int ret;
 
-    ret = sqlite3_prepare_v2(db, sql, -1, (sqlite3_stmt **)stmt, 0);
-    if (ret != SQLITE_OK) {
-        char msg[512];
-        snprintf(msg, sizeof(msg), "\"%s\" failed: %s",
-                 sql, sqlite3_errmsg(db));
-        SET_ERRMSG(errmsg, msg);
+	if (!db || !sql || !stmt) {
+		SET_ERRMSG(errmsg, "Some parameterment is null");
 		return -1;
 	}
 
-    return 0;
+	ret = sqlite3_prepare_v2(db, sql, -1, (sqlite3_stmt **)stmt, 0);
+	if (ret != SQLITE_OK) {
+		char msg[512];
+		snprintf(msg, sizeof(msg), "\"%s\" failed: %s",
+				sql, sqlite3_errmsg(db));
+		SET_ERRMSG(errmsg, msg);
+		return -1;
+	}
+
+	return 0;
 }
 int sws_query_bind(SwsStmt *stmt,int index,SwsBindType type,...)
 {
-    va_list args;
-    va_start(args,type);
-    switch(type){
-        case SWS_BIND_INT:
-            sqlite3_bind_int(stmt,index,va_arg(args,int));
-            break;
-        case SWS_BIND_TEXT:
-            {
-                const char * text = va_arg(args,const char*);
-                if(text == NULL)
-                    sqlite3_bind_null(stmt, index);
-                else 
-                    sqlite3_bind_text(stmt,index,text,strlen(text),SQLITE_TRANSIENT);
-            } break;
-    }
-    va_end(args);
-    return 0;
+	va_list args;
+	va_start(args,type);
+	switch(type){
+		case SWS_BIND_INT:
+			sqlite3_bind_int(stmt,index,va_arg(args,int));
+			break;
+		case SWS_BIND_TEXT:
+			{
+				const char * text = va_arg(args,const char*);
+				if(text == NULL)
+					sqlite3_bind_null(stmt, index);
+				else 
+					sqlite3_bind_text(stmt,index,text,strlen(text),SQLITE_TRANSIENT);
+			} break;
+	}
+	va_end(args);
+	return 0;
 }
 
 int sws_query_reset(SwsStmt* stmt)
 {
-    sqlite3_clear_bindings(stmt);
-    sqlite3_reset(stmt);
-    return 0;
+	sqlite3_clear_bindings(stmt);
+	sqlite3_reset(stmt);
+	return 0;
 }
 
 /** 
@@ -179,19 +179,19 @@ int sws_query_reset(SwsStmt* stmt)
  */
 SwsRetCode sws_query_next(SwsStmt *stmt, char **errmsg)
 {
-    int ret;
-    
-    if (!stmt) {
-        SET_ERRMSG(errmsg, "Some parameterment is null");
-        return SWS_FAILED;
-    }
+	int ret;
 
-    ret = sqlite3_step(stmt);
+	if (!stmt) {
+		SET_ERRMSG(errmsg, "Some parameterment is null");
+		return SWS_FAILED;
+	}
 
-    if(ret == SQLITE_ROW) return SWS_OK;
-    else if (ret == SQLITE_DONE) return SWS_FAILED;
-    else if (ret == SQLITE_OK) return SWS_OK;
-    else return SWS_FAILED;
+	ret = sqlite3_step(stmt);
+
+	if(ret == SQLITE_ROW) return SWS_OK;
+	else if (ret == SQLITE_DONE) return SWS_FAILED;
+	else if (ret == SQLITE_OK) return SWS_OK;
+	else return SWS_FAILED;
 }
 
 /** 
@@ -207,25 +207,25 @@ SwsRetCode sws_query_next(SwsStmt *stmt, char **errmsg)
  *         information in errmsg if errmsg is not null.
  */
 int sws_query_column(SwsStmt *stmt, int clm_index, char *buf, int buflen,
-                     char **errmsg)
+		char **errmsg)
 {
-    const unsigned char *result;
-    
-    if (!stmt || clm_index <0 || !buf || buflen <= 0) {
-        SET_ERRMSG(errmsg, "Some parameterment is null");
-        return -1;
-    }
+	const unsigned char *result;
 
-    result = sqlite3_column_text(stmt, clm_index);
-    if (!result) {
-        char msg[64];
-        snprintf(msg, sizeof(msg), "Query %d column failed", clm_index);
-        SET_ERRMSG(errmsg, msg);
-        return -1;
-    }
+	if (!stmt || clm_index <0 || !buf || buflen <= 0) {
+		SET_ERRMSG(errmsg, "Some parameterment is null");
+		return -1;
+	}
 
-    snprintf(buf, buflen, "%s", result);
-    return 0;
+	result = sqlite3_column_text(stmt, clm_index);
+	if (!result) {
+		char msg[64];
+		snprintf(msg, sizeof(msg), "Query %d column failed", clm_index);
+		SET_ERRMSG(errmsg, msg);
+		return -1;
+	}
+
+	snprintf(buf, buflen, "%s", result);
+	return 0;
 }
 
 /** 
@@ -239,23 +239,23 @@ int sws_query_column(SwsStmt *stmt, int clm_index, char *buf, int buflen,
  */
 int sws_query_end(SwsStmt *stmt, char **errmsg)
 {
-    int ret;
-    
-    if (!stmt) {
-        SET_ERRMSG(errmsg, "Some parameterment is null");
-        return -1;
-    }
-    
-    ret = sqlite3_finalize(stmt);
+	int ret;
 
-    if (ret != SQLITE_OK) {
-        char msg[64];
-        snprintf(msg, sizeof(msg), "End query failed, errcode: %d", ret);
-        SET_ERRMSG(errmsg, msg);
-        return -1;
-    }
-    
-    return 0;
+	if (!stmt) {
+		SET_ERRMSG(errmsg, "Some parameterment is null");
+		return -1;
+	}
+
+	ret = sqlite3_finalize(stmt);
+
+	if (ret != SQLITE_OK) {
+		char msg[64];
+		snprintf(msg, sizeof(msg), "End query failed, errcode: %d", ret);
+		SET_ERRMSG(errmsg, msg);
+		return -1;
+	}
+
+	return 0;
 }
 
 /** 
@@ -269,33 +269,33 @@ int sws_query_end(SwsStmt *stmt, char **errmsg)
  */
 int sws_exec_sql_directly(const char *filename, const char *sql, char **errmsg)
 {
-    int ret;
-    SwsDB *db = NULL;
-    
-    if (!filename || !sql) {
-        SET_ERRMSG(errmsg, "Some parameterment is null");
-        goto failed;
-    }
+	int ret;
+	SwsDB *db = NULL;
 
-    db = sws_open_db(filename, errmsg);
-    if (!db) {
-        perror("Error:");
-        goto failed;
-    }
+	if (!filename || !sql) {
+		SET_ERRMSG(errmsg, "Some parameterment is null");
+		goto failed;
+	}
 
-    ret = sws_exec_sql(db, sql, errmsg);
-    if (ret) {
-        goto failed;
-    }
+	db = sws_open_db(filename, errmsg);
+	if (!db) {
+		perror("Error:");
+		goto failed;
+	}
 
-    sws_close_db(db, NULL);
+	ret = sws_exec_sql(db, sql, errmsg);
+	if (ret) {
+		goto failed;
+	}
 
-    return 0;
+	sws_close_db(db, NULL);
+
+	return 0;
 
 failed:
-    if (db)
-        sws_close_db(db, NULL);
-    return -1;    
+	if (db)
+		sws_close_db(db, NULL);
+	return -1;    
 }
 
 #if 0
@@ -303,51 +303,53 @@ failed:
 #include <stdlib.h>
 int main(int argc, char *argv[])
 {
-    int ret;
-    SwsStmt *stmt = NULL;
+	int ret;
+	SwsStmt *stmt = NULL;
 
-    /* Open DB */
-    SwsDB *db = sws_open_db("/tmp/test_sws.db", NULL);
-    if (!db) {
-        return -1;
-    }
+	/* Open DB */
+	SwsDB *db = sws_open_db("/tmp/test_sws.db", NULL);
+	if (!db) {
+		return -1;
+	}
 
-    /* Excute SQL */
-    ret = sws_exec_sql(db, "create table if not exists config("
-                       "id integer primary key asc autoincrement,"
-                       "family,key,value); "
-                       "INSERT into config (family, key, value) "
-                       "VALUES('sws', 'version', '0.0.1');"
-                       "INSERT into config (family, key, value) "
-                       "VALUES('sws', 'status', 'test');", NULL);
-    if (ret) {
-        goto failed;
-    }
+	/* Excute SQL */
+	ret = sws_exec_sql(db, "create table if not exists config("
+			"id integer primary key asc autoincrement,"
+			"family,key,value); "
+			"INSERT into config (family, key, value) "
+			"VALUES('sws', 'version', '0.0.1');"
+			"INSERT into config (family, key, value) "
+			"VALUES('sws', 'status', 'test');", NULL);
+	if (ret) {
+		goto failed;
+	}
 
-    /* Query */
-    ret = sws_query_start(db, "SELECT key,value FROM config;", &stmt, NULL);
-    if (ret) {
-        goto failed;
-    }
-    while (!sws_query_next(stmt, NULL)) {
-        char key[128], value[128];
-        sws_query_column(stmt, 0, key, sizeof(key), NULL);
-        sws_query_column(stmt, 1, value, sizeof(value), NULL);
-        printf ("%s=%s\n", key, value);
-    }
-    sws_query_end(stmt, NULL);
-    
-    /* Close DB */
-    sws_close_db(db, NULL);
+	/* Query */
+	ret = sws_query_start(db, "SELECT key,value FROM config;", &stmt, NULL);
+	if (ret) {
+		goto failed;
+	}
+	while (!sws_query_next(stmt, NULL)) {
+		char key[128], value[128];
+		sws_query_column(stmt, 0, key, sizeof(key), NULL);
+		sws_query_column(stmt, 1, value, sizeof(value), NULL);
+		printf ("%s=%s\n", key, value);
+	}
+	sws_query_end(stmt, NULL);
 
-    /* Excute SQL directly */
-    sws_exec_sql_directly("/tmp/test_sws.db", "INSERT INTO configs "
-                          "(family,key,value) VALUES('1', '2', '3');", NULL);
-    
-    return 0;
+	/* Close DB */
+	sws_close_db(db, NULL);
+
+	/* Excute SQL directly */
+	sws_exec_sql_directly("/tmp/test_sws.db", "INSERT INTO configs "
+			"(family,key,value) VALUES('1', '2', '3');", NULL);
+
+	return 0;
 
 failed:
-    sws_close_db(db, NULL);
-    return -1;
+	sws_close_db(db, NULL);
+	return -1;
 }
 #endif
+
+// vim: ts=3 sw=3 sts=3 noet
