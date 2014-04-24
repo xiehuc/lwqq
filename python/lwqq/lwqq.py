@@ -1,3 +1,6 @@
+
+# include from info.h , type.h
+
 from ctypes import CFUNCTYPE,POINTER,Structure,c_char_p,pointer,c_long,c_voidp,c_ulong,c_int,cast,byref,c_void_p
 import ctypes
 from .base import lib, LwqqBase
@@ -419,7 +422,7 @@ class Lwqq(LwqqBase):
     def setDispatcher(self,dispatcher):
         self.ref[0].dispatch = DISPATCH_FUNC(dispatcher)
 
-    def dispatch(self,cmd,delay = 50):
+    def dispatch(self,cmd,delay = 0):
         self.ref[0].dispatch(cmd,delay)
 
     def addListener(self,events,called):
@@ -470,8 +473,6 @@ class Lwqq(LwqqBase):
         return Event(lib.lwqq_info_get_online_buddies(self.ref,None))
     def get_friends_info(self,hashfunc,data):
         return Event(lib.lwqq_info_get_friends_info(self.ref,HASHFUNC(hashfunc),data))
-    def get_all_friend_qqnumbers(self):
-        return Event(lib.lwqq_info_get_all_friend_qqnumber(self.ref,None))
     def get_group_list(self):
         return Event(lib.lwqq_info_get_group_name_list(self.ref,None))
     def get_discu_list(self):
@@ -539,8 +540,6 @@ def register_library(lib):
     lib.lwqq_info_get_friends_info.restype = Event.PT
     lib.lwqq_info_get_qqnumber.argtypes = [Lwqq.PT,c_char_p,c_void_p]
     lib.lwqq_info_get_qqnumber.restype = Event.PT
-    lib.lwqq_info_get_all_friend_qqnumbers.argtypes = [Lwqq.PT,c_void_p]
-    lib.lwqq_info_get_all_friend_qqnumbers.restype = None
     lib.lwqq_info_get_friend_detail_info.argtypes = [Lwqq.PT,Buddy.PT]
     lib.lwqq_info_get_friend_detail_info.restype = Event.PT
     lib.lwqq_info_get_group_name_list.argtypes = [Lwqq.PT,c_void_p]
@@ -594,3 +593,5 @@ def register_library(lib):
     lib.lwqq_msg_send.restype = Event.PT
 
 register_library(lib)
+
+# vim: ts=3 sts=3 sw=3 et

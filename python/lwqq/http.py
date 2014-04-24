@@ -1,3 +1,6 @@
+
+# include from http.h
+
 from .base import lib
 
 from ctypes import c_long,c_char_p,c_int,c_voidp,c_size_t
@@ -18,3 +21,4 @@ class HttpHandle(Structure):
             ('synced',c_int)
             ]
 
+# vim: ts=3 sts=3 sw=3 et

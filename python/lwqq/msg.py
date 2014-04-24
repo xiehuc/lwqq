@@ -430,3 +430,5 @@ def register_library(lib):
     
 
 register_library(lib)
+
+# vim: ts=3 sts=3 sw=3 et

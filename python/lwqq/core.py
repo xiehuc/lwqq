@@ -1,3 +1,6 @@
+
+# include from async.h type.h
+
 from ctypes import CFUNCTYPE,POINTER,Structure,c_char_p,pointer,c_long,c_voidp,c_ulong,c_int,cast,byref,c_size_t,c_void_p
 import ctypes
 
@@ -73,6 +76,9 @@ class Events():
                 ('need_verify',Command),
                 ('delete_group',Command),
                 ('group_member_chg',Command),
+                ('ext_clean',Command),
+                ('friend_chg',Command),
+                ('group_chg',Command)
                 ]
     PT = POINTER(T)
     ref = None
@@ -97,6 +103,12 @@ class Events():
     def delete_group(self): return self.ref[0].delete_group
     @property
     def group_member_chg(self): return self.ref[0].group_member_chg
+    @property
+    def ext_clean(self): return self.ref[0].ext_clean
+    @property
+    def friend_chg(self): return self.ref[0].friend_chg
+    @property
+    def group_chg(self): return self.ref[0].group_chg
 
 class Arguments():
     class T(Structure):
@@ -180,3 +192,5 @@ def register_library(lib):
     lib.lwqq_util_save_img.restype = c_long
 
 register_library(lib)
+
+# vim: ts=3 sts=3 sw=3 et

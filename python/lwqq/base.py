@@ -1,3 +1,6 @@
+
+# include from smemory.h
+
 import ctypes
 
 __all__ = [
@@ -63,3 +66,4 @@ s_realloc = lib.s_realloc
 s_strdup = lib.s_strdup
 s_atol = lib.s_atol
 
+# vim: ts=3 sts=3 sw=3 et

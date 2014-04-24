@@ -1,3 +1,6 @@
+
+# include from lwjs.h
+
 from .base import lib,s_strdup
 from .core import has_feature
 from .types import Features
@@ -41,3 +44,5 @@ def register_library(lib):
         lib.lwqq_js_hash.restype = ctypes.c_void_p
 
 register_library(lib)
+
+# vim: ts=3 sts=3 sw=3 et

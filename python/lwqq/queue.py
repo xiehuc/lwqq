@@ -1,3 +1,6 @@
+
+#include from queue.h
+
 import ctypes
 from ctypes import c_void_p,POINTER,pointer,cast
 
@@ -60,3 +63,4 @@ class LIST_HEAD():
             item = entry.le_next
         pass
 
+# vim: ts=3 sts=3 sw=3 et

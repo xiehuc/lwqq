@@ -1,3 +1,6 @@
+
+#include from type.h
+
 from ctypes import c_int
 
 __all__ = [ 'Status', 'Features', 'ErrorCode', 'PollFlags', 'MsgType',
@@ -23,6 +26,11 @@ class Status(c_int):
 
 class ErrorCode(c_int):
     DB_EXEC_FAILED      = -50
+    #login error
+    FAILD_VERIFY        = -42,
+    WRONG_VERIFY        = -41,
+    WRONG_PASS          = -40,
+
     NOT_JSON_FORMAT     = -30
     #upload error code
     UPLOAD_OVERSIZE     = -21
@@ -182,3 +190,5 @@ class Answer(c_int):
     EXTRA_ANSWER  = 2
     IGNORE        = 3
     ALLOW_ANS_ADD = EXTRA_ANSWER
+
+# vim: ts=3 sts=3 sw=3 et
