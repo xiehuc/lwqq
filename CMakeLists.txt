@@ -10,6 +10,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 add_definitions(-Wall)
 option(WITHOUT_ASYNC "Fully Disable Async Ability, Only Sync mode" Off)
+set(QUICK_QUIT False CACHE BOOL "Hide Option: Detatch thread to quickly quit")
 
 find_package(Sphinx)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -103,13 +104,8 @@ if(WITH_LIBUV AND NOT UV_FOUND)
 	message(FATAL_ERROR "Required package libuv not found")
 endif()
 
-if(WITH_LIBEV)
-	if(WITH_LIBUV)
-		message(FATAL_ERROR "Libuv and Libev shouldn't used together; Turn off one")
-	endif()
-	#    if(WIN32)
-	#        message(FATAL_ERROR "Windows do not support Libev")
-	#    endif()
+if(WITH_LIBEV AND WITH_LIBUV)
+	message(FATAL_ERROR "Libuv and Libev shouldn't used together; Turn off one")
 endif()
 
 option(WITH_MOZJS "Use Mozjs To Provide hash.js support" ${MOZJS_FOUND})
