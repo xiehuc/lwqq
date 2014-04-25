@@ -178,7 +178,7 @@ def talk_to(argv):
     global talk_tg
     args = talk.parse_args(argv)
     if args.to:
-        b = lc.find_buddy(uin=cstr(args.to))
+        b = lc.find_buddy(uin=cstr(args.to),nick=cstr(args.to))
         if b:
             global prompt_hint
             prompt_hint = 'Input:'

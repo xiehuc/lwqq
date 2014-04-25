@@ -449,18 +449,22 @@ class Lwqq(LwqqBase):
 
     def sync(self,yes):
         self.http().synced = yes
-    def find_buddy(self,uin=None,qqnumber=None):
+    def find_buddy(self, uin=None, qqnumber=None, nick=None):
         found = None
-        if uin:
+        if uin and not found:
             found = self.ref[0].find_buddy_by_uin(self.ref,uin)
-        if qqnumber:
+        if qqnumber and not found:
             found = self.ref[0].find_buddy_by_qqnumber(self.ref,uin)
+        if nick and not found:
+            for b in self.friends():
+                if b.nick == nick: return b
         if found:
             return Buddy(cast(found,Buddy.PT),self)
-    def find_group(self,gid=None,qqnumber=None):
+    def find_group(self, gid=None, qqnumber=None, name=None):
         for g in self.groups():
             if gid and g.gid == gid: return g
             if qqnumber and g.qq == qqnumber: return g
+            if name and g.name == name: return g
     def find_discu(self,did=None):
         for d in self.discus():
             if did and d.did == did: return d
@@ -594,4 +598,4 @@ def register_library(lib):
 
 register_library(lib)
 
-# vim: ts=3 sts=3 sw=3 et
+# vim: ts=4 sts=4 sw=4 et 
