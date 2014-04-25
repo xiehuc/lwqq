@@ -29,7 +29,7 @@ class Msg(LwqqBase):
         return self.typeid == dest_type.TypeID
     @classmethod
     def new(cls,**kw):
-        ins = super().new(malloc=True,**kw)
+        ins = super(Msg,cls).new(malloc=True,**kw)
         ins.ref[0].typeid = cls.TypeID
         return ins
 
@@ -42,7 +42,7 @@ class MsgSeq(Msg):
             ('msg_id2',ctypes.c_int)]
     PT = ctypes.POINTER(T)
     @property
-    def super(self): return self.ref[0].parent
+    def parent(self): return self.ref[0].parent
     @property
     def sender(self): return self.ref[0].sender
     @property
@@ -65,7 +65,7 @@ class MsgContent(LwqqBase):
         return self.typeid == dest_type.TypeID
     @classmethod
     def new(cls,**kw):
-        instance = super().new(malloc=True,**kw)
+        instance = super(MsgContent,cls).new(malloc=True,**kw)
         instance.ref[0].typeid = cls.TypeID
         return instance
 
@@ -164,7 +164,7 @@ class Message(MsgSeq):
     TypeID = MsgType.MT_MESSAGE
     content = None
     def __init__(self,ref): 
-        super().__init__(ref)
+        super(Message,self).__init__(ref)
         self.content = TAILQ_HEAD(self.ref[0].content,MsgContent.T.entries)
     def contents(self):
         for item in self.content.foreach():
@@ -187,7 +187,7 @@ class Message(MsgSeq):
     def new(cls,**kw):
         opt = {'upload_retry':3, 'f_color':b'000000', 'f_name':b'Arial',
                 'f_size':11 }
-        ins = super().new(**dict(opt,**kw))
+        ins = super(Message,cls).new(**dict(opt,**kw))
         ins.content.init()
         return ins
 
@@ -201,7 +201,7 @@ class BuddyMessage(Message):
     TypeID = MsgType.MS_BUDDY_MSG
     def send(self,buddy):
         self.ref[0].to = buddy.uin
-        return super().send(buddy.lc)
+        return super(BuddyMessage,self).send(buddy.lc)
 
 class GroupMessage(Message):
     class T(Message.T):

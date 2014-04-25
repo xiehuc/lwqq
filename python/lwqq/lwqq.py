@@ -80,7 +80,7 @@ class Buddy(LwqqBase):
     lc = None
     cate_list = None
     def __init__(self,ref,client=None): 
-        super().__init__(ref)
+        super(Buddy,self).__init__(ref)
         if client: 
             self.lc = client.ref
             self.cate_list = client.cate_list
@@ -200,7 +200,7 @@ class SimpleBuddy(LwqqBase):
     PT = POINTER(T)
     lc = None
     def __init__(self,ref,client=None): 
-        super().__init__(ref)
+        super(SimpleBuddy,self).__init__(ref)
         if client: 
             self.lc = client.ref if hasattr(client,'ref') else client
     def destroy(self): lib.lwqq_simple_buddy_free(self.ptr_)
@@ -262,7 +262,7 @@ class Group(LwqqBase):
     lc = None
     member_list = None
     def __init__(self,ref,client=None): 
-        super().__init__(ref)
+        super(Group,self).__init__(ref)
         self.member_list = LIST_HEAD(self.ref[0].members,SimpleBuddy.T.entries)
         if client: 
             self.lc = client.ref

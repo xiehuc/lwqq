@@ -16,7 +16,7 @@ __all__ = [
         ]
 
 
-class LwqqBase():
+class LwqqBase(object):
     ref = None
     def __init__(self,ref):
         self.ref = ctypes.cast(ref.ref,self.PT) if hasattr(ref,'ref') else ctypes.cast(ref,self.PT)

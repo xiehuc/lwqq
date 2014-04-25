@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+#python2 compible
+from __future__ import unicode_literals
 
 from lwqq.types import *
 from lwqq.vplist import *
@@ -10,8 +12,9 @@ from lwqq.msg import *
 from ctypes import c_voidp,cast,POINTER,c_int,byref,c_char_p,pointer,CFUNCTYPE,py_object
 from tornado.ioloop import IOLoop
 from os import read
+from six import print_,u
+from six.moves.urllib import request
 import functools
-import urllib.request
 import sys
 import argparse
 
@@ -21,34 +24,40 @@ prompt_hint = '>>>'
 
 class ArgsParser(argparse.ArgumentParser):
     def error(self, message):
-        print(message,file=sys.stderr)
+        print_(message,file=sys.stderr)
+
+#return a python str
+def utf(x):
+    return x.decode('utf-8')
+#return a c_str
+def cstr(x):
+    return x.encode('utf-8')
 
 def prompt(hint='>>>'):
-    print(hint,end='')
+    print_(hint,end='')
     sys.stdout.flush()
 
 def start_login(p_login_ec):
     login_ec = cast(p_login_ec,POINTER(c_int))[0]
-    print("login_ec",login_ec)
-    print("===start_login===")
+    print_("login_ec",login_ec)
+    print_("===start_login===")
 
 def need_verify(p_vf_image):
     vf = core.VerifyCode(cast(p_vf_image,POINTER(core.VerifyCode.PT))[0])
-    path = "/tmp/"+lc.username.decode("utf-8")+".jpg"
+    path = "/tmp/"+utf(lc.username)+".jpg"
     vf.save(path)
-    print("need verify image, see: "+path)
+    print_("need verify image, see: "+path)
     code = input("Input:")
-    vf.input(code.encode("utf-8"))
+    vf.input(cstr(code))
     pass
 
 def message_cb():
     for msg in lc.msg_list.read():
-        print(msg.trycast(BuddyMessage))
-        print(msg.typeid)
+        print_(msg.typeid)
         if msg.trycast(Message):
             m = Message(msg.ref)
-            print(m.sender)
-            print(str(m))
+            print_(m.sender)
+            print_(str(m))
         msg.destroy()
     prompt(prompt_hint)
 
@@ -65,11 +74,11 @@ def init_listener(lc):
 
 def load_info():
     if not core.has_feature(Features.WITH_MOZJS):
-        print("not support js")
+        print_("not support js")
         exit(-1)
     else:
         js = lwjs.Lwjs()
-        hashjs = urllib.request.urlopen("http://pidginlwqq.sinaapp.com/hash.js")
+        hashjs = request.urlopen("http://pidginlwqq.sinaapp.com/hash.js")
         js.load(hashjs.read())
         lc.get_friends_info(js.hashfunc,js.js).addListener(load_group_info)
     pass
@@ -81,7 +90,7 @@ def load_group_info():
     ev.addListener(poll_msg)
 
 def print_help():
-    print("""avaliable command:
+    print_("""avaliable command:
     help --- show this help
     ls   --- list friends and groups
     talk --- talk to friends
@@ -102,25 +111,24 @@ ls.add_argument('-h',help='print help',action='store_true')
 
 def list_friend(argv):
     args = ls.parse_args(argv)
-    print(args)
     if args.h:
         ls.print_help()
         return
     if not args.who:
         for b in lc.friends():
-            print('[Buddy uin:{} nick:{}]'.format(b.uin,b.nick.decode()))
-        print()
+            print_('[Buddy uin:{} nick:{}]'.format(b.uin,utf(b.nick)))
+        print_()
         for g in lc.groups():
-            print('[Group gid:{} name:{}]'.format(g.gid,g.name.decode()))
-        print()
+            print_('[Group gid:{} name:{}]'.format(g.gid,utf(g.name)))
+        print_()
         for d in lc.discus():
-            print('[Discu did:{} name:{}]'.format(d.did,d.name.decode()))
+            print_('[Discu did:{} name:{}]'.format(d.did,utf(d.name)))
         return
-    b = lc.find_buddy(uin=args.who.encode())
-    g = lc.find_group(gid=args.who.encode())
-    d = lc.find_discu(did=args.who.encode())
+    b = lc.find_buddy(uin=cstr(args.who))
+    g = lc.find_group(gid=cstr(args.who))
+    d = lc.find_discu(did=cstr(args.who))
     if not b and not g and not d:
-        print("not found")
+        print_("not found")
         return
     found = b if b else g if g else d
     if not found.qqnumber:
@@ -128,12 +136,12 @@ def list_friend(argv):
         found.get_detail().addListener(
                 functools.partial(list_friend,argv)
                 )
-        print("waiting for a while, fetch from server")
+        print_("waiting for a while, fetch from server")
         return
     if b:
         c = b.get_category()
-        if c: print('in Category:'+c.name.decode())
-    print(str(b))
+        if c: print_('in Category:'+utf(c.name))
+    print_(str(b))
 
 quit = ArgsParser(prog='quit',description='quit program',add_help=False)
 quit.add_argument('-h',help='print help',action='store_true')
@@ -153,7 +161,7 @@ talk_tg = None
 
 def talk_mode(fd,events):
     global prompt_hint
-    print()
+    print_()
     send = read(fd,512)
     if not send :
         loop.remove_handler(0)
@@ -170,18 +178,18 @@ def talk_to(argv):
     global talk_tg
     args = talk.parse_args(argv)
     if args.to:
-        b = lc.find_buddy(uin=args.to.encode())
+        b = lc.find_buddy(uin=cstr(args.to))
         if b:
             global prompt_hint
             prompt_hint = 'Input:'
             loop.remove_handler(0)
             loop.add_handler(0,talk_mode,loop.READ)
             talk_tg = b
-            print('Use Ctrl-D to end talk')
+            print_('Use Ctrl-D to end talk')
             prompt(prompt_hint)
 
 def command(fd,events):
-    argv = read(fd,100).decode().rstrip().split(' ')
+    argv = utf(read(fd,100)).rstrip().split(' ')
     if argv[0]=='ls' or argv[0] == 'l':
         list_friend(argv[1:])
     elif argv[0]=='quit' or argv[0]=='q':
@@ -190,7 +198,7 @@ def command(fd,events):
         talk_to(argv[1:])
     elif argv[0]=='help' or argv[0]=='h':
         print_help()
-    print()
+    print_()
     prompt()
 
 def local_thread(cmd):
@@ -213,7 +221,7 @@ argp.add_argument('-v','--verbose',help='verbose level',type=int,nargs='?')
 if __name__ == '__main__':
     args = argp.parse_args()
 
-    lc = Lwqq(args.user.encode(),args.password.encode())
+    lc = Lwqq(cstr(args.user),cstr(args.password))
     if args.verbose:
         Lwqq.log_level(args.verbose)
     lc.setDispatcher(dispatch)
