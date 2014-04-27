@@ -1655,9 +1655,9 @@ static void *start_poll_msg(void *msg_list)
 	req->set_header(req, "Content-Transfer-Encoding", "binary");
 	req->set_header(req, "Content-Type", "application/x-www-form-urlencoded");
 	//long poll timeout is 90s.official value
-	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT,90);
 	lwqq_http_set_option(req, LWQQ_HTTP_CANCELABLE,1L);
-	req->retry = 5;
+	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, POLL_MSG_TIMEOUT);
+	req->retry = RETRY_BEFORE_RELINK;
 
 #if USE_MSG_THREAD
 	while(1) {
