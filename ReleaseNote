@@ -1,0 +1,16 @@
+version 0.3.0: (2014-04-28)
+
+	*  修正添加讨论组成员失败
+	+  当新群组消息到来时智能创建群组
+	*  修正获取头像的url地址变动
+	+  智能刷新群组的成员列表
+	+  缓存讨论组聊天记录
+	+  添加LwqqExtension来方便扩展
+	+  支持pkg-config
+	+  添加群消息丢失的检测
+	*  修正发送消息是msg_id应自动递增
+	+  http添加自动增长超时API(没有大规模启用)
+	+  添加python2/3语言绑定
+	+  添加QUICK_QUIT开关和DETATCH_THREAD宏
+	+  添加Cygwin下编译配置 btbxbob <btbxbob@gmail.com>
+	*  优先使用js-17.0 其次才是 mozjs185
