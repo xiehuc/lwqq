@@ -87,7 +87,7 @@ if(WIN32)
 		)
 	find_package(MozJS REQUIRED)
 	set(MOZJS_185 ${MOZJS_FOUND})
-	find_package(EV REQUIRED)
+	find_package(EV)
 endif(WIN32)
 
 option(WITH_LIBEV "Use Libev To Provide Async " ${EV_FOUND})
