@@ -9,11 +9,9 @@
 
 #ifdef WIN32
 #undef SLIST_ENTRY
-//only libev use pipe
-#define pipe ev_pipe
 #endif
 
-#ifdef __MINGW32__
+#if (defined WITH_LIBEV) && (defined __MINGW32__) 
 #define PIPE_SIZE 4096
 #define pipe(fd)  _pipe(fd,PIPE_SIZE,0)
 #endif
@@ -286,6 +284,7 @@ void lwqq_http_set_cookie(LwqqHttpRequest* req,const char* name,const char* val)
  * 
  * @param request 
  */
+LWQQ_EXPORT
 int lwqq_http_request_free(LwqqHttpRequest *request)
 {
 	if (!request)
@@ -386,6 +385,7 @@ static int curl_debug_redirect(CURL* h,curl_infotype t,char* msg,size_t len,void
  * 
  * @return 
  */
+LWQQ_EXPORT
 LwqqHttpRequest *lwqq_http_request_new(const char *uri)
 {
 	if (!uri) {
@@ -978,6 +978,8 @@ retry:
 		}
 		pthread_cond_signal(&async_cond);
 	}
+
+	LWQQ_EXPORT
 	void lwqq_http_global_free()
 	{
 		if(global.multi){
@@ -1110,6 +1112,7 @@ retry:
 		return req->progress_func?req->progress_func(req->prog_data,now,total):0;
 	}
 
+	LWQQ_EXPORT
 	void lwqq_http_on_progress(LwqqHttpRequest* req,LWQQ_PROGRESS progress,void* prog_data)
 	{
 		if(!req) return;
@@ -1121,6 +1124,7 @@ retry:
 		curl_easy_setopt(req->req,CURLOPT_NOPROGRESS,0L);
 	}
 
+	LWQQ_EXPORT
 	void lwqq_http_set_option(LwqqHttpRequest* req,LwqqHttpOption opt,...)
 	{
 		if(!req) return;
@@ -1170,6 +1174,8 @@ retry:
 		}
 		va_end(args);
 	}
+
+	LWQQ_EXPORT
 	void lwqq_http_cancel(LwqqHttpRequest* req)
 	{
 		if(!req) return;

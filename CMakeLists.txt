@@ -7,6 +7,7 @@ set(VERSION_MINOR "3")
 set(VERSION_PATCH "0")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
+include(GenerateExportHeader)
 
 add_definitions(-Wall)
 option(WITHOUT_ASYNC "Fully Disable Async Ability, Only Sync mode" Off)

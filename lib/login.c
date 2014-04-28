@@ -410,6 +410,7 @@ done:
  *        *err will be set LWQQ_EC_ERROR.
  */
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_get_version(LwqqClient *lc, LwqqErrorCode *err)
 {
 	LwqqHttpRequest *req;
@@ -561,6 +562,7 @@ done:
  * @param client Lwqq Client 
  * @param err Error code
  */
+LWQQ_EXPORT 
 void lwqq_login(LwqqClient *client, LwqqStatus status,LwqqErrorCode *err)
 {
 	if (!client) {
@@ -695,6 +697,7 @@ static void login_stage_f(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
  * @param client Lwqq Client 
  * @param err Error code
  */
+LWQQ_EXPORT
 void lwqq_logout(LwqqClient *client, LwqqErrorCode *err)
 {
 	LwqqClient* lc = client;
@@ -824,6 +827,7 @@ done:
 	return err;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_relink(LwqqClient* lc)
 {
 	if(!lc) return NULL;

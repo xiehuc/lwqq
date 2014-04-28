@@ -11,12 +11,15 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include "internal.h"
 
+LWQQ_EXPORT
 void *s_malloc(size_t size)
 {
 	return size?malloc(size):NULL;
 }
 
+LWQQ_EXPORT
 void *s_malloc0(size_t size)
 {
 	if (size == 0)
@@ -29,20 +32,25 @@ void *s_malloc0(size_t size)
 	return ptr;
 }
 
+LWQQ_EXPORT
 void *s_calloc(size_t nmemb, size_t lsize)
 {
 	return calloc(nmemb, lsize);
 }
 
+LWQQ_EXPORT
 void *s_realloc(void *ptr, size_t size)
 {
 	return realloc(ptr, size);
 }
 
+LWQQ_EXPORT
 char *s_strdup(const char *s1)
 {
 	return s1?strdup(s1):NULL;
 }
+
+LWQQ_EXPORT
 long s_atol(const char* s,long init)
 {
 	char* end;
@@ -51,17 +59,20 @@ long s_atol(const char* s,long init)
 	return (end==s)?init:ret;
 }
 #if 0
+LWQQ_EXPORT
 char *s_strndup(const char *s1, size_t n)
 {
 	return s1?strndup(s1, n):NULL;
 }
 
+LWQQ_EXPORT
 int s_vasprintf(char **buf, const char * format,
 		va_list arg)
 {
 	return vasprintf(buf, format, arg);
 }
 
+LWQQ_EXPORT
 int s_asprintf(char **buf, const char *format, ...)
 {
 	va_list arg;

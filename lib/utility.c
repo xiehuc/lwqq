@@ -8,7 +8,7 @@
 #include "smemory.h"
 #include "internal.h"
 
-
+LWQQ_EXPORT
 void lwqq_ct_free(LwqqConfirmTable* table)
 {
 	if(table){
@@ -23,7 +23,7 @@ void lwqq_ct_free(LwqqConfirmTable* table)
 	}
 }
 
-
+LWQQ_EXPORT
 LwqqOpCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir)
 {
 	if(!ptr||!path) return LWQQ_OP_FAILED;
@@ -62,7 +62,7 @@ const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type)
 	return NULL;
 }
 
-
+LWQQ_EXPORT
 char* lwqq_util_hashN(const char* uin,const char* ptwebqq,void* unused)
 {
 	int alen=strlen(uin);
@@ -105,6 +105,8 @@ char* lwqq_util_hashN(const char* uin,const char* ptwebqq,void* unused)
 	free(c);
 	return ret;
 }
+
+LWQQ_EXPORT
 char* lwqq_util_hashO(const char* uin,const char* ptwebqq,void* unused)
 {
 	char* a = s_malloc0(strlen(ptwebqq)+strlen("password error")+3);
@@ -135,6 +137,8 @@ char* lwqq_util_hashO(const char* uin,const char* ptwebqq,void* unused)
 	s_free(j);
 	return s;
 }
+
+LWQQ_EXPORT
 char* lwqq_util_hashP(const char* uin,const char* ptwebqq,void* unused)
 {
 	char a[4]={0};
@@ -167,6 +171,8 @@ struct hash_slice{
 	int s;
 	int e;
 };
+
+LWQQ_EXPORT
 char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused)
 {
 	int r[4];

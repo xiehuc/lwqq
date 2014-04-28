@@ -56,13 +56,9 @@ if(WIN32)
   set(LWQQ_OTHER_LIBS 
      ${LWQQ_OTHER_LIBS} 
      ws2_32
-     "-Wl,-Bdynamic pthread"
+     "-Wl,-Bdynamic -lpthread"
      )
 endif(WIN32)
-
-if(SSL)
-    add_definitions(-DLWQQ_ENABLE_SSL=1)
-endif(SSL)
 
 if(WITH_LIBEV)
     include_directories(${EV_INCLUDE_DIRS})
@@ -74,8 +70,14 @@ if(WITH_LIBUV)
 endif()
 
 add_library(lwqq-static STATIC ${LWQQ_LIST} )
-set_target_properties(lwqq-static PROPERTIES OUTPUT_NAME lwqq)
+set_target_properties(lwqq-static PROPERTIES 
+    OUTPUT_NAME lwqq
+    COMPILE_FLAGS -DLWQQ_STATIC_DEFINE
+    )
 add_library(lwqq SHARED ${LWQQ_LIST} )
+GENERATE_EXPORT_HEADER(lwqq 
+    EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/lwqq_export.h
+    )
 
 target_link_libraries(lwqq
     ${SQLITE_LIBRARIES}

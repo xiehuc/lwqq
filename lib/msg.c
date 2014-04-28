@@ -453,7 +453,7 @@ LwqqRecvMsgList *lwqq_msglist_new(void *client)
 	return (LwqqRecvMsgList*)list;
 }
 
-
+LWQQ_EXPORT
 LwqqMsg* lwqq_msglist_read(LwqqRecvMsgList* list)
 {
 	LwqqRecvMsg* rmsg;
@@ -516,6 +516,7 @@ void lwqq_historymsg_free(LwqqHistoryMsgList *list)
 	s_free(list);
 }
 
+LWQQ_EXPORT
 LwqqMsg *lwqq_msg_new(LwqqMsgType msg_type)
 {
 	LwqqMsg* msg = NULL;
@@ -682,6 +683,7 @@ static void msg_seq_free(LwqqMsg* msg)
  * 
  * @param msg 
  */
+LWQQ_EXPORT
 void lwqq_msg_free(LwqqMsg *msg)
 {
 	if (!msg)
@@ -1672,6 +1674,7 @@ static void *start_poll_msg(void *msg_list)
 #endif
 }
 
+LWQQ_EXPORT
 void lwqq_msglist_poll(LwqqRecvMsgList *list,LwqqPollOption flags)
 {
 	static pthread_attr_t attr;
@@ -1693,6 +1696,7 @@ void lwqq_msglist_poll(LwqqRecvMsgList *list,LwqqPollOption flags)
 #endif
 }
 
+LWQQ_EXPORT
 void lwqq_msglist_close(LwqqRecvMsgList* list)
 {
 	if(!list) return;
@@ -2042,6 +2046,7 @@ static void lwqq_msg_incre_seq(LwqqClient* lc,LwqqMsg* send)
  * @return 1 means ok
  *         0 means failed or send failed
  */
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 {
 	LwqqHttpRequest *req = NULL;  
@@ -2206,6 +2211,7 @@ int lwqq_msg_send_simple(LwqqClient* lc,int type,const char* to,const char* mess
 	return ret;
 }
 
+LWQQ_EXPORT
 int lwqq_msg_check_lost(LwqqClient* lc, LwqqMsg** p_msg, LwqqGroup* g)
 {
 	LwqqMsg* msg = *p_msg;
@@ -2226,6 +2232,8 @@ int lwqq_msg_check_lost(LwqqClient* lc, LwqqMsg** p_msg, LwqqGroup* g)
 	g->last_seq = seq;
 	return ret;
 }
+
+LWQQ_EXPORT
 void lwqq_msg_check_member_chg(LwqqClient* lc, LwqqMsg** p_msg, LwqqGroup* g)
 {
 	LwqqMsg* msg = *p_msg;
@@ -2246,6 +2254,7 @@ void lwqq_msg_check_member_chg(LwqqClient* lc, LwqqMsg** p_msg, LwqqGroup* g)
 
 }
 
+LWQQ_EXPORT
 const char* lwqq_msg_offfile_get_url(LwqqMsgOffFile* msg)
 {
 	static char url[1024];
@@ -2303,6 +2312,7 @@ failed:
 	return err;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_accept_file(LwqqClient* lc,LwqqMsgFileMessage* msg,const char* saveto)
 {
 	char url[512];
@@ -2327,6 +2337,8 @@ LwqqAsyncEvent* lwqq_msg_accept_file(LwqqClient* lc,LwqqMsgFileMessage* msg,cons
 	msg->req = req;
 	return ev;
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_refuse_file(LwqqClient* lc,LwqqMsgFileMessage* file)
 {
 	char url[512];
@@ -2339,6 +2351,7 @@ LwqqAsyncEvent* lwqq_msg_refuse_file(LwqqClient* lc,LwqqMsgFileMessage* file)
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_upload_offline_file(LwqqClient* lc,LwqqMsgOffFile* file,LwqqUploadFlag flags)
 {
 	char url[512];
@@ -2402,6 +2415,7 @@ done:
 	return err;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_send_offfile(LwqqClient* lc,LwqqMsgOffFile* file)
 {
 	char url[512];
@@ -2450,6 +2464,7 @@ LwqqAsyncEvent* lwqq_msg_upload_file(LwqqClient* lc,LwqqMsgOffFile* file,
 	return NULL;
 }
 
+LWQQ_EXPORT
 LwqqMsgContent* lwqq_msg_fill_upload_cface(const char* filename,
 		const void* buffer,size_t buf_size)
 {
@@ -2461,6 +2476,8 @@ LwqqMsgContent* lwqq_msg_fill_upload_cface(const char* filename,
 	c->data.cface.size = buf_size;
 	return c;
 }
+
+LWQQ_EXPORT
 LwqqMsgContent* lwqq_msg_fill_upload_offline_pic(const char* filename,
 		const void* buffer,size_t buf_size)
 {
@@ -2472,6 +2489,8 @@ LwqqMsgContent* lwqq_msg_fill_upload_offline_pic(const char* filename,
 	c->data.img.size = buf_size;
 	return c;
 }
+
+LWQQ_EXPORT
 LwqqMsgOffFile* lwqq_msg_fill_upload_offline_file(const char* filename,
 		const char* from,const char* to)
 {
@@ -2482,6 +2501,8 @@ LwqqMsgOffFile* lwqq_msg_fill_upload_offline_file(const char* filename,
 	file->super.to = s_strdup(to);
 	return file;
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_input_notify(LwqqClient* lc,const char* serv_id)
 {
 	if(!lc || !serv_id) return NULL;
@@ -2494,6 +2515,7 @@ LwqqAsyncEvent* lwqq_msg_input_notify(LwqqClient* lc,const char* serv_id)
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_shake_window(LwqqClient* lc,const char* serv_id)
 {
 	if(!lc || !serv_id) return NULL;
@@ -2506,6 +2528,7 @@ LwqqAsyncEvent* lwqq_msg_shake_window(LwqqClient* lc,const char* serv_id)
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_friend_history(LwqqClient* lc,const char* serv_id,LwqqHistoryMsgList* list)
 {
 	if(!lc||!serv_id||!list) return NULL;

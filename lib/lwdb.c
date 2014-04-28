@@ -187,6 +187,7 @@ if(stmt==NULL){\
  * LWDB initialization
  * 
  */
+LWQQ_EXPORT
 const char* lwdb_get_config_dir()
 {
 	static char buf[256];
@@ -226,6 +227,7 @@ const char* lwdb_get_config_dir()
 #endif
 }
 
+LWQQ_EXPORT
 void lwdb_global_free()
 {
 }
@@ -550,6 +552,7 @@ static LwqqErrorCode lwdb_globaldb_update_user_info(
 	return LWQQ_EC_OK;
 }
 
+LWQQ_EXPORT
 LwdbUserDB *lwdb_userdb_new(const char *qqnumber,const char* dir,int flags)
 {
 	LwdbUserDB *udb = NULL;
@@ -602,6 +605,7 @@ failed:
 	return NULL;
 }
 
+LWQQ_EXPORT
 void lwdb_userdb_free(LwdbUserDB *db)
 {
 	if (db) {
@@ -706,6 +710,8 @@ static SwsStmt* get_cache(LwdbUserDB* db,const char* sql)
 	}
 	return NULL;
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwdb_userdb_insert_buddy_info(LwdbUserDB* db,LwqqBuddy** p_buddy)
 {
 	if(!db || !p_buddy ) return -1;
@@ -726,6 +732,8 @@ LwqqErrorCode lwdb_userdb_insert_buddy_info(LwdbUserDB* db,LwqqBuddy** p_buddy)
 		sws_query_end(stmt, NULL);
 	return 0;
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwdb_userdb_update_buddy_info(LwdbUserDB* db,LwqqBuddy** p_buddy)
 {
 	if(!p_buddy) return LWQQ_EC_ERROR;
@@ -749,6 +757,8 @@ LwqqErrorCode lwdb_userdb_update_buddy_info(LwdbUserDB* db,LwqqBuddy** p_buddy)
 	if(!cache)sws_query_end(stmt,NULL);
 	return 0;
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwdb_userdb_update_group_info(LwdbUserDB* db,LwqqGroup** p_group)
 {
 	if(!p_group) return LWQQ_EC_ERROR;
@@ -776,6 +786,8 @@ LwqqErrorCode lwdb_userdb_update_group_info(LwdbUserDB* db,LwqqGroup** p_group)
 	if(!cache) sws_query_end(stmt, NULL);
 	return 0;
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwdb_userdb_insert_group_info(LwdbUserDB* db,LwqqGroup** p_group)
 {
 	if(!db || !p_group) return -1;
@@ -801,6 +813,8 @@ LwqqErrorCode lwdb_userdb_insert_group_info(LwdbUserDB* db,LwqqGroup** p_group)
 	if(!cache) sws_query_end(stmt, NULL);
 	return 0;
 }
+
+LWQQ_EXPORT
 void lwdb_userdb_query_qqnumbers(LwdbUserDB* db,LwqqClient* lc)
 {
 	if(!lc || !db) return;
@@ -925,6 +939,7 @@ void lwdb_userdb_query_qqnumbers(LwdbUserDB* db,LwqqClient* lc)
 #endif
 }
 
+LWQQ_EXPORT
 void lwdb_userdb_begin(LwdbUserDB* db)
 {
 	if(!db) return;
@@ -932,6 +947,8 @@ void lwdb_userdb_begin(LwdbUserDB* db)
 	snprintf(sql,sizeof(sql),"BEGIN TRANSACTION;");
 	sws_exec_sql(db->db,sql,NULL);
 }
+
+LWQQ_EXPORT
 void lwdb_userdb_commit(LwdbUserDB* db)
 {
 	if(!db) return;
@@ -940,6 +957,8 @@ void lwdb_userdb_commit(LwdbUserDB* db)
 	sws_exec_sql(db->db,sql,NULL);
 	clear_cache(db);
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwdb_userdb_query_buddy(LwdbUserDB* db,LwqqBuddy* buddy)
 {
 	if(!db||!buddy||!buddy->qqnumber) return LWQQ_EC_ERROR;
@@ -964,6 +983,8 @@ LwqqErrorCode lwdb_userdb_query_buddy(LwdbUserDB* db,LwqqBuddy* buddy)
 	if(!cache) sws_query_end(stmt, NULL);
 	return 0;
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwdb_userdb_query_group(LwdbUserDB* db,LwqqGroup* group)
 {
 	if(!db ||!group ||!group->account) return LWQQ_EC_ERROR;
@@ -985,6 +1006,8 @@ LwqqErrorCode lwdb_userdb_query_group(LwdbUserDB* db,LwqqGroup* group)
 	if(!cache) sws_query_end(stmt, NULL);
 	return 0;
 }
+
+LWQQ_EXPORT
 void lwdb_userdb_flush_buddies(LwdbUserDB* db,int last,int day)
 {
 	if(!db||last<0) return ;
@@ -995,6 +1018,8 @@ void lwdb_userdb_flush_buddies(LwdbUserDB* db,int last,int day)
 			day,last);
 	sws_exec_sql(db->db, sql, NULL);
 }
+
+LWQQ_EXPORT
 void lwdb_userdb_flush_groups(LwdbUserDB* db,int last,int day)
 {
 	if(!db||last<0) return ;
@@ -1005,6 +1030,8 @@ void lwdb_userdb_flush_groups(LwdbUserDB* db,int last,int day)
 			day,last);
 	sws_exec_sql(db->db, sql, NULL);
 }
+
+LWQQ_EXPORT
 const char* lwdb_userdb_read(LwdbUserDB* db,const char* key)
 {
 	if(!db||!key) return NULL;
@@ -1022,6 +1049,7 @@ const char* lwdb_userdb_read(LwdbUserDB* db,const char* key)
 	return ret_;
 }
 
+LWQQ_EXPORT
 int lwdb_userdb_write(LwdbUserDB* db,const char* key,const char* value)
 {
 	if(!db||!key||!value) return -1;
@@ -1058,6 +1086,7 @@ static void db_extension_remove(LwqqClient* lc,LwqqExtension* ext)
 	ext_->ext_clean = NULL;
 }
 
+LWQQ_EXPORT
 LwqqExtension* lwdb_make_extension(LwdbUserDB* db)
 {
 	LwdbExtension* ext = s_malloc0(sizeof(*ext));

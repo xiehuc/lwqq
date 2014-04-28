@@ -20,6 +20,7 @@
 #include "internal.h"
 #include "utility.h"
 
+LWQQ_EXPORT
 const LwqqFeatures lwqq_features = 0
 #ifdef WITH_LIBEV
 |LWQQ_WITH_LIBEV
@@ -63,11 +64,13 @@ static char* generate_random_id(int length)
 	return s;
 }
 
+LWQQ_EXPORT
 const char* lwqq_status_to_str(LwqqStatus status)
 {
 	return lwqq_util_mapto_str(status_type_map, status);
 }
 
+LWQQ_EXPORT
 LwqqStatus lwqq_status_from_str(const char* str)
 {
 	return lwqq_util_mapto_type(status_type_map, str);
@@ -87,6 +90,7 @@ typedef struct LwqqClient_
  * 
  * @return A new LwqqClient instance, or NULL failed
  */
+LWQQ_EXPORT
 LwqqClient *lwqq_client_new(const char *username, const char *password)
 {
 	setlocale(LC_TIME,"en_US.utf8");///< use at get avatar
@@ -132,6 +136,7 @@ failed:
 	return NULL;
 }
 
+LWQQ_EXPORT
 struct LwqqHttpHandle* lwqq_get_http_handle(LwqqClient* lc)
 {
 	return ((LwqqClient_*)lc)->http;
@@ -162,6 +167,7 @@ static void lwqq_categories_free(LwqqFriendCategory *cate)
  * 
  * @param client LwqqClient instance
  */
+LWQQ_EXPORT
 void lwqq_client_free(LwqqClient *client)
 {
 	LwqqClient_* lc_ = (LwqqClient_*) client;
@@ -251,6 +257,7 @@ void lwqq_client_free(LwqqClient *client)
  * 
  * @return A LwqqBuddy instance
  */
+LWQQ_EXPORT
 LwqqBuddy *lwqq_buddy_new()
 {
 	LwqqBuddy *b = s_malloc0(sizeof(*b));
@@ -264,6 +271,7 @@ LwqqBuddy *lwqq_buddy_new()
  * 
  * @param buddy 
  */
+LWQQ_EXPORT
 void lwqq_buddy_free(LwqqBuddy *buddy)
 {
 	if (!buddy)
@@ -295,12 +303,16 @@ void lwqq_buddy_free(LwqqBuddy *buddy)
 
 	s_free(buddy);
 }
+
+LWQQ_EXPORT
 LwqqSimpleBuddy* lwqq_simple_buddy_new()
 {
 	LwqqSimpleBuddy*ret = ((LwqqSimpleBuddy*)s_malloc0(sizeof(LwqqSimpleBuddy)));
 	ret->stat = LWQQ_STATUS_OFFLINE;
 	return ret;
 }
+
+LWQQ_EXPORT
 void lwqq_simple_buddy_free(LwqqSimpleBuddy* buddy)
 {
 	if(!buddy) return;
@@ -323,6 +335,7 @@ void lwqq_simple_buddy_free(LwqqSimpleBuddy* buddy)
  * 
  * @return 
  */
+LWQQ_EXPORT
 LwqqBuddy *lwqq_buddy_find_buddy_by_uin(LwqqClient *lc, const char *uin)
 {
 	LwqqBuddy *buddy;
@@ -337,6 +350,8 @@ LwqqBuddy *lwqq_buddy_find_buddy_by_uin(LwqqClient *lc, const char *uin)
 
 	return NULL;
 }
+
+LWQQ_EXPORT
 LwqqBuddy *lwqq_buddy_find_buddy_by_qqnumber(LwqqClient *lc, const char *qqnum)
 {
 	LwqqBuddy* buddy;
@@ -347,6 +362,8 @@ LwqqBuddy *lwqq_buddy_find_buddy_by_qqnumber(LwqqClient *lc, const char *qqnum)
 	}
 	return NULL;
 }
+
+LWQQ_EXPORT
 LwqqBuddy* lwqq_buddy_find_buddy_by_name(LwqqClient* lc,const char* name)
 {
 	if(!lc || !name ) return NULL;
@@ -358,6 +375,8 @@ LwqqBuddy* lwqq_buddy_find_buddy_by_name(LwqqClient* lc,const char* name)
 	}
 	return NULL;
 }
+
+LWQQ_EXPORT
 LwqqFriendCategory* lwqq_category_find_by_name(LwqqClient* lc,const char* name)
 {
 	if(!lc||!name) return NULL;
@@ -367,6 +386,8 @@ LwqqFriendCategory* lwqq_category_find_by_name(LwqqClient* lc,const char* name)
 	}
 	return NULL;
 }
+
+LWQQ_EXPORT
 LwqqFriendCategory* lwqq_category_find_by_id(LwqqClient* lc,int index)
 {
 	if(!lc) return NULL;
@@ -385,6 +406,7 @@ LwqqFriendCategory* lwqq_category_find_by_id(LwqqClient* lc,int index)
  * 
  * @return A LwqqGroup instance
  */
+LWQQ_EXPORT
 LwqqGroup *lwqq_group_new(int type)
 {
 	LwqqGroup *g = s_malloc0(sizeof(*g));
@@ -401,6 +423,7 @@ LwqqGroup *lwqq_group_new(int type)
  * 
  * @param group
  */
+LWQQ_EXPORT
 void lwqq_group_free(LwqqGroup *group)
 {
 	LwqqSimpleBuddy *m_entry, *m_next;
@@ -441,6 +464,7 @@ void lwqq_group_free(LwqqGroup *group)
  * 
  * @return A LwqqGroup instance 
  */
+LWQQ_EXPORT
 LwqqGroup *lwqq_group_find_group_by_gid(LwqqClient *lc, const char *gid)
 {
 	LwqqGroup *group;
@@ -460,6 +484,7 @@ LwqqGroup *lwqq_group_find_group_by_gid(LwqqClient *lc, const char *gid)
 	return NULL;
 }
 
+LWQQ_EXPORT
 LwqqGroup* lwqq_group_find_group_by_qqnumber(LwqqClient* lc,const char* qqnumber)
 {
 	LwqqGroup *group,*discu;
@@ -485,6 +510,7 @@ LwqqGroup* lwqq_group_find_group_by_qqnumber(LwqqClient* lc,const char* qqnumber
  * 
  * @return A LwqqBuddy instance 
  */
+LWQQ_EXPORT
 LwqqSimpleBuddy *lwqq_group_find_group_member_by_uin(LwqqGroup *group, const char *uin)
 {
 	LwqqSimpleBuddy *member;
@@ -500,7 +526,7 @@ LwqqSimpleBuddy *lwqq_group_find_group_member_by_uin(LwqqGroup *group, const cha
 	return NULL;
 }
 
-
+LWQQ_EXPORT
 const char* lwqq_date_to_str(time_t date)
 {
 	static char buf[128];
@@ -520,6 +546,7 @@ long lwqq_time()
 	return ret;
 }
 
+LWQQ_EXPORT
 const LwqqCommand* lwqq_add_event_listener(LwqqCommand* inko,LwqqCommand cmd)
 {
 	return vp_link(inko, &cmd);

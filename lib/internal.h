@@ -4,6 +4,7 @@
 #include "json.h"
 #include "lwqq-config.h"
 #include "async.h"
+#include "lwqq_Export.h"
 #ifdef WIN32
 #include "win32.h"
 #endif

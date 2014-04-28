@@ -1,10 +1,17 @@
 #include "vplist.h"
 #include <string.h>
+#ifdef WIN32
+#include "lwqq_export.h"
+#else
+#define LWQQ_EXPORT
+#endif
 
 struct vp_d_table{
 	const char* id;
 	VP_DISPATCH d;
 };
+
+LWQQ_EXPORT
 vp_command vp_make_command(VP_DISPATCH dsph,VP_CALLBACK func,...)
 {
 	vp_command ret = {0};
@@ -17,6 +24,8 @@ vp_command vp_make_command(VP_DISPATCH dsph,VP_CALLBACK func,...)
 	va_end(args);
 	return ret;
 }
+
+LWQQ_EXPORT
 vp_list* vp_make_params(VP_DISPATCH dsph,...)
 {
 	vp_list* list = malloc(sizeof(*list));
@@ -26,6 +35,8 @@ vp_list* vp_make_params(VP_DISPATCH dsph,...)
 	va_end(args);
 	return list;
 }
+
+LWQQ_EXPORT
 void vp_do(vp_command cmd,void* retval)
 {
 	if(cmd.dsph==NULL||cmd.func==NULL) return;
@@ -48,6 +59,7 @@ void vp_do(vp_command cmd,void* retval)
 	}
 }
 
+LWQQ_EXPORT
 void vp_do_repeat(vp_command cmd,void* retval)
 {
 	if(cmd.dsph && cmd.func){
@@ -62,6 +74,7 @@ void vp_do_repeat(vp_command cmd,void* retval)
 		n = n->next;
 	}
 }
+
 void vp_cancel(vp_command cmd)
 {
 	vp_start(cmd.data);
@@ -79,6 +92,7 @@ void vp_cancel(vp_command cmd)
 		free(p);
 	}
 }
+
 const vp_command* vp_link(vp_command* head,vp_command* elem)
 {
 	vp_command* cmd = head;
@@ -106,6 +120,7 @@ void vp_unlink(vp_command* head,const vp_command* elem)
 	free((void*)elem);
 }
 
+LWQQ_EXPORT
 void vp_func_void(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void);
@@ -117,6 +132,8 @@ void vp_func_void(VP_CALLBACK func,vp_list* vp,void* q)
 	}
 	((f)func)();
 }
+
+LWQQ_EXPORT
 void vp_func_p(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void*);
@@ -130,6 +147,7 @@ void vp_func_p(VP_CALLBACK func,vp_list* vp,void* q)
 	((f)func)(p1);
 }
 
+LWQQ_EXPORT
 void vp_func_2p(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void*,void*);
@@ -146,6 +164,8 @@ void vp_func_2p(VP_CALLBACK func,vp_list* vp,void* q)
 	void* p2 = vp_arg(*vp,void*);
 	((f)func)(p1,p2);
 }
+
+LWQQ_EXPORT
 void vp_func_2pi(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void*,void*,int);
@@ -162,6 +182,8 @@ void vp_func_2pi(VP_CALLBACK func,vp_list* vp,void* q)
 	int p3 = vp_arg(*vp,int);
 	((f)func)(p1,p2,p3);
 }
+
+LWQQ_EXPORT
 void vp_func_3p(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void*,void*,void*);
@@ -178,6 +200,8 @@ void vp_func_3p(VP_CALLBACK func,vp_list* vp,void* q)
 	void* p3 = vp_arg(*vp,void*);
 	((f)func)(p1,p2,p3);
 }
+
+LWQQ_EXPORT
 void vp_func_3pi(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void*,void*,void*,int);
@@ -196,6 +220,8 @@ void vp_func_3pi(VP_CALLBACK func,vp_list* vp,void* q)
 	int p4 = vp_arg(*vp,int);
 	((f)func)(p1,p2,p3,p4);
 }
+
+LWQQ_EXPORT
 void vp_func_4p(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void*,void*,void*,void*);
@@ -214,6 +240,8 @@ void vp_func_4p(VP_CALLBACK func,vp_list* vp,void* q)
 	void* p4 = vp_arg(*vp,void*);
 	((f)func)(p1,p2,p3,p4);
 }
+
+LWQQ_EXPORT
 void vp_func_pi(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef void (*f)(void*,int);
@@ -228,6 +256,8 @@ void vp_func_pi(VP_CALLBACK func,vp_list* vp,void* q)
 	int p2 = vp_arg(*vp,int);
 	((f)func)(p1,p2);
 }
+
+LWQQ_EXPORT
 void vp_func_p_i(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef int (*f)(void*);
@@ -241,6 +271,8 @@ void vp_func_p_i(VP_CALLBACK func,vp_list* vp,void* q)
 	int ret = ((f)func)(p1);
 	if(q) *(int*)q = ret;
 }
+
+LWQQ_EXPORT
 void vp_func_2p_i(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef int (*f)(void*,void*);
@@ -256,6 +288,8 @@ void vp_func_2p_i(VP_CALLBACK func,vp_list* vp,void* q)
 	int ret = ((f)func)(p1,p2);
 	if(q) *(int*)q = ret;
 }
+
+LWQQ_EXPORT
 void vp_func_3p_i(VP_CALLBACK func,vp_list* vp,void* q)
 {
 	typedef int (*f)(void*,void*,void*);
@@ -275,16 +309,5 @@ void vp_func_3p_i(VP_CALLBACK func,vp_list* vp,void* q)
 	int ret = ((f)func)(p1,p2,p3);
 	if(q) *(int*)q = ret;
 }
-#if 0
-static struct vp_d_table tables[]= {
-	{"",vp_func_void},
-	{"p",vp_func_p},
-	{"pp",vp_func_2p},
-	{"ppp",vp_func_3p},
-	{"pppp",vp_func_4p},
-	{"pi",vp_func_pi},
-	{"i:pp",vp_func_2p_i},
-};
-#endif
 
 // vim: ts=3 sw=3 sts=3 noet

@@ -61,10 +61,13 @@ static void dispatch_wrap(LwqqAsyncTimerHandle timer,void* p)
 	//!!! should we stop first delete later?
 	s_free(data);
 }
+
 void lwqq_async_dispatch(LwqqCommand cmd)
 {
 	lwqq_async_dispatch_delay(cmd, 0);
 }
+
+
 void lwqq_async_dispatch_delay(LwqqCommand cmd,unsigned long timeout)
 {
 #ifndef WITHOUT_ASYNC
@@ -77,6 +80,7 @@ void lwqq_async_dispatch_delay(LwqqCommand cmd,unsigned long timeout)
 	vp_do(cmd,NULL);
 #endif
 }
+
 
 void lwqq_async_init(LwqqClient* lc)
 {
@@ -107,12 +111,16 @@ LwqqAsyncEvent* lwqq_async_event_new(void* req)
 	event->result = 0;
 	return event;
 }
+
+LWQQ_EXPORT
 LwqqHttpRequest* lwqq_async_event_get_conn(LwqqAsyncEvent* ev)
 {
 	if(!ev) return NULL;
 	LwqqAsyncEvent_* in = (LwqqAsyncEvent_*) ev;
 	return in->req;
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvset* lwqq_async_evset_new()
 {
 	LwqqAsyncEvset_* l = s_malloc0(sizeof(LwqqAsyncEvset_));
@@ -120,6 +128,8 @@ LwqqAsyncEvset* lwqq_async_evset_new()
 	pthread_cond_init(&l->cond,NULL);
 	return (LwqqAsyncEvset*)l;
 }
+
+LWQQ_EXPORT
 void lwqq_async_evset_free(LwqqAsyncEvset* set)
 {
 	if(!set) return;
@@ -128,6 +138,8 @@ void lwqq_async_evset_free(LwqqAsyncEvset* set)
 	pthread_cond_destroy(&evset_->cond);
 	s_free(evset_);
 }
+
+
 void lwqq_async_event_finish(LwqqAsyncEvent* event)
 {
 	LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
@@ -166,6 +178,8 @@ void lwqq_async_evset_wait(LwqqAsyncEvset* set)
 	}
 	lwqq_async_evset_free(set);
 }
+
+LWQQ_EXPORT
 void lwqq_async_evset_add_event(LwqqAsyncEvset* host,LwqqAsyncEvent *handle)
 {
 	if(!host || !handle) return;
@@ -176,6 +190,7 @@ void lwqq_async_evset_add_event(LwqqAsyncEvset* host,LwqqAsyncEvent *handle)
 	pthread_mutex_unlock(&set_->lock);
 }
 
+LWQQ_EXPORT
 void lwqq_async_add_event_listener(LwqqAsyncEvent* event,LwqqCommand cmd)
 {
 	LwqqAsyncEvent_* event_ = (LwqqAsyncEvent_*) event;
@@ -217,6 +232,8 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 		lwqq_async_add_event_listener(caller,_C_(2p,on_chain,caller,called));
 	}
 }
+
+LWQQ_EXPORT
 void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd)
 {
 	LwqqAsyncEvset_* set_ = (LwqqAsyncEvset_*)evset;
@@ -230,6 +247,7 @@ void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd)
 	if(set_->ref_count == 0) lwqq_async_evset_free(evset);
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_async_queue_find(LwqqAsyncQueue* queue,void* func)
 {
 	if(!queue||!func) return NULL;
@@ -328,6 +346,7 @@ static void ev_bomb(LwqqAsyncTimerHandle timer,void* data)
 	LWQQ__ASYNC_IMPL(loop_stop)();
 }
 
+LWQQ_EXPORT
 void lwqq_async_global_quit()
 {
 	//no need to destroy thread
@@ -383,6 +402,7 @@ void lwqq_async_timer_repeat(LwqqAsyncTimerHandle timer)
 }
 LwqqAsyncImpl lwqq__async_impl_ = {0};
 
+LWQQ_EXPORT
 void lwqq_async_implement(LwqqAsyncImpl* i)
 {
 	lwqq__async_impl_ = *i;

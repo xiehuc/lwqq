@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "logger.h"
+#include "internal.h"
 
 static char *levels[] = {
 	"DEBUG",
@@ -42,6 +43,7 @@ static LwqqLogRedirectFunc redirect_func_ = log_direct_to_stderr;
  * @param function Which function call this function 
  * @param msg Log message
  */
+LWQQ_EXPORT
 void lwqq_log(int level, const char *file, int line,
 		const char *function, const char* msg, ...)
 {
@@ -67,6 +69,7 @@ void lwqq_log(int level, const char *file, int line,
 	fflush(stderr);
 }
 
+LWQQ_EXPORT
 const char* lwqq_log_time()
 {
 	static char tm_str[64];
@@ -76,6 +79,7 @@ const char* lwqq_log_time()
 	return tm_str;
 }
 
+LWQQ_EXPORT
 void lwqq_verbose(int l,const char* str,...)
 {
 	static char buffer[81920];
@@ -87,15 +91,20 @@ void lwqq_verbose(int l,const char* str,...)
 		if(redirect_func_) redirect_func_(l,buffer);
 	}
 }
+
+LWQQ_EXPORT
 void lwqq_log_set_level(int level)
 {
 	LWQQ_VERBOSE_LEVEL_ = level;
 }
+
+LWQQ_EXPORT
 int lwqq_log_get_level()
 {
 	return LWQQ_VERBOSE_LEVEL_;
 }
 
+LWQQ_EXPORT
 void lwqq_log_redirect(LwqqLogRedirectFunc func)
 {
 	redirect_func_ = func;

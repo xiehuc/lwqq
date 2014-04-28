@@ -723,6 +723,7 @@ static void parse_friends_child(LwqqClient *lc, json_t *json)
  * @param lc 
  * @param err 
  */ 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, void* userdata) 
 {
 	char post[512];
@@ -817,6 +818,7 @@ done:
 	return err;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_avatar(LwqqClient* lc,LwqqBuddy* buddy,LwqqGroup* group)
 {
 	static int serv_id = 0;
@@ -865,6 +867,8 @@ done:
 	lwqq_http_request_free(req);
 	return -1;
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwqq_info_save_avatar(LwqqBuddy* b,LwqqGroup* g,const char* path)
 {
 	char* path_;
@@ -1002,6 +1006,7 @@ static void parse_groups_gmarklist_child(LwqqClient *lc, json_t *json)
  * @param lc
  * @param err
  */
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_group_name_list(LwqqClient *lc, LwqqErrorCode *err)
 {
 	char post[512] = {0};
@@ -1079,6 +1084,7 @@ done:
 
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_discu_name_list(LwqqClient* lc)
 {
 	if(!lc) return NULL;
@@ -1318,6 +1324,7 @@ static void parse_groups_stats_child(LwqqClient *lc, LwqqGroup *group,  json_t *
  * @param group
  * @param err
  */
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_group_detail_info(LwqqClient *lc, LwqqGroup *group,
 		LwqqErrorCode *err)
 {
@@ -1531,6 +1538,7 @@ done:
 	return err;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_qqnumber(LwqqClient* lc,const char* uin_gcode,char **value)
 {
 	if (!lc || !uin_gcode || !value ) return NULL;
@@ -1554,6 +1562,7 @@ LwqqAsyncEvent* lwqq_info_get_qqnumber(LwqqClient* lc,const char* uin_gcode,char
  * @param buddy
  * @param err
  */
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_friend_detail_info(LwqqClient *lc, LwqqBuddy *buddy)
 {
 	char url[512];
@@ -1588,6 +1597,7 @@ LwqqAsyncEvent* lwqq_info_get_friend_detail_info(LwqqClient *lc, LwqqBuddy *budd
  * @param lc
  * @param err
  */
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_online_buddies(LwqqClient *lc, LwqqErrorCode *err)
 {
 	char url[512];
@@ -1613,6 +1623,8 @@ done:
 	lwqq_http_request_free(req);
 	return NULL;
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_change_buddy_markname(LwqqClient* lc,LwqqBuddy* buddy,const char* alias)
 {
 	if(!lc||!buddy||!alias) return NULL;
@@ -1629,6 +1641,7 @@ LwqqAsyncEvent* lwqq_info_change_buddy_markname(LwqqClient* lc,LwqqBuddy* buddy,
 	return ev;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_change_group_markname(LwqqClient* lc,LwqqGroup* group,const char* alias)
 {
 	if(!lc||!group||!alias||group->type != LWQQ_GROUP_QUN) return NULL;
@@ -1646,6 +1659,7 @@ LwqqAsyncEvent* lwqq_info_change_group_markname(LwqqClient* lc,LwqqGroup* group,
 	return ev;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_change_discu_topic(LwqqClient* lc,LwqqGroup* group,const char* alias)
 {
 	if(!lc || !group || !alias) return NULL;
@@ -1665,7 +1679,7 @@ LwqqAsyncEvent* lwqq_info_change_discu_topic(LwqqClient* lc,LwqqGroup* group,con
 	return ev;
 }
 
-
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_modify_buddy_category(LwqqClient* lc,LwqqBuddy* buddy,int new_cate)
 {
 	if(!lc||!buddy) return NULL;
@@ -1692,6 +1706,7 @@ LwqqAsyncEvent* lwqq_info_modify_buddy_category(LwqqClient* lc,LwqqBuddy* buddy,
 	return ev;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_delete_friend(LwqqClient* lc,LwqqBuddy* buddy,LwqqDelFriendType del_type)
 {
 	if(!lc||!buddy) return NULL;
@@ -1709,6 +1724,8 @@ LwqqAsyncEvent* lwqq_info_delete_friend(LwqqClient* lc,LwqqBuddy* buddy,LwqqDelF
 	//do delete work.
 	return ev;
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_answer_request_friend(LwqqClient* lc,const char* qq,LwqqAnswer allow,const char* extra)
 {
 	if(!lc||!qq) return NULL;
@@ -1743,6 +1760,7 @@ LwqqAsyncEvent* lwqq_info_answer_request_friend(LwqqClient* lc,const char* qq,Lw
 	return req->do_request_async(req,lwqq__has_post(),_C_(p_i,process_simple_response,req));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_group_sig(LwqqClient* lc,LwqqGroup* group,const char* to_uin)
 {
 	if(!lc||!group||!to_uin) return NULL;
@@ -1764,6 +1782,7 @@ LwqqAsyncEvent* lwqq_info_get_group_sig(LwqqClient* lc,LwqqGroup* group,const ch
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(3p_i,process_simple_string,req, "value", &sb->group_sig));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_change_status(LwqqClient* lc,LwqqStatus status)
 {
 	if(!lc||!status) return NULL;
@@ -1808,6 +1827,7 @@ done:
 	lwqq_vc_free(code);
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_search_friend(LwqqClient* lc,const char* qq_email,LwqqBuddy* out)
 {
 	if(!lc||!qq_email||!out) return NULL;
@@ -1819,6 +1839,8 @@ LwqqAsyncEvent* lwqq_info_search_friend(LwqqClient* lc,const char* qq_email,Lwqq
 	lwqq__request_captcha(lc, c);
 	return ev;
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_add_friend(LwqqClient* lc,LwqqBuddy* buddy,const char* message)
 {
 	if(!lc||!buddy) return NULL;
@@ -1846,6 +1868,7 @@ LwqqAsyncEvent* lwqq_info_add_friend(LwqqClient* lc,LwqqBuddy* buddy,const char*
 	return ev;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_search_group_by_qq(LwqqClient* lc,const char* qq,LwqqGroup* group)
 {
 	if(!lc||!qq||!group) return NULL;
@@ -1900,6 +1923,7 @@ done:
 	return err;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_add_group(LwqqClient* lc,LwqqGroup* g,const char* msg)
 {
 	if(!lc||!g) return NULL;
@@ -1938,7 +1962,7 @@ done:
 	s_free(msg);
 }
 
-
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_mask_group(LwqqClient* lc,LwqqGroup* group,LwqqMask mask)
 {
 	if(!lc||!group) return NULL;
@@ -1980,6 +2004,7 @@ LwqqAsyncEvent* lwqq_info_mask_group(LwqqClient* lc,LwqqGroup* group,LwqqMask ma
 	return ev;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_stranger_info(LwqqClient* lc,const char* serv_id,LwqqBuddy* out)
 {
 	if(!lc||!serv_id||!out) return NULL;
@@ -1990,6 +2015,8 @@ LwqqAsyncEvent* lwqq_info_get_stranger_info(LwqqClient* lc,const char* serv_id,L
 
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(2p,process_friend_detail,req,out));
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_stranger_info_by_msg(LwqqClient* lc,LwqqMsgSysGMsg* msg,LwqqBuddy* out)
 {
 	if(!lc||!msg||!out) return NULL;
@@ -2001,6 +2028,7 @@ LwqqAsyncEvent* lwqq_info_get_stranger_info_by_msg(LwqqClient* lc,LwqqMsgSysGMsg
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(2p,process_friend_detail,req,out));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_answer_request_join_group(LwqqClient* lc,LwqqMsgSysGMsg* msg ,LwqqAnswer answer,const char* reason)
 {
 	if(!lc||!msg) return NULL;
@@ -2015,6 +2043,8 @@ LwqqAsyncEvent* lwqq_info_answer_request_join_group(LwqqClient* lc,LwqqMsgSysGMs
 
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_group_public_info(LwqqClient* lc,LwqqGroup* g)
 {
 	if(!lc||!g) return NULL;
@@ -2029,6 +2059,7 @@ LwqqAsyncEvent* lwqq_info_get_group_public_info(LwqqClient* lc,LwqqGroup* g)
 
 }
 
+LWQQ_EXPORT
 void lwqq_card_free(LwqqBusinessCard* card)
 {
 	if(card){
@@ -2041,6 +2072,8 @@ void lwqq_card_free(LwqqBusinessCard* card)
 		s_free(card);
 	}
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_self_card(LwqqClient* lc,LwqqGroup* g,LwqqBusinessCard* card)
 {
 	if(!lc||!g||!card) return NULL;
@@ -2053,6 +2086,7 @@ LwqqAsyncEvent* lwqq_info_get_self_card(LwqqClient* lc,LwqqGroup* g,LwqqBusiness
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(2p_i,process_business_card,req,card));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_set_self_card(LwqqClient* lc,LwqqBusinessCard* card)
 {
 	if(!lc||!card) return NULL;
@@ -2072,6 +2106,7 @@ LwqqAsyncEvent* lwqq_info_set_self_card(LwqqClient* lc,LwqqBusinessCard* card)
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_single_long_nick(LwqqClient* lc,LwqqBuddy* buddy)
 {
 	//{"retcode":0,"result":[{"uin":1503539798,"lnick":"有梦想的人是幸福的，哪怕是梦想没有实现，只要努力奋斗了，也无怨无悔"}]}
@@ -2086,6 +2121,7 @@ LwqqAsyncEvent* lwqq_info_get_single_long_nick(LwqqClient* lc,LwqqBuddy* buddy)
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(3p_i,process_simple_string,req,"lnick",&buddy->long_nick));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_set_self_long_nick(LwqqClient* lc,const char* nick)
 {
 	if(!lc||!nick) return NULL;
@@ -2102,6 +2138,7 @@ LwqqAsyncEvent* lwqq_info_set_self_long_nick(LwqqClient* lc,const char* nick)
 	return ev;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_delete_group(LwqqClient* lc,LwqqGroup* group)
 {
 	if(!lc||!group) return NULL;
@@ -2128,6 +2165,7 @@ LwqqAsyncEvent* lwqq_info_delete_group(LwqqClient* lc,LwqqGroup* group)
 	return ev;
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_group_memo(LwqqClient* lc,LwqqGroup* g)
 {
 	if(!lc||!g) return NULL;
@@ -2142,6 +2180,7 @@ LwqqAsyncEvent* lwqq_info_get_group_memo(LwqqClient* lc,LwqqGroup* g)
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(3p_i,process_simple_string,req,"memo",&g->memo));
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_recent_list(LwqqClient* lc,LwqqRecentList* list)
 {
 	if(!lc||!list) return NULL;
@@ -2155,6 +2194,8 @@ LwqqAsyncEvent* lwqq_info_recent_list(LwqqClient* lc,LwqqRecentList* list)
 
 	return req->do_request_async(req,lwqq__has_post(),_C_(2p_i,process_recent_list,req,list));
 }
+
+LWQQ_EXPORT
 void lwqq_recent_list_free(LwqqRecentList* list)
 {
 	if(!list) return;
@@ -2167,7 +2208,7 @@ void lwqq_recent_list_free(LwqqRecentList* list)
 	memset(list,0,sizeof(*list));
 }
 
-
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_get_level(LwqqClient* lc, LwqqBuddy* b)
 {
 	if(!lc||!b) return NULL;
@@ -2178,6 +2219,8 @@ LwqqAsyncEvent* lwqq_info_get_level(LwqqClient* lc, LwqqBuddy* b)
 
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(2p,process_qq_level,req,b));
 }
+
+LWQQ_EXPORT
 LwqqDiscuMemChange* lwqq_discu_mem_change_new()
 {
 	return s_malloc0(sizeof(LwqqDiscuMemChange));
@@ -2190,6 +2233,8 @@ void lwqq_discu_mem_change_free(LwqqDiscuMemChange* chg)
 	str_list_free_all(chg->relate_groups);
 	s_free(chg);
 }
+
+LWQQ_EXPORT
 LwqqErrorCode lwqq_discu_add_buddy(LwqqDiscuMemChange* mem,LwqqBuddy* b)
 {
 	if(!mem||!b) return LWQQ_EC_ERROR;
@@ -2197,6 +2242,7 @@ LwqqErrorCode lwqq_discu_add_buddy(LwqqDiscuMemChange* mem,LwqqBuddy* b)
 	return LWQQ_EC_OK;
 }
 
+LWQQ_EXPORT
 LwqqErrorCode lwqq_discu_add_group_member(LwqqDiscuMemChange* mem,LwqqSimpleBuddy* sb,LwqqGroup* g)
 {
 	if(!mem||!sb||!g) return LWQQ_EC_ERROR;
@@ -2232,6 +2278,7 @@ static void lwqq_discu_mem_change_to_str(LwqqDiscuMemChange* chg,char* buf,size_
 	strcat(buf,"]");
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_change_discu_mem(LwqqClient* lc,LwqqGroup* discu,LwqqDiscuMemChange* chg)
 {
 	if(!discu||!chg) return NULL;
@@ -2280,6 +2327,7 @@ done:
 	}
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_add_group_member_as_friend(LwqqClient* lc,LwqqBuddy* mem_detail,const char* markname)
 {
 	LwqqBuddy* buddy = mem_detail;
@@ -2325,6 +2373,8 @@ done:
 	s_free(dname);
 	lwqq_vc_free(code);
 }
+
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_info_create_discu(LwqqClient* lc,LwqqDiscuMemChange* chg,const char* dname)
 {
 	if(!lc||!chg) return NULL;

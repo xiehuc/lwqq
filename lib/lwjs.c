@@ -1,5 +1,6 @@
 #include "lwqq.h"
 #include "lwjs.h"
+#include "internal.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -36,6 +37,7 @@ static void report_error(JSContext *cx,  const char *message, JSErrorReport *rep
 			message); 
 } 
 
+LWQQ_EXPORT
 lwqq_js_t* lwqq_js_init()
 {
 	lwqq_js_t* h = s_malloc0(sizeof(*h));
@@ -53,6 +55,7 @@ lwqq_js_t* lwqq_js_init()
 	return h;
 }
 
+LWQQ_EXPORT
 lwqq_jso_t* lwqq_js_load(lwqq_js_t* js,const char* file)
 {
 	JSObject* global = JS_GetGlobalObject(js->context);
@@ -64,16 +67,21 @@ lwqq_jso_t* lwqq_js_load(lwqq_js_t* js,const char* file)
 	JS_ExecuteScript(js->context, global, script, NULL);
 	return (lwqq_jso_t*)script;
 }
+
+LWQQ_EXPORT
 void lwqq_js_load_buffer(lwqq_js_t* js,const char* content)
 {
 	JSObject* global = JS_GetGlobalObject(js->context);
 	JS_EvaluateScript(js->context,global,content,strlen(content),NULL,0,NULL);
 }
+
+LWQQ_EXPORT
 void lwqq_js_unload(lwqq_js_t* js,lwqq_jso_t* obj)
 {
 	//JS_DecompileScriptObject(js->context, obj, <#const char *name#>, <#uintN indent#>);
 }
 
+LWQQ_EXPORT
 char* lwqq_js_hash(const char* uin,const char* ptwebqq,lwqq_js_t* js)
 {
 	JSObject* global = JS_GetGlobalObject(js->context);
@@ -94,6 +102,7 @@ char* lwqq_js_hash(const char* uin,const char* ptwebqq,lwqq_js_t* js)
 	return ret;
 }
 
+LWQQ_EXPORT
 void lwqq_js_close(lwqq_js_t* js)
 {
 	JS_DestroyContext(js->context);
@@ -105,10 +114,14 @@ void lwqq_js_close(lwqq_js_t* js)
 
 struct lwqq_js_t{
 };
+
+LWQQ_EXPORT
 lwqq_js_t* lwqq_js_init()
 {
 	return NULL;
 }
+
+LWQQ_EXPORT
 void lwqq_js_close(lwqq_js_t* js)
 {
 }
