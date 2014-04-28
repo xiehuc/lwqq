@@ -1,0 +1,495 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C0A1F9C3190E46B400C050B6 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C0A1F9C1190E46B400C050B6 /* InfoPlist.strings */; };
+		C0A1F9E4190E48A300C050B6 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1F9E3190E48A300C050B6 /* libcurl.dylib */; };
+		C0A1F9E6190E48B000C050B6 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1F9E5190E48B000C050B6 /* libsqlite3.dylib */; };
+		C0A1FA0E190E48E200C050B6 /* async_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9E7190E48E200C050B6 /* async_impl.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA11190E48E200C050B6 /* async.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9EA190E48E200C050B6 /* async.c */; };
+		C0A1FA12190E48E200C050B6 /* async.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9EB190E48E200C050B6 /* async.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA13190E48E200C050B6 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9EC190E48E200C050B6 /* http.c */; };
+		C0A1FA14190E48E200C050B6 /* http.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9ED190E48E200C050B6 /* http.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA15190E48E200C050B6 /* info.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9EE190E48E200C050B6 /* info.c */; };
+		C0A1FA16190E48E200C050B6 /* info.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9EF190E48E200C050B6 /* info.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA17190E48E200C050B6 /* internal.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9F0190E48E200C050B6 /* internal.c */; };
+		C0A1FA18190E48E200C050B6 /* internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9F1190E48E200C050B6 /* internal.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		C0A1FA19190E48E200C050B6 /* json.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9F2190E48E200C050B6 /* json.c */; };
+		C0A1FA1A190E48E200C050B6 /* json.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9F3190E48E200C050B6 /* json.h */; };
+		C0A1FA1B190E48E200C050B6 /* logger.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9F4190E48E200C050B6 /* logger.c */; };
+		C0A1FA1C190E48E200C050B6 /* logger.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9F5190E48E200C050B6 /* logger.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA1D190E48E200C050B6 /* login.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9F6190E48E200C050B6 /* login.c */; };
+		C0A1FA1E190E48E200C050B6 /* login.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9F7190E48E200C050B6 /* login.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA1F190E48E200C050B6 /* lwdb.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9F8190E48E200C050B6 /* lwdb.c */; };
+		C0A1FA20190E48E200C050B6 /* lwdb.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9F9190E48E200C050B6 /* lwdb.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA21190E48E200C050B6 /* lwjs.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9FA190E48E200C050B6 /* lwjs.c */; };
+		C0A1FA22190E48E200C050B6 /* lwjs.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9FB190E48E200C050B6 /* lwjs.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA23190E48E200C050B6 /* lwqq.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9FC190E48E200C050B6 /* lwqq.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA24190E48E200C050B6 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9FD190E48E200C050B6 /* md5.c */; };
+		C0A1FA25190E48E200C050B6 /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9FE190E48E200C050B6 /* md5.h */; };
+		C0A1FA26190E48E200C050B6 /* msg.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9FF190E48E200C050B6 /* msg.c */; };
+		C0A1FA27190E48E200C050B6 /* msg.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA00190E48E200C050B6 /* msg.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA28190E48E200C050B6 /* queue.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA01190E48E200C050B6 /* queue.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA29190E48E200C050B6 /* smemory.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA02190E48E200C050B6 /* smemory.c */; };
+		C0A1FA2A190E48E200C050B6 /* smemory.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA03190E48E200C050B6 /* smemory.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA2B190E48E200C050B6 /* swsqlite.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA04190E48E200C050B6 /* swsqlite.c */; };
+		C0A1FA2C190E48E200C050B6 /* swsqlite.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA05190E48E200C050B6 /* swsqlite.h */; };
+		C0A1FA2D190E48E200C050B6 /* type.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA06190E48E200C050B6 /* type.c */; };
+		C0A1FA2E190E48E200C050B6 /* type.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA07190E48E200C050B6 /* type.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA2F190E48E200C050B6 /* url.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA08190E48E200C050B6 /* url.c */; };
+		C0A1FA30190E48E200C050B6 /* url.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA09190E48E200C050B6 /* url.h */; };
+		C0A1FA31190E48E200C050B6 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA0A190E48E200C050B6 /* utility.c */; };
+		C0A1FA32190E48E200C050B6 /* utility.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA0B190E48E200C050B6 /* utility.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA33190E48E200C050B6 /* vplist.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA0C190E48E200C050B6 /* vplist.c */; };
+		C0A1FA34190E48E200C050B6 /* vplist.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA0D190E48E200C050B6 /* vplist.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA37190E499F00C050B6 /* lwqq_export.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA35190E499F00C050B6 /* lwqq_export.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA38190E499F00C050B6 /* lwqq-config.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA36190E499F00C050B6 /* lwqq-config.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C0A1FA3F190E4FC900C050B6 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1FA3E190E4FC900C050B6 /* libz.dylib */; };
+		C0A1FA54190E653400C050B6 /* libmozjs185-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1FA53190E653400C050B6 /* libmozjs185-1.0.a */; };
+		C0A1FA5C190E655C00C050B6 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1FA5B190E655C00C050B6 /* libstdc++.dylib */; };
+		C0BB75D1190E6E8E005D2DA3 /* libnspr4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BB75CE190E6E8E005D2DA3 /* libnspr4.a */; };
+		C0BB75D2190E6E8E005D2DA3 /* libplc4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BB75CF190E6E8E005D2DA3 /* libplc4.a */; };
+		C0BB75D3190E6E8E005D2DA3 /* libplds4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BB75D0190E6E8E005D2DA3 /* libplds4.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		C0A1F9B5190E46B400C050B6 /* lwqq.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = lwqq.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0A1F9C0190E46B400C050B6 /* lwqq-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "lwqq-Info.plist"; sourceTree = "<group>"; };
+		C0A1F9C2190E46B400C050B6 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0A1F9E3190E48A300C050B6 /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
+		C0A1F9E5190E48B000C050B6 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		C0A1F9E7190E48E200C050B6 /* async_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = async_impl.h; path = ../../lib/async_impl.h; sourceTree = "<group>"; };
+		C0A1F9EA190E48E200C050B6 /* async.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = async.c; path = ../../lib/async.c; sourceTree = "<group>"; };
+		C0A1F9EB190E48E200C050B6 /* async.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = async.h; path = ../../lib/async.h; sourceTree = "<group>"; };
+		C0A1F9EC190E48E200C050B6 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = http.c; path = ../../lib/http.c; sourceTree = "<group>"; };
+		C0A1F9ED190E48E200C050B6 /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = http.h; path = ../../lib/http.h; sourceTree = "<group>"; };
+		C0A1F9EE190E48E200C050B6 /* info.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = info.c; path = ../../lib/info.c; sourceTree = "<group>"; };
+		C0A1F9EF190E48E200C050B6 /* info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = info.h; path = ../../lib/info.h; sourceTree = "<group>"; };
+		C0A1F9F0190E48E200C050B6 /* internal.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = internal.c; path = ../../lib/internal.c; sourceTree = "<group>"; };
+		C0A1F9F1190E48E200C050B6 /* internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = internal.h; path = ../../lib/internal.h; sourceTree = "<group>"; };
+		C0A1F9F2190E48E200C050B6 /* json.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = json.c; path = ../../lib/json.c; sourceTree = "<group>"; };
+		C0A1F9F3190E48E200C050B6 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = json.h; path = ../../lib/json.h; sourceTree = "<group>"; };
+		C0A1F9F4190E48E200C050B6 /* logger.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = logger.c; path = ../../lib/logger.c; sourceTree = "<group>"; };
+		C0A1F9F5190E48E200C050B6 /* logger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = logger.h; path = ../../lib/logger.h; sourceTree = "<group>"; };
+		C0A1F9F6190E48E200C050B6 /* login.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = login.c; path = ../../lib/login.c; sourceTree = "<group>"; };
+		C0A1F9F7190E48E200C050B6 /* login.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = login.h; path = ../../lib/login.h; sourceTree = "<group>"; };
+		C0A1F9F8190E48E200C050B6 /* lwdb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lwdb.c; path = ../../lib/lwdb.c; sourceTree = "<group>"; };
+		C0A1F9F9190E48E200C050B6 /* lwdb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwdb.h; path = ../../lib/lwdb.h; sourceTree = "<group>"; };
+		C0A1F9FA190E48E200C050B6 /* lwjs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lwjs.c; path = ../../lib/lwjs.c; sourceTree = "<group>"; };
+		C0A1F9FB190E48E200C050B6 /* lwjs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwjs.h; path = ../../lib/lwjs.h; sourceTree = "<group>"; };
+		C0A1F9FC190E48E200C050B6 /* lwqq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwqq.h; path = ../../lib/lwqq.h; sourceTree = "<group>"; };
+		C0A1F9FD190E48E200C050B6 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md5.c; path = ../../lib/md5.c; sourceTree = "<group>"; };
+		C0A1F9FE190E48E200C050B6 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = md5.h; path = ../../lib/md5.h; sourceTree = "<group>"; };
+		C0A1F9FF190E48E200C050B6 /* msg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = msg.c; path = ../../lib/msg.c; sourceTree = "<group>"; };
+		C0A1FA00190E48E200C050B6 /* msg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = msg.h; path = ../../lib/msg.h; sourceTree = "<group>"; };
+		C0A1FA01190E48E200C050B6 /* queue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = queue.h; path = ../../lib/queue.h; sourceTree = "<group>"; };
+		C0A1FA02190E48E200C050B6 /* smemory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = smemory.c; path = ../../lib/smemory.c; sourceTree = "<group>"; };
+		C0A1FA03190E48E200C050B6 /* smemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = smemory.h; path = ../../lib/smemory.h; sourceTree = "<group>"; };
+		C0A1FA04190E48E200C050B6 /* swsqlite.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = swsqlite.c; path = ../../lib/swsqlite.c; sourceTree = "<group>"; };
+		C0A1FA05190E48E200C050B6 /* swsqlite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = swsqlite.h; path = ../../lib/swsqlite.h; sourceTree = "<group>"; };
+		C0A1FA06190E48E200C050B6 /* type.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = type.c; path = ../../lib/type.c; sourceTree = "<group>"; };
+		C0A1FA07190E48E200C050B6 /* type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = type.h; path = ../../lib/type.h; sourceTree = "<group>"; };
+		C0A1FA08190E48E200C050B6 /* url.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = url.c; path = ../../lib/url.c; sourceTree = "<group>"; };
+		C0A1FA09190E48E200C050B6 /* url.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = url.h; path = ../../lib/url.h; sourceTree = "<group>"; };
+		C0A1FA0A190E48E200C050B6 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = utility.c; path = ../../lib/utility.c; sourceTree = "<group>"; };
+		C0A1FA0B190E48E200C050B6 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utility.h; path = ../../lib/utility.h; sourceTree = "<group>"; };
+		C0A1FA0C190E48E200C050B6 /* vplist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vplist.c; path = ../../lib/vplist.c; sourceTree = "<group>"; };
+		C0A1FA0D190E48E200C050B6 /* vplist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vplist.h; path = ../../lib/vplist.h; sourceTree = "<group>"; };
+		C0A1FA35190E499F00C050B6 /* lwqq_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwqq_export.h; path = ../build/lwqq_export.h; sourceTree = "<group>"; };
+		C0A1FA36190E499F00C050B6 /* lwqq-config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "lwqq-config.h"; path = "../build/lwqq-config.h"; sourceTree = "<group>"; };
+		C0A1FA3E190E4FC900C050B6 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		C0A1FA53190E653400C050B6 /* libmozjs185-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmozjs185-1.0.a"; path = "../../../../../usr/local/Cellar/spidermonkey/1.8.5/lib/libmozjs185-1.0.a"; sourceTree = "<group>"; };
+		C0A1FA5B190E655C00C050B6 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
+		C0BB75CE190E6E8E005D2DA3 /* libnspr4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libnspr4.a; sourceTree = "<group>"; };
+		C0BB75CF190E6E8E005D2DA3 /* libplc4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libplc4.a; sourceTree = "<group>"; };
+		C0BB75D0190E6E8E005D2DA3 /* libplds4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libplds4.a; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C0A1F9B1190E46B400C050B6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0A1FA54190E653400C050B6 /* libmozjs185-1.0.a in Frameworks */,
+				C0BB75D2190E6E8E005D2DA3 /* libplc4.a in Frameworks */,
+				C0A1FA5C190E655C00C050B6 /* libstdc++.dylib in Frameworks */,
+				C0A1FA3F190E4FC900C050B6 /* libz.dylib in Frameworks */,
+				C0A1F9E6190E48B000C050B6 /* libsqlite3.dylib in Frameworks */,
+				C0A1F9E4190E48A300C050B6 /* libcurl.dylib in Frameworks */,
+				C0BB75D1190E6E8E005D2DA3 /* libnspr4.a in Frameworks */,
+				C0BB75D3190E6E8E005D2DA3 /* libplds4.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C0A1F9AB190E46B400C050B6 = {
+			isa = PBXGroup;
+			children = (
+				C0A1FA35190E499F00C050B6 /* lwqq_export.h */,
+				C0A1FA36190E499F00C050B6 /* lwqq-config.h */,
+				C0A1F9BE190E46B400C050B6 /* lwqq */,
+				C0A1F9B7190E46B400C050B6 /* Frameworks */,
+				C0A1F9B6190E46B400C050B6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C0A1F9B6190E46B400C050B6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C0A1F9B5190E46B400C050B6 /* lwqq.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C0A1F9B7190E46B400C050B6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C0BB75CE190E6E8E005D2DA3 /* libnspr4.a */,
+				C0BB75CF190E6E8E005D2DA3 /* libplc4.a */,
+				C0BB75D0190E6E8E005D2DA3 /* libplds4.a */,
+				C0A1FA53190E653400C050B6 /* libmozjs185-1.0.a */,
+				C0A1FA5B190E655C00C050B6 /* libstdc++.dylib */,
+				C0A1FA3E190E4FC900C050B6 /* libz.dylib */,
+				C0A1F9E5190E48B000C050B6 /* libsqlite3.dylib */,
+				C0A1F9E3190E48A300C050B6 /* libcurl.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C0A1F9BE190E46B400C050B6 /* lwqq */ = {
+			isa = PBXGroup;
+			children = (
+				C0A1F9E7190E48E200C050B6 /* async_impl.h */,
+				C0A1F9EA190E48E200C050B6 /* async.c */,
+				C0A1F9EB190E48E200C050B6 /* async.h */,
+				C0A1F9EC190E48E200C050B6 /* http.c */,
+				C0A1F9ED190E48E200C050B6 /* http.h */,
+				C0A1F9EE190E48E200C050B6 /* info.c */,
+				C0A1F9EF190E48E200C050B6 /* info.h */,
+				C0A1F9F0190E48E200C050B6 /* internal.c */,
+				C0A1F9F1190E48E200C050B6 /* internal.h */,
+				C0A1F9F2190E48E200C050B6 /* json.c */,
+				C0A1F9F3190E48E200C050B6 /* json.h */,
+				C0A1F9F4190E48E200C050B6 /* logger.c */,
+				C0A1F9F5190E48E200C050B6 /* logger.h */,
+				C0A1F9F6190E48E200C050B6 /* login.c */,
+				C0A1F9F7190E48E200C050B6 /* login.h */,
+				C0A1F9F8190E48E200C050B6 /* lwdb.c */,
+				C0A1F9F9190E48E200C050B6 /* lwdb.h */,
+				C0A1F9FA190E48E200C050B6 /* lwjs.c */,
+				C0A1F9FB190E48E200C050B6 /* lwjs.h */,
+				C0A1F9FC190E48E200C050B6 /* lwqq.h */,
+				C0A1F9FD190E48E200C050B6 /* md5.c */,
+				C0A1F9FE190E48E200C050B6 /* md5.h */,
+				C0A1F9FF190E48E200C050B6 /* msg.c */,
+				C0A1FA00190E48E200C050B6 /* msg.h */,
+				C0A1FA01190E48E200C050B6 /* queue.h */,
+				C0A1FA02190E48E200C050B6 /* smemory.c */,
+				C0A1FA03190E48E200C050B6 /* smemory.h */,
+				C0A1FA04190E48E200C050B6 /* swsqlite.c */,
+				C0A1FA05190E48E200C050B6 /* swsqlite.h */,
+				C0A1FA06190E48E200C050B6 /* type.c */,
+				C0A1FA07190E48E200C050B6 /* type.h */,
+				C0A1FA08190E48E200C050B6 /* url.c */,
+				C0A1FA09190E48E200C050B6 /* url.h */,
+				C0A1FA0A190E48E200C050B6 /* utility.c */,
+				C0A1FA0B190E48E200C050B6 /* utility.h */,
+				C0A1FA0C190E48E200C050B6 /* vplist.c */,
+				C0A1FA0D190E48E200C050B6 /* vplist.h */,
+				C0A1F9BF190E46B400C050B6 /* Supporting Files */,
+			);
+			path = lwqq;
+			sourceTree = "<group>";
+		};
+		C0A1F9BF190E46B400C050B6 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				C0A1F9C0190E46B400C050B6 /* lwqq-Info.plist */,
+				C0A1F9C1190E46B400C050B6 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		C0A1F9B2190E46B400C050B6 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0A1FA38190E499F00C050B6 /* lwqq-config.h in Headers */,
+				C0A1FA22190E48E200C050B6 /* lwjs.h in Headers */,
+				C0A1FA2A190E48E200C050B6 /* smemory.h in Headers */,
+				C0A1FA16190E48E200C050B6 /* info.h in Headers */,
+				C0A1FA23190E48E200C050B6 /* lwqq.h in Headers */,
+				C0A1FA0E190E48E200C050B6 /* async_impl.h in Headers */,
+				C0A1FA20190E48E200C050B6 /* lwdb.h in Headers */,
+				C0A1FA1C190E48E200C050B6 /* logger.h in Headers */,
+				C0A1FA34190E48E200C050B6 /* vplist.h in Headers */,
+				C0A1FA14190E48E200C050B6 /* http.h in Headers */,
+				C0A1FA27190E48E200C050B6 /* msg.h in Headers */,
+				C0A1FA28190E48E200C050B6 /* queue.h in Headers */,
+				C0A1FA2E190E48E200C050B6 /* type.h in Headers */,
+				C0A1FA32190E48E200C050B6 /* utility.h in Headers */,
+				C0A1FA1E190E48E200C050B6 /* login.h in Headers */,
+				C0A1FA12190E48E200C050B6 /* async.h in Headers */,
+				C0A1FA37190E499F00C050B6 /* lwqq_export.h in Headers */,
+				C0A1FA18190E48E200C050B6 /* internal.h in Headers */,
+				C0A1FA1A190E48E200C050B6 /* json.h in Headers */,
+				C0A1FA30190E48E200C050B6 /* url.h in Headers */,
+				C0A1FA2C190E48E200C050B6 /* swsqlite.h in Headers */,
+				C0A1FA25190E48E200C050B6 /* md5.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		C0A1F9B4190E46B400C050B6 /* lwqq */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0A1F9DD190E46B400C050B6 /* Build configuration list for PBXNativeTarget "lwqq" */;
+			buildPhases = (
+				C0A1F9B0190E46B400C050B6 /* Sources */,
+				C0A1F9B1190E46B400C050B6 /* Frameworks */,
+				C0A1F9B2190E46B400C050B6 /* Headers */,
+				C0A1F9B3190E46B400C050B6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = lwqq;
+			productName = lwqq;
+			productReference = C0A1F9B5190E46B400C050B6 /* lwqq.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C0A1F9AC190E46B400C050B6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = xiehuc;
+			};
+			buildConfigurationList = C0A1F9AF190E46B400C050B6 /* Build configuration list for PBXProject "lwqq" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = C0A1F9AB190E46B400C050B6;
+			productRefGroup = C0A1F9B6190E46B400C050B6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C0A1F9B4190E46B400C050B6 /* lwqq */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C0A1F9B3190E46B400C050B6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0A1F9C3190E46B400C050B6 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C0A1F9B0190E46B400C050B6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0A1FA33190E48E200C050B6 /* vplist.c in Sources */,
+				C0A1FA24190E48E200C050B6 /* md5.c in Sources */,
+				C0A1FA1F190E48E200C050B6 /* lwdb.c in Sources */,
+				C0A1FA15190E48E200C050B6 /* info.c in Sources */,
+				C0A1FA1B190E48E200C050B6 /* logger.c in Sources */,
+				C0A1FA2B190E48E200C050B6 /* swsqlite.c in Sources */,
+				C0A1FA11190E48E200C050B6 /* async.c in Sources */,
+				C0A1FA31190E48E200C050B6 /* utility.c in Sources */,
+				C0A1FA17190E48E200C050B6 /* internal.c in Sources */,
+				C0A1FA2D190E48E200C050B6 /* type.c in Sources */,
+				C0A1FA1D190E48E200C050B6 /* login.c in Sources */,
+				C0A1FA21190E48E200C050B6 /* lwjs.c in Sources */,
+				C0A1FA29190E48E200C050B6 /* smemory.c in Sources */,
+				C0A1FA2F190E48E200C050B6 /* url.c in Sources */,
+				C0A1FA26190E48E200C050B6 /* msg.c in Sources */,
+				C0A1FA13190E48E200C050B6 /* http.c in Sources */,
+				C0A1FA19190E48E200C050B6 /* json.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		C0A1F9C1190E46B400C050B6 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				C0A1F9C2190E46B400C050B6 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C0A1F9DB190E46B400C050B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C0A1F9DC190E46B400C050B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C0A1F9DE190E46B400C050B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/usr/local/include/js,
+				);
+				INFOPLIST_FILE = "lwqq/lwqq-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Application Support/Adium 2.0/PlugIns/adium-lwqq.AdiumLibpurplePlugin/Contents/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					/usr/local/Cellar/spidermonkey/1.8.5/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Debug;
+		};
+		C0A1F9DF190E46B400C050B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/usr/local/include/js,
+				);
+				INFOPLIST_FILE = "lwqq/lwqq-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Application Support/Adium 2.0/PlugIns/adium-lwqq.AdiumLibpurplePlugin/Contents/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					/usr/local/Cellar/spidermonkey/1.8.5/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C0A1F9AF190E46B400C050B6 /* Build configuration list for PBXProject "lwqq" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0A1F9DB190E46B400C050B6 /* Debug */,
+				C0A1F9DC190E46B400C050B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0A1F9DD190E46B400C050B6 /* Build configuration list for PBXNativeTarget "lwqq" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0A1F9DE190E46B400C050B6 /* Debug */,
+				C0A1F9DF190E46B400C050B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C0A1F9AC190E46B400C050B6 /* Project object */;
+}

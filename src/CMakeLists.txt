@@ -20,6 +20,4 @@ else()
 		)
 endif()
 
-if(LWQQ_INSTALL)
-INSTALL(TARGETS lwqq-cli DESTINATION bin)
-endif()
+install(TARGETS lwqq-cli DESTINATION bin)
