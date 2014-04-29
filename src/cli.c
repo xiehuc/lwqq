@@ -24,7 +24,7 @@
 #include <windows.h>
 #endif
 
-#define LWQQ_CLI_VERSION "0.0.1"
+#define LWQQ_CLI_VERSION LWQQ_VERSION
 
 
 static int help_f(int argc, char **argv);
@@ -444,8 +444,8 @@ int main(int argc, char *argv[])
                             long_options, NULL)) != EOF) {
         switch (c) {
         case 'v':
-            printf("lwqq-cli version %s, Copyright (c) 2012 "
-                   "mathslinux\n", LWQQ_CLI_VERSION);
+            printf("lwqq-cli version %s, Copyright (c) 2014 "
+                   "mathslinux:xiehuc\n", LWQQ_CLI_VERSION);
             exit(0);
         case 'h':
             usage();

@@ -132,6 +132,8 @@ message(STATUS "With Mozjs (Option)     : ${WITH_MOZJS}")
 message(STATUS "Build Document (Option) : ${ENABLE_DOCS}")
 message( "===============================================")
 
+set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+
 string(COMPARE EQUAL "${CMAKE_BUILD_TYPE}" "Debug" USE_DEBUG)
 configure_file(config.h.in ${PROJECT_BINARY_DIR}/lwqq-config.h)
 configure_file(lwqq.pc.in ${PROJECT_BINARY_DIR}/lwqq.pc @ONLY)
