@@ -53,6 +53,7 @@ endif(UNIX)
 if(WIN32)
   set(LWQQ_LIST ${LWQQ_LIST} win32.c )
   add_definitions(-D_GNU_SOURCE=1)
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -static -static-libgcc -static-libstdc++" )
   set(LWQQ_OTHER_LIBS 
      ${LWQQ_OTHER_LIBS} 
      ws2_32
