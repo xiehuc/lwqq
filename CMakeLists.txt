@@ -1,7 +1,7 @@
 # vim: ts=3 sts=3 sw=3 noet
 
 project(libwebqq)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "3")
 set(VERSION_PATCH "0")

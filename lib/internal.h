@@ -4,9 +4,12 @@
 #include "json.h"
 #include "lwqq-config.h"
 #include "async.h"
-#include "lwqq_export.h"
+
 #ifdef WIN32
+#include "lwqq_export.h"
 #include "win32.h"
+#else
+#define LWQQ_EXPORT
 #endif
 
 #define WEBQQ_LOGIN_UI_HOST "https://ui.ptlogin2.qq.com"
