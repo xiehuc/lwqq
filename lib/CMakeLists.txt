@@ -87,6 +87,10 @@ target_link_libraries(lwqq
     ${MOZJS_LIBRARIES}
     ${LWQQ_OTHER_LIBS}
     )
+set_target_properties(lwqq PROPERTIES
+   VERSION "${VERSION}"
+   SOVERSION "${VERSION_MAJOR}"
+   )
 
 target_link_libraries(lwqq-static
     ${SQLITE_LIBRARIES}
