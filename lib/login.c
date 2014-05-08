@@ -299,7 +299,7 @@ static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)
 	if (strstr(req->response,"aq.qq.com")!=NULL){
 		err = LWQQ_EC_LOGIN_ABNORMAL;
 		const char* beg = strstr(req->response,"http://aq.qq.com");
-		sscanf(beg,"%[^']",lc->error_description);
+		if(beg) sscanf(beg,"%[^']",lc->error_description); // beg may be null
 		goto done;
 	}
 	if(req->response == NULL){
