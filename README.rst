@@ -39,6 +39,7 @@ Debian Package
 =============
 
 To create a Debian package from the source::
+
    mkdir build;cd build
    cmake ..
    cpack
