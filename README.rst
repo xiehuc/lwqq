@@ -35,3 +35,11 @@ You can fin more details concerning the build process in the wiki__
 
 __ https://github.com/xiehuc/lwqq/wiki/Build-From-Source
 
+Debian Package
+=============
+
+To create a Debian package from the source::
+   mkdir build;cd build
+   cmake ..
+   cpack
+
