@@ -103,6 +103,6 @@ target_link_libraries(lwqq-static
 
 install(TARGETS lwqq DESTINATION ${LIB_INSTALL_DIR})
 install(TARGETS lwqq-static DESTINATION ${LIB_INSTALL_DIR})
-install(FILES ${LWQQ_HEADER} DESTINATION include)
+install(FILES ${LWQQ_HEADER} DESTINATION include/lwqq)
 message("NOTE!! add 'export LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR}:$LD_LIBRARY_PATH' "
 	"to ~/.xprofile when need load library from desktop application such as pidgin")
