@@ -5,33 +5,42 @@ lwqq
 Introduction
 ==============
 
-lwqq means light weight qq (also linux webqq). it provide a library for webqq
+lwqq means light weight QQ (also Linux webqq). It provide a library for the webqq
 protocol.
 
-lwqq designs as cross platform, and also provide a python api, to support quick
+lwqq is designed as cross platform and also provide a Python API to support quick
 development.
 
-lwqq used in many open source projects. the most well known is `pidgin-lwqq`__
+lwqq is currently used in many open source projects. The most well known is `pidgin-lwqq`__
 
 __ https://github.com/xiehuc/pidgin-lwqq
 
-lwqq use **GPLv3** Lisence.
+lwqq is licenced under the **GPLv3** License.
 
 
 Quick Build
 =============
 
-most of lwqq's dependends are optional. means you can write some own implement
-and embed it into a small system.
+Most of lwqq's dependencies are optional. It means that you can write some own implementations
+and embed it into a small applications.
 
-the brief install guide::
+A brief install guide::
    
    mkdir build;cd build
    cmake ..
    make 
    sudo make install
 
-the detail build guide in wiki__
+You can fin more details concerning the build process in the wiki__
 
 __ https://github.com/xiehuc/lwqq/wiki/Build-From-Source
+
+Debian Package
+=============
+
+To create a Debian package from the source::
+
+   mkdir build;cd build
+   cmake ..
+   cpack
 
