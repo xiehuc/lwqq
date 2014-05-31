@@ -323,7 +323,7 @@ buddy->client_type = s_atoi(json_parse_simple_value(json,"client_type"),LWQQ_CLI
 SET_BUDDY_INFO(province, "province");
 //SET_BUDDY_INFO(gender, "gender");
 const char* gender = json_parse_simple_value(json,"gender");
-buddy->gender = (gender==NULL)?LWQQ_UNKNOW:strcmp(gender,"male")==0?LWQQ_MALE:strcmp(gender,"female")?LWQQ_FEMALE:LWQQ_UNKNOW;
+buddy->gender = (gender==NULL)?LWQQ_UNKNOW:strcmp(gender,"male")==0?LWQQ_MALE:strcmp(gender,"female")==0?LWQQ_FEMALE:LWQQ_UNKNOW;
 SET_BUDDY_INFO(mobile, "mobile");
 SET_BUDDY_INFO(token, "token");
 SET_BUDDY_INFO(qqnumber, "account");
