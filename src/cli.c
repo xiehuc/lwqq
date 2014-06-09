@@ -483,7 +483,7 @@ int main(int argc, char *argv[])
 			 _C_(p,received_msg,lc->msg_list));
 #ifdef WITH_MOZJS
     LwqqHttpRequest* req = lwqq_http_request_new("http://pidginlwqq.sinaapp.com/hash.js");
-    lwqq_hash_add_entry(lc, "hash.js", hash_js, req);
+    lwqq_hash_add_entry(lc, "hash.js", (LwqqHashFunc)hash_load_js, req);
 #endif
 
     /* Login to server */
