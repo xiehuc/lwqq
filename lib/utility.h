@@ -25,12 +25,6 @@ typedef struct LwqqTypeMap{
 	const char* str;
 }LwqqTypeMap;
 
-typedef struct LwqqHashEntry {
-	const char* name;
-	LwqqHashFunc func;
-	void* data;
-}LwqqHashEntry;
-
 void lwqq_ct_free(LwqqConfirmTable* table);
 
 int lwqq_util_mapto_type(const struct LwqqTypeMap* maps,const char* key);

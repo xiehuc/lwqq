@@ -276,21 +276,26 @@ static void handle_new_msg(LwqqRecvMsg *recvmsg)
     s_free(recvmsg);
 }
 
-static void *info_thread(void *lc)
-{
 #ifdef WITH_MOZJS
-    LwqqHttpRequest* req = lwqq_http_request_new("http://pidginlwqq.sinaapp.com/hash.js");
+static char* hash_load_js(const char* str1, const char* str2, LwqqHttpRequest* req)
+{
     req->do_request(req,0,NULL);
     const char* hashjs = req->response;
     lwqq_js_t* js = lwqq_js_init();
     lwqq_js_load_buffer(js,hashjs);
-    lwqq_info_get_friends_info(lc,(LwqqHashFunc)lwqq_js_hash,js);
+    char* ret = lwqq_js_hash(str1, str2, js);
     lwqq_js_close(js);
-#else
-    lwqq_info_get_friends_info(lc,NULL,NULL);
+    return ret;
+}
 #endif
 
-    return NULL;
+static void *info_thread(void *lc)
+{
+   // auto select hash, ofcourse include js
+   lwqq_info_get_friends_info(lc,NULL,NULL);
+   // FIXME also we should save last used js, and make next load would be
+   // faster
+   return NULL;
 }
 
 static char **breakline(char *input, int *count)
@@ -468,14 +473,18 @@ int main(int argc, char *argv[])
     
 	 lwqq_log_set_level(4);
 	 lc = lwqq_client_new(qqnumber, password);
-	 lwqq_add_event(lc->events->need_verify,
-			 _C_(2p,need_verify2,lc, &lc->args->vf_image));
-	 lwqq_add_event(lc->events->poll_msg,
-			 _C_(p,received_msg,lc->msg_list));
 	 if (!lc) {
 		 lwqq_log(LOG_NOTICE, "Create lwqq client failed\n");
 		 return -1;
 	 }
+	 lwqq_add_event(lc->events->need_verify,
+			 _C_(2p,need_verify2,lc, &lc->args->vf_image));
+	 lwqq_add_event(lc->events->poll_msg,
+			 _C_(p,received_msg,lc->msg_list));
+#ifdef WITH_MOZJS
+    LwqqHttpRequest* req = lwqq_http_request_new("http://pidginlwqq.sinaapp.com/hash.js");
+    lwqq_hash_add_entry(lc, "hash.js", hash_js, req);
+#endif
 
     /* Login to server */
     err = cli_login();

@@ -178,6 +178,13 @@ typedef enum {
 
 #define LWQQ_FRIEND_CATE_IDX_DEFAULT 0
 #define LWQQ_FRIEND_CATE_IDX_PASSERBY -1
+
+typedef struct LwqqHashEntry {
+	const char* name;
+	LwqqHashFunc func;
+	void* data;
+}LwqqHashEntry;
+
 /* Struct defination */
 typedef struct LwqqFriendCategory {
 	int index;
@@ -553,11 +560,19 @@ LwqqSimpleBuddy *lwqq_group_find_group_member_by_uin(LwqqGroup *group, const cha
 #define format_append(str,format...)\
 	snprintf(str+strlen(str),sizeof(str)-strlen(str),##format)
 
+/** auto select hash function, it try one form system queue, if failed, try
+ * next one, you can set begin postion to start scan */
 char* lwqq_hash_auto(const char* uin, const char* ptwebqq, void* lc);
+/* check we have already tried all hash */
 int lwqq_hash_all_finished(LwqqClient* lc);
+/* register a new js entry for auto select.
+ * note we have only 8 size, and lwqq used 4, so you can only add 3 at most,
+ * last one must be empty*/
 void lwqq_hash_add_entry(LwqqClient* lc, const char* name, LwqqHashFunc func, void* data);
-
-
+/* set the begin postion to start auto select */
+void lwqq_hash_set_beg(LwqqClient* lc, const char* hash_name);
+/* get the last one successful hash, you should save it for next time use */
+const LwqqHashEntry* lwqq_hash_get_last(LwqqClient* lc);
 
 /************************************************************************/
 

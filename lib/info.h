@@ -42,8 +42,8 @@ typedef LIST_HEAD(,LwqqRecentItem) LwqqRecentList;
  * information, friends group information, and so on
  * 
  * @param lc 
- * @param hash NULL to use internal hash function
- * @param err 
+ * @param hash: NULL to use lwqq_hash_auto function, auto select existing hash
+ * @param userdata: the extra data push to hash function, most of time is NULL
  */
 LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc,LwqqHashFunc hash, void* userdata);
 

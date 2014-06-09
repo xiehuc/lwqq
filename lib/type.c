@@ -39,6 +39,8 @@ const LwqqFeatures lwqq_features = 0
 #endif
 ;
 
+#define HASH_ENTRY_SIZE 8
+
 static struct LwqqTypeMap status_type_map[] = {
 	{LWQQ_STATUS_ONLINE  ,"online",   },
 	{LWQQ_STATUS_OFFLINE ,"offline",     },
@@ -80,7 +82,7 @@ typedef struct LwqqClient_
 {
 	LwqqClient parent;
 	LwqqHttpHandle* http;
-	LwqqHashEntry hash_entry[8];
+	LwqqHashEntry hash_entry[HASH_ENTRY_SIZE];
 	LwqqHashEntry* hash_beg;
 	LwqqHashEntry* hash_idx;
 }LwqqClient_;
@@ -564,7 +566,6 @@ LWQQ_EXPORT
 char* lwqq_hash_auto(const char* uin, const char* ptwebqq, void* lc)
 {
 	LwqqClient_* lc_ = lc;
-	printf("using hash:%s\n", lc_->hash_idx->name);
 	char* ret = lc_->hash_idx->func(uin,ptwebqq,lc_->hash_idx->data);
 	lc_->hash_idx++;
 	if(lc_->hash_idx->name == NULL) lc_->hash_idx = lc_->hash_entry;
@@ -583,7 +584,7 @@ void lwqq_hash_add_entry(LwqqClient* lc, const char* name, LwqqHashFunc func, vo
 {
 	LwqqClient_* lc_ = (LwqqClient_*)lc;
 	LwqqHashEntry* entry;
-	for(entry = lc_->hash_entry ; entry != lc_->hash_entry + sizeof(lc_->hash_entry)/sizeof(LwqqHashEntry); entry++){
+	for(entry = lc_->hash_entry ; entry != lc_->hash_entry + HASH_ENTRY_SIZE -1; entry++){
 		if(entry->name == NULL){
 			entry->name = name;
 			entry->func = func;
@@ -591,6 +592,34 @@ void lwqq_hash_add_entry(LwqqClient* lc, const char* name, LwqqHashFunc func, vo
 			break;
 		}
 	}
+}
+
+LWQQ_EXPORT
+void lwqq_hash_set_beg(LwqqClient* lc, const char* hash_name)
+{
+	LwqqClient_* lc_ = (LwqqClient_*)lc;
+	LwqqHashEntry* entry;
+	for(entry = lc_->hash_entry ; entry != lc_->hash_entry + HASH_ENTRY_SIZE; entry++){
+		if(entry->name == NULL) break;
+		if(strcmp(entry->name, hash_name) == 0){
+			lc_->hash_beg = entry;
+			break;
+		}
+	}
+}
+
+LWQQ_EXPORT
+const LwqqHashEntry* lwqq_hash_get_last(LwqqClient* lc)
+{
+	LwqqClient_* lc_ = (LwqqClient_*)lc;
+	LwqqHashEntry* entry = lc_->hash_idx;
+	if(lc_->hash_idx == lc_->hash_entry) { // if idx point at begin
+		for(entry = lc_->hash_entry + HASH_ENTRY_SIZE -1; entry >lc_->hash_entry; --entry){
+			// we find the last element
+			if(entry->name) break;
+		}
+	}
+	return entry-1;
 }
 
 // vim: ts=3 sw=3 sts=3 noet
