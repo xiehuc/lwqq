@@ -566,6 +566,7 @@ LWQQ_EXPORT
 char* lwqq_hash_auto(const char* uin, const char* ptwebqq, void* lc)
 {
 	LwqqClient_* lc_ = lc;
+	lwqq_verbose(2, "[using hash: %s]\n", lc_->hash_idx->name);
 	char* ret = lc_->hash_idx->func(uin,ptwebqq,lc_->hash_idx->data);
 	lc_->hash_idx++;
 	if(lc_->hash_idx->name == NULL) lc_->hash_idx = lc_->hash_entry;
@@ -602,7 +603,7 @@ void lwqq_hash_set_beg(LwqqClient* lc, const char* hash_name)
 	for(entry = lc_->hash_entry ; entry != lc_->hash_entry + HASH_ENTRY_SIZE; entry++){
 		if(entry->name == NULL) break;
 		if(strcmp(entry->name, hash_name) == 0){
-			lc_->hash_beg = entry;
+			lc_->hash_idx = lc_->hash_beg = entry;
 			break;
 		}
 	}
@@ -616,10 +617,11 @@ const LwqqHashEntry* lwqq_hash_get_last(LwqqClient* lc)
 	if(lc_->hash_idx == lc_->hash_entry) { // if idx point at begin
 		for(entry = lc_->hash_entry + HASH_ENTRY_SIZE -1; entry >lc_->hash_entry; --entry){
 			// we find the last element
-			if(entry->name) break;
+			if(entry->name) return entry;
 		}
-	}
-	return entry-1;
+		return lc_->hash_idx; // here unreachable
+	}else
+		return entry-1;
 }
 
 // vim: ts=3 sw=3 sts=3 noet

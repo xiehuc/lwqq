@@ -28,7 +28,7 @@
 
 
 static int get_avatar_back(LwqqHttpRequest* req,LwqqBuddy* buddy,LwqqGroup* group);
-static int get_friends_info_back(LwqqHttpRequest* req);
+static int get_friends_info_back(LwqqHttpRequest* req, LwqqAsyncEvent* called);
 static int get_group_name_list_back(LwqqHttpRequest* req,LwqqClient* lc);
 static int group_detail_back(LwqqHttpRequest* req,LwqqClient* lc,LwqqGroup* group);
 static int get_discu_list_back(LwqqHttpRequest* req,void* data);
@@ -716,16 +716,6 @@ static void parse_friends_child(LwqqClient *lc, json_t *json)
 	}
 }
 
-static void validate_hash_result(LwqqAsyncEvent* ev, LwqqAsyncEvent* called)
-{
-	LwqqClient* lc = ev->lc;
-	if(ev->result == LWQQ_EC_HASH_WRONG && !lwqq_hash_all_finished(lc)){
-		LwqqAsyncEvent* event = lwqq_info_get_friends_info(ev->lc, lwqq_hash_auto, lc);
-		lwqq_async_add_event_listener(event, _C_(2p,validate_hash_result,event,called));
-	}else{
-		lwqq_async_add_event_chain(ev, called);
-	}
-}
 /** 
  * Get QQ friends information. These information include basic friend 
  * information, friends group information, and so on 
@@ -739,14 +729,18 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, vo
 	char post[512];
 	LwqqHttpRequest *req = NULL;
 	LwqqAsyncEvent* ret = NULL;
+	void* data = userdata;
 	if(hash == NULL){
 		hash = lwqq_hash_auto;
-		userdata = lc;
+		data = lc;
 		ret = lwqq_async_event_new(NULL);
+	} else if (hash == lwqq_hash_auto) {
+		ret = userdata;
+		data = lc;
 	}
 
 	char* ptwebqq = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "ptwebqq");
-	char* h = hash(lc->myself->uin, ptwebqq, userdata);
+	char* h = hash(lc->myself->uin, ptwebqq, data);
 	if(h == NULL) 
 		// hash failed, fake it with empty and wait for server error return.
 		h = s_strdup("");
@@ -763,9 +757,9 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, vo
 	req->set_header(req, "Accept-Encoding", "gzip,deflate,sdch");
 	req->set_header(req, "Content-Type", "application/x-www-form-urlencoded");
 
-	LwqqAsyncEvent* ev = req->do_request_async(req, lwqq__has_post(),_C_(p_i,get_friends_info_back,req));
+	LwqqAsyncEvent* ev = req->do_request_async(req, lwqq__has_post(),_C_(2p_i,get_friends_info_back,req, ret));
 	if(ret){
-		lwqq_async_add_event_listener(ev, _C_(2p, validate_hash_result, ev, ret));
+		lwqq_async_add_event_chain(ev, ret);
 		return ret;
 	}else return ev;
 
@@ -780,7 +774,7 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, vo
 	 *
 	 */
 }
-static int get_friends_info_back(LwqqHttpRequest* req)
+static int get_friends_info_back(LwqqHttpRequest* req, LwqqAsyncEvent* called)
 {
 	json_t *json = NULL, *json_tmp;
 	int ret = 0;
@@ -802,6 +796,9 @@ static int get_friends_info_back(LwqqHttpRequest* req)
 	}
 
 	json_tmp = lwqq__parse_retcode_result(json, &retcode);
+	if (retcode == LWQQ_EC_HASH_WRONG && !lwqq_hash_all_finished(lc)) {
+		lwqq_info_get_friends_info(lc, lwqq_hash_auto, called);
+	}
 	if (retcode != LWQQ_EC_OK){
 		err = retcode;
 		goto done;
