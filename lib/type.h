@@ -53,6 +53,7 @@ typedef vp_command  LwqqCommand;
 #define _P_(d,...) _P_2(d,__VA_ARGS__)
 //return zero means continue.>1 means abort
 typedef int (*LWQQ_PROGRESS)(void* data,size_t now,size_t total);
+typedef char* (*LwqqHashFunc)(const char* uin,const char* ptwebqq,void* userdata);
 /************************************************************************/
 
 //=========================INSTRUCTION=================================//
@@ -551,6 +552,10 @@ LwqqSimpleBuddy *lwqq_group_find_group_member_by_uin(LwqqGroup *group, const cha
 
 #define format_append(str,format...)\
 	snprintf(str+strlen(str),sizeof(str)-strlen(str),##format)
+
+char* lwqq_hash_auto(const char* uin, const char* ptwebqq, void* lc);
+int lwqq_hash_all_finished(LwqqClient* lc);
+void lwqq_hash_add_entry(LwqqClient* lc, const char* name, LwqqHashFunc func, void* data);
 
 
 

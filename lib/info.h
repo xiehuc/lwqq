@@ -14,7 +14,6 @@
 #include "type.h"
 #include "msg.h"
 
-typedef char* (*LwqqHashFunc)(const char* uin,const char* ptwebqq,void* userdata);
 /** change discu member operation structure */
 typedef struct LwqqDiscuMemChange LwqqDiscuMemChange;
 /**群名片*/

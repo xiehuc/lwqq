@@ -716,6 +716,16 @@ static void parse_friends_child(LwqqClient *lc, json_t *json)
 	}
 }
 
+static void validate_hash_result(LwqqAsyncEvent* ev, LwqqAsyncEvent* called)
+{
+	LwqqClient* lc = ev->lc;
+	if(ev->result == LWQQ_EC_HASH_WRONG && !lwqq_hash_all_finished(lc)){
+		LwqqAsyncEvent* event = lwqq_info_get_friends_info(ev->lc, lwqq_hash_auto, lc);
+		lwqq_async_add_event_listener(event, _C_(2p,validate_hash_result,event,called));
+	}else{
+		lwqq_async_add_event_chain(ev, called);
+	}
+}
 /** 
  * Get QQ friends information. These information include basic friend 
  * information, friends group information, and so on 
@@ -728,10 +738,15 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, vo
 {
 	char post[512];
 	LwqqHttpRequest *req = NULL;
-	if(hash == NULL)  hash = lwqq_util_hashP;
+	LwqqAsyncEvent* ret = NULL;
+	if(hash == NULL){
+		hash = lwqq_hash_auto;
+		userdata = lc;
+		ret = lwqq_async_event_new(NULL);
+	}
 
 	char* ptwebqq = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "ptwebqq");
-	char* h = hash(lc->myself->uin, ptwebqq,userdata);
+	char* h = hash(lc->myself->uin, ptwebqq, userdata);
 	if(h == NULL) 
 		// hash failed, fake it with empty and wait for server error return.
 		h = s_strdup("");
@@ -748,7 +763,11 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, vo
 	req->set_header(req, "Accept-Encoding", "gzip,deflate,sdch");
 	req->set_header(req, "Content-Type", "application/x-www-form-urlencoded");
 
-	return req->do_request_async(req, lwqq__has_post(),_C_(p_i,get_friends_info_back,req));
+	LwqqAsyncEvent* ev = req->do_request_async(req, lwqq__has_post(),_C_(p_i,get_friends_info_back,req));
+	if(ret){
+		lwqq_async_add_event_listener(ev, _C_(2p, validate_hash_result, ev, ret));
+		return ret;
+	}else return ev;
 
 	/**
 	 * Here, we got a json object like this:

@@ -80,6 +80,9 @@ typedef struct LwqqClient_
 {
 	LwqqClient parent;
 	LwqqHttpHandle* http;
+	LwqqHashEntry hash_entry[8];
+	LwqqHashEntry* hash_beg;
+	LwqqHashEntry* hash_idx;
 }LwqqClient_;
 
 /** 
@@ -127,7 +130,12 @@ LwqqClient *lwqq_client_new(const char *username, const char *password)
 	lwqq_async_init(lc);
 
 	LwqqClient_* lc_ = (LwqqClient_*) lc;
+	lwqq_hash_add_entry(lc, "hashN", lwqq_util_hashN, NULL);
+	lwqq_hash_add_entry(lc, "hashO", lwqq_util_hashO, NULL);
+	lwqq_hash_add_entry(lc, "hashP", lwqq_util_hashP, NULL);
+	lwqq_hash_add_entry(lc, "hashQ", lwqq_util_hashQ, NULL);
 	lc_->http = lwqq_http_handle_new();
+	lc_->hash_beg = lc_->hash_idx = lc_->hash_entry;
 
 	return lc;
 
@@ -550,6 +558,39 @@ LWQQ_EXPORT
 const LwqqCommand* lwqq_add_event_listener(LwqqCommand* inko,LwqqCommand cmd)
 {
 	return vp_link(inko, &cmd);
+}
+
+LWQQ_EXPORT
+char* lwqq_hash_auto(const char* uin, const char* ptwebqq, void* lc)
+{
+	LwqqClient_* lc_ = lc;
+	printf("using hash:%s\n", lc_->hash_idx->name);
+	char* ret = lc_->hash_idx->func(uin,ptwebqq,lc_->hash_idx->data);
+	lc_->hash_idx++;
+	if(lc_->hash_idx->name == NULL) lc_->hash_idx = lc_->hash_entry;
+	return ret;
+}
+
+LWQQ_EXPORT
+int lwqq_hash_all_finished(LwqqClient* lc)
+{
+	LwqqClient_* lc_ = (LwqqClient_*)lc;
+	return lc_->hash_idx == lc_->hash_beg;
+}
+
+LWQQ_EXPORT
+void lwqq_hash_add_entry(LwqqClient* lc, const char* name, LwqqHashFunc func, void* data)
+{
+	LwqqClient_* lc_ = (LwqqClient_*)lc;
+	LwqqHashEntry* entry;
+	for(entry = lc_->hash_entry ; entry != lc_->hash_entry + sizeof(lc_->hash_entry)/sizeof(LwqqHashEntry); entry++){
+		if(entry->name == NULL){
+			entry->name = name;
+			entry->func = func;
+			entry->data = data;
+			break;
+		}
+	}
 }
 
 // vim: ts=3 sw=3 sts=3 noet
