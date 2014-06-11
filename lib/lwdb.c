@@ -64,7 +64,7 @@ static char *global_database_name;
 
 ///when save friend info need update version
 //to clean old error
-#define LWDB_VERSION 1004
+#define LWDB_VERSION 1005
 #define VAL(v) #v
 #define STR(v) VAL(v)
 
@@ -133,7 +133,7 @@ static const char *create_user_db_sql =
 
 "create table if not exists discus("
 "    account primary key not null,"
-"    name default '',"
+"    name unique default '',"
 "    markname default '',"
 "    face default '',"
 "    memo default '',"
