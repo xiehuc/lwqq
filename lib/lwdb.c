@@ -920,13 +920,15 @@ void lwdb_userdb_query_qqnumbers(LwdbUserDB* db,LwqqClient* lc)
 		}
 		sws_query_column(stmt5,0, qqnumber,sizeof(qqnumber),NULL);
 		sws_query_column(stmt5, 1, last_modify, sizeof(last_modify),NULL);
-		if(sws_query_next(stmt5,0)==SWS_FAILED){
-			lwqq_override(discu->account, s_strdup(qqnumber));
-			discu->last_modify = s_atol(last_modify, 0);
-		}else{
+		//if(sws_query_next(stmt5,0)==SWS_FAILED){
+		// if there are duplicated entry for discu, we also select the first
+		// item. this is not like group or buddies. 
+		lwqq_override(discu->account, s_strdup(qqnumber));
+		discu->last_modify = s_atol(last_modify, 0);
+		/*}else{
 			lwqq_verbose(1,"userdb mismatch [ name : %s ]\n",discu->name);
 			discu->last_modify = -1;
-		}
+		}*/
 	}
 #endif
 
