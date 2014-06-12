@@ -38,7 +38,6 @@ static void *start_poll_msg(void *msg_list);
 static json_t *get_result_json_object(json_t *json);
 static int parse_recvmsg_from_json(LwqqRecvMsgList *list, const char *str);
 
-static int msg_send_back(LwqqHttpRequest* req,void* data);
 static int upload_offline_pic_back(LwqqHttpRequest* req,LwqqMsgContent* c,const char* to);
 static int upload_offline_file_back(LwqqHttpRequest* req,void* data);
 static int send_offfile_back(LwqqHttpRequest* req,void* data);
@@ -270,22 +269,6 @@ static void add_passerby(LwqqClient* lc,LwqqBuddy* buddy,LwqqGroup* g)
 		lc->args->group = g;
 		vp_do_repeat(lc->events->new_group, NULL);
 	}
-}
-static int process_simple_response(LwqqHttpRequest* req)
-{
-	//{"retcode":0,"result":{"ret":0}}
-	int err = 0;
-	json_t *root = NULL;
-	lwqq__jump_if_http_fail(req,err);
-	lwqq__jump_if_json_fail(root,req->response,err);
-	int retcode = s_atoi(json_parse_simple_value(root, "retcode"),LWQQ_EC_ERROR);
-	if(retcode != LWQQ_EC_OK){
-		err = retcode;
-	}
-done:
-	lwqq__log_if_error(err, req);
-	lwqq__clean_json_and_req(root,req);
-	return err;
 }
 static int process_msg_list(LwqqHttpRequest* req,char* serv_id,LwqqHistoryMsgList* list)
 {
@@ -1570,8 +1553,10 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 	LwqqRecvMsgList* list = lc->msg_list;
 	LwqqAsyncEvent* ev = NULL;
 	int ret = req->failcode;
-	if(ret == LWQQ_EC_CANCELED) return LWQQ_EC_ERROR;
-	if(!lwqq_client_logined(lc)) return LWQQ_EC_ERROR;
+	if(ret == LWQQ_EC_CANCELED) // cancel by user, so no need notify user
+		return LWQQ_EC_ERROR; 
+	if(!lwqq_client_logined(lc)) // client not valid, no way to notify user
+		return LWQQ_EC_ERROR;
 	if(ret != LWQQ_EC_OK){
 		//some thing is wrong. try relogin first. 
 		LwqqAsyncEvent* ev = lwqq_relink(lc);
@@ -2151,38 +2136,13 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 
 	lwqq_msg_incre_seq(lc, (LwqqMsg*)msg);
 
-	return req->do_request_async(req, lwqq__has_post(),_C_(2p_i,msg_send_back,req,lc));
+	return req->do_request_async(req, lwqq__has_post(),_C_(p_i,lwqq__process_simple_response,req));
 failed:
 	lwqq_http_request_free(req);
 	return NULL;
 }
-static int msg_send_back(LwqqHttpRequest* req,void* data)
-{
-	json_t *root = NULL;
-	int ret;
-	int err = 0;
 
-	if(req->failcode>0) {err = 1;goto failed;}
-	if (req->http_code != 200) {
-		err = 1;
-		goto failed;
-	}
-
-	//we check result if ok return 1,fail return 0;
-	ret = json_parse_document(&root,req->response);
-	if(ret != JSON_OK) goto failed;
-	const char* retcode = json_parse_simple_value(root,"retcode");
-	if(!retcode){
-		err = 1;
-		goto failed;
-	}
-	err = atoi(retcode);
-failed:
-	lwqq__log_if_error(err, req);
-	lwqq__clean_json_and_req(root, req);
-	return err;
-}
-
+LWQQ_EXPORT
 int lwqq_msg_send_simple(LwqqClient* lc,int type,const char* to,const char* message)
 {
 	if(!lc||!to||!message)
@@ -2348,7 +2308,7 @@ LwqqAsyncEvent* lwqq_msg_refuse_file(LwqqClient* lc,LwqqMsgFileMessage* file)
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
 	req->set_header(req,"Referer",WEBQQ_D_REF_URL);
 
-	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
+	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,lwqq__process_simple_response,req));
 }
 
 LWQQ_EXPORT
@@ -2512,7 +2472,7 @@ LwqqAsyncEvent* lwqq_msg_input_notify(LwqqClient* lc,const char* serv_id)
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
 	req->set_header(req,"Referer",WEBQQ_D_REF_URL);
 
-	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
+	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,lwqq__process_simple_response,req));
 }
 
 LWQQ_EXPORT
@@ -2525,7 +2485,7 @@ LwqqAsyncEvent* lwqq_msg_shake_window(LwqqClient* lc,const char* serv_id)
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
 	req->set_header(req,"Referer",WEBQQ_D_REF_URL);
 
-	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,process_simple_response,req));
+	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,lwqq__process_simple_response,req));
 }
 
 LWQQ_EXPORT

@@ -146,4 +146,25 @@ int lwqq__process_empty(LwqqHttpRequest* req)
 	return 0;
 }
 
+
+/**
+ * this process simple result;
+ */
+int lwqq__process_simple_response(LwqqHttpRequest* req)
+{
+	//{"retcode":0,"result":{"ret":0}}
+	int err = 0;
+	json_t *root = NULL;
+	lwqq__jump_if_http_fail(req,err);
+	lwqq__jump_if_json_fail(root,req->response,err);
+	int retcode = s_atoi(json_parse_simple_value(root, "retcode"),LWQQ_EC_ERROR);
+	if(retcode != LWQQ_EC_OK){
+		err = retcode;
+	}
+done:
+	lwqq__log_if_error(err, req);
+	lwqq__clean_json_and_req(root,req);
+	return err;
+}
+
 // vim: ts=3 sw=3 sts=3 noet
