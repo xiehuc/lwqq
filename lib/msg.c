@@ -1778,8 +1778,7 @@ static char* content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_cfac
 	}
 	//it looks like webqq server need at list one string
 	if(notext){
-		strcat(buf, LEFT);
-		strcat(buf, RIGHT",");
+		strcat(buf, LEFT"\\\\n"RIGHT",");
 	}
 	snprintf(buf+strlen(buf),sizeof(buf)-strlen(buf),
 			"["KEY("font")",{"
@@ -1812,7 +1811,7 @@ static LwqqAsyncEvent* lwqq_msg_upload_offline_pic(
 	char piece[22];
 
 	snprintf(url,sizeof(url),"http://weboffline.ftn.qq.com/ftn_access/upload_offline_pic?time=%ld",
-			time(NULL));
+			LTIME);
 	req = lwqq_http_create_default_request(lc,url,&err);
 	req->set_header(req,"Origin","http://web2.qq.com");
 	req->set_header(req,"Referer","http://web2.qq.com/");
@@ -1853,7 +1852,7 @@ static int upload_offline_pic_back(LwqqHttpRequest* req,LwqqMsgContent* c,const 
 	}
 	c->type = LWQQ_CONTENT_OFFPIC;
 	c->data.img.size = atol(json_parse_simple_value(json,"filesize"));
-	c->data.img.file_path = s_strdup(json_parse_simple_value(json,"filepath"));
+	lwqq_override(c->data.img.file_path, lwqq__json_get_value(json, "filepath"));
 	if(!strcmp(c->data.img.file_path,"")){
 		LwqqClient* lc = req->lc;
 		lc->args->serv_id = to;
@@ -1861,8 +1860,7 @@ static int upload_offline_pic_back(LwqqHttpRequest* req,LwqqMsgContent* c,const 
 		lc->args->err = LWQQ_EC_ERROR;
 		vp_do_repeat(lc->events->upload_fail, NULL);
 	}
-	s_free(c->data.img.name);
-	c->data.img.name = s_strdup(json_parse_simple_value(json,"filename"));
+	lwqq_override(c->data.img.name, lwqq__json_get_value(json, "filename"));
 	s_free(c->data.img.data);
 done:
 	lwqq__clean_json_and_req(json, req);
@@ -1984,14 +1982,14 @@ static LwqqAsyncEvent* lwqq_msg_upload_cface(
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(3p_i,upload_cface_back,req,c,to));
 }
 
-	static
+static
 void msg_send_continue(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyncEvent* event)
 {
 	LwqqAsyncEvent* ret = lwqq_msg_send(lc,msg);
 	lwqq_async_add_event_chain(ret, event);
 }
 
-	static 
+static 
 void msg_send_delay(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyncEvent* event, long delay)
 {
 	lc->dispatch(_C_(3p,msg_send_continue,lc,msg,event),delay);
@@ -2445,7 +2443,7 @@ LwqqMsgContent* lwqq_msg_fill_upload_offline_pic(const char* filename,
 	c->type = LWQQ_CONTENT_OFFPIC;
 	c->data.img.name = s_strdup(filename);
 	c->data.img.data = s_malloc(buf_size);
-	memcpy(c->data.cface.data,buffer,buf_size);
+	memcpy(c->data.img.data, buffer, buf_size);
 	c->data.img.size = buf_size;
 	return c;
 }
