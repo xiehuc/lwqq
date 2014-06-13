@@ -74,8 +74,7 @@ def init_listener(lc):
 
 def load_info():
     if not core.has_feature(Features.WITH_MOZJS):
-        print_("not support js")
-        exit(-1)
+        lc.get_friends_info(None,None).addListener(load_group_info)
     else:
         js = lwjs.Lwjs()
         hashjs = request.urlopen("http://pidginlwqq.sinaapp.com/hash.js")

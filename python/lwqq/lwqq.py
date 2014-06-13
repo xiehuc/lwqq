@@ -19,6 +19,13 @@ HASHFUNC = CFUNCTYPE(c_voidp,c_char_p,c_char_p,c_voidp)
 DISPATCH_FUNC = CFUNCTYPE(None,Command,c_ulong)
 FIND_BUDDY_FUNC = CFUNCTYPE(c_void_p,c_void_p,c_char_p)
 
+class HashEntry(Structure):
+    _fields_ = [
+            ('name', c_char_p),
+            ('func', HASHFUNC),
+            ('data', c_voidp)
+            ]
+
 class Category(LwqqBase):
     class T(Structure):
         _fields_ = [
@@ -500,6 +507,10 @@ class Lwqq(LwqqBase):
     def add_group_member_as_friend(self,buddy,markname):
         return Event(lib.lwqq_info_add_group_member_as_friend(self.ref,buddy.ref,markmake))
 
+    ###### hash api ######
+    def add_hash_entry(self, hashfunc, data):
+        lib.lwqq_hash_add_entry(self.lc, hashfunc, data)
+
     @classmethod
     def time(cls):
         return lib.lwqq_time()
@@ -586,6 +597,15 @@ def register_library(lib):
     lib.lwqq_info_get_stranger_info.restype = Event.PT
     lib.lwqq_info_add_group_member_as_friend.argtypes = [Lwqq.PT,Buddy.PT,c_char_p]
     lib.lwqq_info_add_group_member_as_friend.restype = Event.PT
+
+    # lwqq hash api
+    lib.lwqq_hash_all_finished.argtypes = [Lwqq.PT]
+    lib.lwqq_hash_all_finished.restype = c_int
+    lib.lwqq_hash_add_entry.argtypes = [Lwqq.PT, c_char_p, HASHFUNC, c_voidp];
+    lib.lwqq_hash_set_beg.argtypes = [Lwqq.PT, c_char_p]
+    lib.lwqq_hash_get_last.argtypes = [Lwqq.PT]
+    lib.lwqq_hash_get_last.restype = POINTER(HashEntry)
+
     
     #orginal in msg.py but has conflicts
     lib.lwqq_info_get_stranger_info_by_msg.argtypes = [Lwqq.PT,GroupSystemMessage.PT,Buddy.PT]
