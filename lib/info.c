@@ -29,7 +29,7 @@
 
 static int get_avatar_back(LwqqHttpRequest* req,LwqqBuddy* buddy,LwqqGroup* group);
 static int get_friends_info_back(LwqqHttpRequest* req, LwqqAsyncEvent* called);
-static int get_group_name_list_back(LwqqHttpRequest* req,LwqqClient* lc);
+static int get_group_name_list_back(LwqqHttpRequest* req, LwqqAsyncEvent* called);
 static int group_detail_back(LwqqHttpRequest* req,LwqqClient* lc,LwqqGroup* group);
 static int get_discu_list_back(LwqqHttpRequest* req,void* data);
 static int get_discu_detail_info_back(LwqqHttpRequest* req,LwqqClient* lc,LwqqGroup* discu);
@@ -743,17 +743,6 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc, LwqqHashFunc hash, vo
 		lwqq_async_add_event_chain(ev, ret);
 		return ret;
 	}else return ev;
-
-	/**
-	 * Here, we got a json object like this:
-	 * {"retcode":0,"result":{
-	 * "friends":[{"flag":0,"uin":1907104721,"categories":0},i...
-	 * "marknames":[{"uin":276408653,"markname":""},...
-	 * "categories":[{"index":1,"sort":1,"name":""},...
-	 * "vipinfo":[{"vip_level":1,"u":1907104721,"is_vip":1},i...
-	 * "info":[{"face":294,"flag":8389126,"nick":"","uin":1907104721},
-	 *
-	 */
 }
 static int get_friends_info_back(LwqqHttpRequest* req, LwqqAsyncEvent* called)
 {
@@ -1004,29 +993,49 @@ static void parse_groups_gmarklist_child(LwqqClient *lc, json_t *json)
  * @param err
  */
 LWQQ_EXPORT
-LwqqAsyncEvent* lwqq_info_get_group_name_list(LwqqClient *lc, LwqqErrorCode *err)
+LwqqAsyncEvent* lwqq_info_get_group_name_list(LwqqClient *lc, LwqqHashFunc hash, void* userdata)
 {
 	char post[512] = {0};
 	LwqqHttpRequest *req = NULL;
+	LwqqAsyncEvent* ret = NULL;
+	void* data = userdata;
+	if(hash == NULL){
+		hash = lwqq_hash_auto;
+		data = lc;
+		ret = lwqq_async_event_new(NULL);
+	} else if( hash == lwqq_hash_auto) {
+		ret = userdata;
+		data = lc;
+	}
+
+	char* ptwebqq = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "ptwebqq");
+	char* h = hash(lc->myself->uin, ptwebqq, data);
+	if(h == NULL) h = s_strdup("");
+	s_free(ptwebqq);
+
+	snprintf(post, sizeof(post), "r={\"hash\":\"%s\",\"vfwebqq\":\"%s\"}",h ,lc->vfwebqq);
+	urlencode(post, 2);
+	s_free(h);
 
 	const char* url =  WEBQQ_S_HOST"/api/get_group_name_list_mask2";
-	/* Create a POST request */
-	/* Create post data: {"h":"hello","vfwebqq":"4354j53h45j34"} */
-	snprintf(post, sizeof(post), "r={\"vfwebqq\":\"%s\"}",lc->vfwebqq);
-	urlencode(post, 2);
-
-	req = lwqq_http_create_default_request(lc,url, err);
+	req = lwqq_http_create_default_request(lc,url, NULL);
 	req->set_header(req, "Referer", WEBQQ_S_REF_URL);
-	req->set_header(req, "Content-Transfer-Encoding", "binary");
+	//req->set_header(req, "Content-Transfer-Encoding", "binary");
+	req->set_header(req, "Accept-Encoding", "gzip,deflate,sdch");
 	req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
 
-	return req->do_request_async(req, lwqq__has_post(),_C_(2p_i,get_group_name_list_back,req,lc));
+	LwqqAsyncEvent* ev = req->do_request_async(req, lwqq__has_post(),_C_(2p_i,get_group_name_list_back,req, ret));
+	if(ret){
+		lwqq_async_add_event_chain(ev, ret);
+		return ret;
+	}else return ev;
 }
-static int get_group_name_list_back(LwqqHttpRequest* req,LwqqClient* lc)
+static int get_group_name_list_back(LwqqHttpRequest* req, LwqqAsyncEvent* called)
 {
 	json_t *json = NULL, *json_tmp;
 	int ret=0;
 	int err=0;
+	LwqqClient* lc = req->lc;
 
 	if (req->http_code != 200) {
 		err = LWQQ_EC_HTTP_ERROR;
@@ -1054,7 +1063,14 @@ static int get_group_name_list_back(LwqqHttpRequest* req,LwqqClient* lc)
 
 	int retcode;
 	json_tmp = lwqq__parse_retcode_result(json,&retcode);
-	if (!json_tmp||retcode != LWQQ_EC_OK) {
+	if (retcode == LWQQ_EC_HASH_WRONG && !lwqq_hash_all_finished(lc)) {
+		lwqq_info_get_group_name_list(lc, lwqq_hash_auto, called);
+	}
+	if(retcode != LWQQ_EC_OK){
+		err = retcode;
+		goto done;
+	}
+	if (!json_tmp) {
 		lwqq_log(LOG_ERROR, "Parse json object error: %s\n", req->response);
 		err = LWQQ_EC_ERROR;
 		goto done;
@@ -1074,9 +1090,8 @@ static int get_group_name_list_back(LwqqHttpRequest* req,LwqqClient* lc)
 	}
 
 done:
-	if (json)
-		json_free_value(&json);
-	lwqq_http_request_free(req);
+	lwqq__log_if_error(err, req);
+	lwqq__clean_json_and_req(json, req);
 	return err;
 
 }

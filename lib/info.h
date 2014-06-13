@@ -53,7 +53,7 @@ LwqqAsyncEvent* lwqq_info_get_friends_info(LwqqClient *lc,LwqqHashFunc hash, voi
  * @param lc 
  * @param err 
  */
-LwqqAsyncEvent* lwqq_info_get_group_name_list(LwqqClient *lc, LwqqErrorCode *err);
+LwqqAsyncEvent* lwqq_info_get_group_name_list(LwqqClient *lc, LwqqHashFunc hash, void* data);
 
 LwqqAsyncEvent* lwqq_info_get_discu_name_list(LwqqClient* lc);
 
