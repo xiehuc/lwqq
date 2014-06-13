@@ -89,7 +89,8 @@ void lwqq_async_add_event_listener(LwqqAsyncEvent* event,LwqqCommand cmd);
  *                because evset is create by evset_new, shouldn't be NULL
  *
  *                if evset reference count is zero, evset would automaticly freed
- *                because it never trigger. if not freed now , no chance to free anymore
+ *                because it never trigger. and cmd would immediately executed.
+ *                if not freed now , no chance to free anymore
  * @param cmd   : if evset reference count decreased to zero, cmd would trigger
  */
 void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd);

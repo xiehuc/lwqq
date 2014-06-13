@@ -244,7 +244,10 @@ void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd)
 		set_->cmd = cmd;
 	else
 		vp_link(&set_->cmd,&cmd);
-	if(set_->ref_count == 0) lwqq_async_evset_free(evset);
+	if(set_->ref_count == 0){
+		lwqq_async_evset_free(evset);
+		vp_do(cmd, NULL);
+	}
 }
 
 LWQQ_EXPORT
