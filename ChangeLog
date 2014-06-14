@@ -1,4 +1,7 @@
-version 0.3.1: (2014-06-13)
+version 0.3.1: (2014-06-14)
+	*  更新xcode配置，不再依赖mozjs
+	*  更改add evset 时refcount==0时候的行为  
+	+  修正group list也需要使用hash
 	*  修正一些网络运营商进行js注入, 导致崩溃
 	+  增加cpack的自动打包脚本 by edhelas
 	*  修正性别显示错误 by lainme
