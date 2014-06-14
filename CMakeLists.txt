@@ -124,20 +124,7 @@ endif()
 #always true because we force enable sqlite
 set(WITH_SQLITE True)
 
-# provide a automatic configure for LIB_INSTALL_DIR when CMAKE_INSTALL_PREFIX changed
-# and also the ability for user modify
-if(NOT CMAKE_INSTALL_PREFIX STREQUAL INSTALL_DIR)
-	if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr") # only /usr enable auto config
-		get_property(IS_LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS) 
-		if(IS_LIB64) 
-			set(LIBSUFFIX "64") 
-		else() 
-			set(LIBSUFFIX "")
-		endif()
-	endif()
-	set(LIB_INSTALL_DIR "lib${LIBSUFFIX}" CACHE STRING "the directory to install library" FORCE)
-endif()
-set(INSTALL_DIR ${CMAKE_INSTALL_PREFIX} CACHE INTERNAL "the backup for CMAKE_INSTALL_PREFIX" FORCE)
+set(LIB_INSTALL_DIR "lib" CACHE STRING "the directory to install library")
 
 message( "================lwqq flags=====================")
 if(WIN32)
