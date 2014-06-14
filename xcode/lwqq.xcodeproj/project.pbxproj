@@ -38,7 +38,7 @@
 		C0A1FA29190E48E200C050B6 /* smemory.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA02190E48E200C050B6 /* smemory.c */; };
 		C0A1FA2A190E48E200C050B6 /* smemory.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA03190E48E200C050B6 /* smemory.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA2B190E48E200C050B6 /* swsqlite.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA04190E48E200C050B6 /* swsqlite.c */; };
-		C0A1FA2C190E48E200C050B6 /* swsqlite.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA05190E48E200C050B6 /* swsqlite.h */; };
+		C0A1FA2C190E48E200C050B6 /* swsqlite.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA05190E48E200C050B6 /* swsqlite.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA2D190E48E200C050B6 /* type.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA06190E48E200C050B6 /* type.c */; };
 		C0A1FA2E190E48E200C050B6 /* type.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA07190E48E200C050B6 /* type.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA2F190E48E200C050B6 /* url.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA08190E48E200C050B6 /* url.c */; };
@@ -47,14 +47,8 @@
 		C0A1FA32190E48E200C050B6 /* utility.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA0B190E48E200C050B6 /* utility.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA33190E48E200C050B6 /* vplist.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1FA0C190E48E200C050B6 /* vplist.c */; };
 		C0A1FA34190E48E200C050B6 /* vplist.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA0D190E48E200C050B6 /* vplist.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C0A1FA37190E499F00C050B6 /* lwqq_export.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA35190E499F00C050B6 /* lwqq_export.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA38190E499F00C050B6 /* lwqq-config.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA36190E499F00C050B6 /* lwqq-config.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA3F190E4FC900C050B6 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1FA3E190E4FC900C050B6 /* libz.dylib */; };
-		C0A1FA54190E653400C050B6 /* libmozjs185-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1FA53190E653400C050B6 /* libmozjs185-1.0.a */; };
-		C0A1FA5C190E655C00C050B6 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1FA5B190E655C00C050B6 /* libstdc++.dylib */; };
-		C0BB75D1190E6E8E005D2DA3 /* libnspr4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BB75CE190E6E8E005D2DA3 /* libnspr4.a */; };
-		C0BB75D2190E6E8E005D2DA3 /* libplc4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BB75CF190E6E8E005D2DA3 /* libplc4.a */; };
-		C0BB75D3190E6E8E005D2DA3 /* libplds4.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C0BB75D0190E6E8E005D2DA3 /* libplds4.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -100,14 +94,8 @@
 		C0A1FA0B190E48E200C050B6 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utility.h; path = ../../lib/utility.h; sourceTree = "<group>"; };
 		C0A1FA0C190E48E200C050B6 /* vplist.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vplist.c; path = ../../lib/vplist.c; sourceTree = "<group>"; };
 		C0A1FA0D190E48E200C050B6 /* vplist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vplist.h; path = ../../lib/vplist.h; sourceTree = "<group>"; };
-		C0A1FA35190E499F00C050B6 /* lwqq_export.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwqq_export.h; path = ../build/lwqq_export.h; sourceTree = "<group>"; };
 		C0A1FA36190E499F00C050B6 /* lwqq-config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "lwqq-config.h"; path = "../build/lwqq-config.h"; sourceTree = "<group>"; };
 		C0A1FA3E190E4FC900C050B6 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		C0A1FA53190E653400C050B6 /* libmozjs185-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libmozjs185-1.0.a"; path = "../../../../../usr/local/Cellar/spidermonkey/1.8.5/lib/libmozjs185-1.0.a"; sourceTree = "<group>"; };
-		C0A1FA5B190E655C00C050B6 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
-		C0BB75CE190E6E8E005D2DA3 /* libnspr4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libnspr4.a; sourceTree = "<group>"; };
-		C0BB75CF190E6E8E005D2DA3 /* libplc4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libplc4.a; sourceTree = "<group>"; };
-		C0BB75D0190E6E8E005D2DA3 /* libplds4.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libplds4.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,14 +103,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0A1FA54190E653400C050B6 /* libmozjs185-1.0.a in Frameworks */,
-				C0BB75D2190E6E8E005D2DA3 /* libplc4.a in Frameworks */,
-				C0A1FA5C190E655C00C050B6 /* libstdc++.dylib in Frameworks */,
 				C0A1FA3F190E4FC900C050B6 /* libz.dylib in Frameworks */,
 				C0A1F9E6190E48B000C050B6 /* libsqlite3.dylib in Frameworks */,
 				C0A1F9E4190E48A300C050B6 /* libcurl.dylib in Frameworks */,
-				C0BB75D1190E6E8E005D2DA3 /* libnspr4.a in Frameworks */,
-				C0BB75D3190E6E8E005D2DA3 /* libplds4.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -132,7 +115,6 @@
 		C0A1F9AB190E46B400C050B6 = {
 			isa = PBXGroup;
 			children = (
-				C0A1FA35190E499F00C050B6 /* lwqq_export.h */,
 				C0A1FA36190E499F00C050B6 /* lwqq-config.h */,
 				C0A1F9BE190E46B400C050B6 /* lwqq */,
 				C0A1F9B7190E46B400C050B6 /* Frameworks */,
@@ -151,11 +133,6 @@
 		C0A1F9B7190E46B400C050B6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C0BB75CE190E6E8E005D2DA3 /* libnspr4.a */,
-				C0BB75CF190E6E8E005D2DA3 /* libplc4.a */,
-				C0BB75D0190E6E8E005D2DA3 /* libplds4.a */,
-				C0A1FA53190E653400C050B6 /* libmozjs185-1.0.a */,
-				C0A1FA5B190E655C00C050B6 /* libstdc++.dylib */,
 				C0A1FA3E190E4FC900C050B6 /* libz.dylib */,
 				C0A1F9E5190E48B000C050B6 /* libsqlite3.dylib */,
 				C0A1F9E3190E48A300C050B6 /* libcurl.dylib */,
@@ -239,12 +216,11 @@
 				C0A1FA2E190E48E200C050B6 /* type.h in Headers */,
 				C0A1FA32190E48E200C050B6 /* utility.h in Headers */,
 				C0A1FA1E190E48E200C050B6 /* login.h in Headers */,
+				C0A1FA2C190E48E200C050B6 /* swsqlite.h in Headers */,
 				C0A1FA12190E48E200C050B6 /* async.h in Headers */,
-				C0A1FA37190E499F00C050B6 /* lwqq_export.h in Headers */,
 				C0A1FA18190E48E200C050B6 /* internal.h in Headers */,
 				C0A1FA1A190E48E200C050B6 /* json.h in Headers */,
 				C0A1FA30190E48E200C050B6 /* url.h in Headers */,
-				C0A1FA2C190E48E200C050B6 /* swsqlite.h in Headers */,
 				C0A1FA25190E48E200C050B6 /* md5.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
