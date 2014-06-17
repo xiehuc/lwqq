@@ -68,10 +68,12 @@ void vp_do_repeat(vp_command cmd,void* retval)
 	}
 
 	vp_command* n = cmd.next;
+	vp_command* next = NULL;
 	while(n){
 		vp_start(n->data);
+		next = n->next;
 		n->dsph(n->func,&n->data,NULL);
-		n = n->next;
+		n = next;
 	}
 }
 
