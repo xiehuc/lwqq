@@ -71,8 +71,8 @@ void vp_do_repeat(vp_command cmd,void* retval)
 	vp_command* next = NULL;
 	while(n){
 		vp_start(n->data);
-		next = n->next;
-		n->dsph(n->func,&n->data,NULL);
+		next = n->next; // dsph may free n, so backup it (by HenryHu)
+		n->dsph(n->func,&n->data,NULL); 
 		n = next;
 	}
 }
