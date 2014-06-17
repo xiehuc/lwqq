@@ -8,8 +8,6 @@ set(VERSION_PATCH "1")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
-include(GenerateExportHeader)
-
 add_definitions(-Wall)
 option(WITHOUT_ASYNC "Fully Disable Async Ability, Only Sync mode" Off)
 set(QUICK_QUIT False CACHE BOOL "Hide Option: Detatch thread to quickly quit")
@@ -91,6 +89,8 @@ if(WIN32)
 	find_package(MozJS REQUIRED)
 	set(MOZJS_185 ${MOZJS_FOUND})
 	find_package(EV)
+
+	include(GenerateExportHeader)
 endif(WIN32)
 
 option(WITH_LIBEV "Use Libev To Provide Async " ${EV_FOUND})
