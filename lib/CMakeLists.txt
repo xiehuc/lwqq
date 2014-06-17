@@ -70,15 +70,9 @@ if(WITH_LIBUV)
     set(LWQQ_OTHER_LIBS ${LWQQ_OTHER_LIBS} ${UV_LIBRARIES})
 endif()
 
-add_library(lwqq-static STATIC ${LWQQ_LIST} )
-set_target_properties(lwqq-static PROPERTIES 
-    OUTPUT_NAME lwqq
-    COMPILE_FLAGS -DLWQQ_STATIC_DEFINE
-    )
+add_library(lwqq-static STATIC ${LWQQ_LIST})
+set_target_properties(lwqq-static PROPERTIES OUTPUT_NAME lwqq)
 add_library(lwqq SHARED ${LWQQ_LIST} )
-GENERATE_EXPORT_HEADER(lwqq 
-    EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/lwqq_export.h
-    )
 
 target_link_libraries(lwqq
     ${SQLITE_LIBRARIES}
