@@ -828,6 +828,8 @@ LwqqAsyncEvent* lwqq_info_get_avatar(LwqqClient* lc,LwqqBuddy* buddy,LwqqGroup* 
 	req = lwqq_http_create_default_request(lc,url, &error);
 	req->set_header(req, "Referer", "http://web2.qq.com/webqq.html");
 	req->set_header(req,"Host",host);
+	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 15);
+	req->retry = 1;
 
 	return req->do_request_async(req, lwqq__hasnot_post(),_C_(3p_i,get_avatar_back,req,buddy,group));
 }
