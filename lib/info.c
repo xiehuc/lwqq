@@ -352,7 +352,7 @@ static void parse_group_info(json_t* json,LwqqGroup* g)
 {
 	//{"face":0,"memo":"","member_cnt":2,"class":10011,"fingermemo":"","code":492623520,"createtime":1344433413,"flag":16842753,"name":"group\u0026test","gid":4072534964,"owner":586389001,"maxmember":100,"option":2}
 	if(!json) return;
-	lwqq_override(g->class,lwqq__json_get_value(json, "class"));
+	lwqq_override(g->classes,lwqq__json_get_value(json, "class"));
 	lwqq_override(g->code, lwqq__json_get_value(json, "code"));
 	g->createtime = lwqq__json_get_int(json, "createtime", g->createtime);
 	lwqq_override(g->face, lwqq__json_get_value(json,"face"));

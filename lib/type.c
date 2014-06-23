@@ -447,7 +447,7 @@ void lwqq_group_free(LwqqGroup *group)
 	s_free(group->markname);
 	s_free(group->face);
 	s_free(group->memo);
-	s_free(group->class);
+	s_free(group->classes);
 	s_free(group->fingermemo);
 	s_free(group->level);
 	s_free(group->owner);

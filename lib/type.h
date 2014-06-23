@@ -276,7 +276,7 @@ Discu: (with lwdb) the only one and stable key reference
 	/* ginfo */
 	char *face;
 	char *memo;
-	char *class;
+	char *classes;
 	char *fingermemo;
 	time_t createtime;
 	char *level;

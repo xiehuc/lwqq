@@ -248,7 +248,7 @@ class Group(LwqqBase):
                 ('markname',c_char_p),
                 ('face',c_char_p),
                 ('memo',c_char_p),
-                ('class_type',c_char_p),
+                ('classes',c_char_p),
                 ('fingermemo',c_char_p),
                 ('createtime',c_ulong),
                 ('level',c_char_p),
@@ -295,7 +295,7 @@ class Group(LwqqBase):
     @property
     def memo(self): return self.ref[0].memo
     @property
-    def class_type(self): return self.ref[0].class_type
+    def classes(self): return self.ref[0].classes
     @property
     def fingermemo(self): return self.ref[0].fingermemo
     @property
