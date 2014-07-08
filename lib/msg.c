@@ -1217,16 +1217,23 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 	LwqqErrorCode *err = &error;
 	char url[512];
 	char *file_path = url_encode(c->data.img.file_path);
-	//there are face 1 to face 10 server to accelerate speed.
+#ifdef OFFPIC_USE_WQQ
+	const char* d_host = WQQ_D_HOST;
+	const char* refurl = "http://"WQQ_HOST;
+#else
+	const char* d_host = WEBQQ_D_HOST;
+	const char* refurl = "http://"WEBQQ_HOST;
+#endif
 	snprintf(url, sizeof(url),
 			"%s/channel/get_offpic2?file_path=%s&f_uin=%s&clientid=%s&psessionid=%s",
-			WEBQQ_D_HOST,file_path,f_uin,lc->clientid,lc->psessionid);
+			d_host,
+			file_path,f_uin,lc->clientid,lc->psessionid);
 	s_free(file_path);
 	req = lwqq_http_create_default_request(lc,url, err);
 	if (!req) {
 		goto done;
 	}
-	req->set_header(req, "Referer", "http://web2.qq.com/");
+	req->set_header(req, "Referer", refurl);
 
 	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
 

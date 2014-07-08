@@ -17,6 +17,8 @@
 #define WEBQQ_LOGIN_HOST    "https://ssl.ptlogin2.qq.com"
 #define WEBQQ_CHECK_HOST    WEBQQ_LOGIN_HOST
 #define WEBQQ_S_HOST        "http://s.web2.qq.com"
+#define WEBQQ_HOST          "http://web2.qq.com"
+#define WQQ_HOST            "http://w.qq.com"
 
 #define WEBQQ_S_REF_URL     WEBQQ_S_HOST"/proxy.html?v=201104120011&callback=1&id=1"
 #define WEBQQ_LOGIN_REF_URL WEBQQ_LOGIN_HOST"/proxy.html"

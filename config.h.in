@@ -31,5 +31,7 @@
 // default : 90
 #define POLL_MSG_TIMEOUT 75
 
+//#define OFFPIC_USE_WQQ
+
 #endif /* __CONFIG_H__ */
 

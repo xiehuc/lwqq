@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "login.h"
 #include "logger.h"
@@ -44,6 +45,7 @@ static void login_stage_2(LwqqClient* lc,LwqqErrorCode* err);
 static void login_stage_3(LwqqAsyncEvent* ev,LwqqErrorCode* ec);
 static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec);
 static void login_stage_5(LwqqAsyncEvent* ev,LwqqErrorCode* ec);
+static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec);
 static void login_stage_f(LwqqAsyncEvent* ev,LwqqErrorCode* ec);
 
 static int get_login_sig_back(LwqqHttpRequest* req)
@@ -550,6 +552,30 @@ done:
 	return err;
 }
 
+#include <curl/curl.h>
+
+static LwqqAsyncEvent* check_sig(LwqqClient* lc)
+{
+	char url[512] = {0};
+	char cookie[80] = {0};
+	unsigned pgv_info;
+	unsigned pgv_pvid;
+	snprintf(url, sizeof(url), "http://ptlogin4.web2.qq.com/check_sig?"
+			"pttype=1&uin=%s&service=login&nodirect=1",lc->myself->uin);
+	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, 0);
+	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L);
+	lwqq_http_set_option(req, LWQQ_HTTP_MAXREDIRS, 0L);
+	srand(time(0));
+	pgv_info = rand()%(unsigned)1E11;
+	srand(~time(0));
+	pgv_pvid = rand()%(unsigned)1E11;
+	snprintf(cookie, sizeof(cookie), "pgv_info=ssid=s%u; pgv_pvid=%u;", pgv_info, pgv_pvid);
+	curl_easy_setopt(req->req, CURLOPT_COOKIE, cookie);
+
+	return req->do_request_async(req, lwqq__hasnot_post(), _C_(p, lwqq__process_empty, req));
+}
+
+
 /** 
  * WebQQ login function
  * Step:
@@ -675,7 +701,18 @@ static void login_stage_5(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 		return;
 	}
 	LwqqAsyncEvent* event = set_online_status(lc, lwqq_status_to_str(lc->stat));
-	lwqq_async_add_event_listener(event,_C_(2p,login_stage_f,event,ec));
+	lwqq_async_add_event_listener(event,_C_(2p,login_stage_6,event,ec));
+}
+static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
+{
+	if(lwqq_async_event_get_code(ev) == LWQQ_CALLBACK_FAILED) return;
+	int err = lwqq_async_event_get_result(ev);
+	if(ec)(*ec=err);
+	LwqqClient* lc = lwqq_async_event_get_owner(ev);
+	if(!lwqq_client_valid(lc)) return;
+
+	LwqqAsyncEvent* event = check_sig(lc);
+	lwqq_async_add_event_listener(event, _C_(2p, login_stage_f, event, ec));
 }
 static void login_stage_f(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 {
@@ -684,6 +721,7 @@ static void login_stage_f(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 	if(ec)(*ec=err);
 	LwqqClient* lc = lwqq_async_event_get_owner(ev);
 	if(!lwqq_client_valid(lc)) return;
+
 	lwqq_vc_free(lc->vc);
 	lc->vc = NULL;
 	if(err) lc->stat = LWQQ_STATUS_LOGOUT;
