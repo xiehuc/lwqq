@@ -93,6 +93,9 @@ if(WIN32)
 	include(GenerateExportHeader)
 endif(WIN32)
 
+include(CheckFunctionExists)
+CHECK_FUNCTION_EXISTS(strtok_r HAVE_STRTOK_R)
+
 option(WITH_LIBEV "Use Libev To Provide Async " ${EV_FOUND})
 if(WITH_LIBEV AND NOT EV_FOUND)
 	message(FATAL_ERROR "Required package libev not found")
