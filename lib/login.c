@@ -736,27 +736,26 @@ static void login_stage_f(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
  * @param err Error code
  */
 LWQQ_EXPORT
-void lwqq_logout(LwqqClient *client, LwqqErrorCode *err)
+LwqqErrorCode lwqq_logout(LwqqClient *client, unsigned wait_time)
 {
 	LwqqClient* lc = client;
-	char url[512];
 	LwqqHttpRequest *req = NULL;  
 	int ret;
+	LwqqErrorCode err = LWQQ_EC_OK;
 	json_t *json = NULL;
 	char *value;
 	struct timeval tv;
 	long int re;
+	char url[512];
 
 	if (!client) {
 		lwqq_log(LOG_ERROR, "Invalid pointer\n");
-		return ;
+		return LWQQ_EC_NULL_POINTER;
 	}
 
 	/* Get the milliseconds of now */
 	if (gettimeofday(&tv, NULL)) {
-		if (err)
-			*err = LWQQ_EC_ERROR;
-		return ;
+		return LWQQ_EC_ERROR;
 	}
 	re = tv.tv_usec / 1000;
 	re += tv.tv_sec;
@@ -766,7 +765,7 @@ void lwqq_logout(LwqqClient *client, LwqqErrorCode *err)
 			WEBQQ_D_HOST, client->clientid, client->psessionid, re);
 
 	/* Create a GET request */
-	req = lwqq_http_create_default_request(client,url, err);
+	req = lwqq_http_create_default_request(client,url, NULL);
 	if (!req) {
 		goto done;
 	}
@@ -774,51 +773,38 @@ void lwqq_logout(LwqqClient *client, LwqqErrorCode *err)
 	/* Set header needed by server */
 	req->set_header(req, "Referer", WEBQQ_LOGIN_REF_URL);
 
-	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 10L); // this perform good when no network link
+	if(wait_time>0)
+		lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, wait_time); // this perform good when no network link
 	req->retry = 0;
 	ret = req->do_request(req, 0, NULL);
 	if (ret) {
 		lwqq_log(LOG_ERROR, "Send logout request failed\n");
-		if (err)
-			*err = LWQQ_EC_NETWORK_ERROR;
+		err = LWQQ_EC_NETWORK_ERROR;
 		goto done;
 	}
 	if (req->http_code != 200) {
-		if (err)
-			*err = LWQQ_EC_HTTP_ERROR;
+		err = LWQQ_EC_HTTP_ERROR;
 		goto done;
 	}
 
-	ret = json_parse_document(&json, req->response);
-	if (ret != JSON_OK) {
-		if (err)
-			*err = LWQQ_EC_ERROR;
-		goto done;
-	}
+	lwqq__jump_if_json_fail(json, req->response, err);
 
 	/* Check whether logout correctly */
 	value = json_parse_simple_value(json, "retcode");
 	if (!value || strcmp(value, "0")) {
-		if (err)
-			*err = LWQQ_EC_ERROR;
+		err = LWQQ_EC_ERROR;
 		goto done;
 	}
 	value = json_parse_simple_value(json, "result");
 	if (!value || strcmp(value, "ok")) {
-		if (err)
-			*err = LWQQ_EC_ERROR;
+		err = LWQQ_EC_ERROR;
 		goto done;
 	}
 
-	/* Ok, seems like all thing is ok */
-	if (err)
-		*err = LWQQ_EC_OK;
-
 done:
-	if (json)
-		json_free_value(&json);
-	lwqq_http_request_free(req);
+	lwqq__clean_json_and_req(json, req);
 	client->stat = LWQQ_STATUS_LOGOUT;
+	return err;
 }
 
 static int process_login2(LwqqHttpRequest* req)

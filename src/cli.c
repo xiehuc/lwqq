@@ -201,7 +201,7 @@ static void cli_logout(LwqqClient *lc)
 {
     LwqqErrorCode err;
     
-    lwqq_logout(lc, &err);
+    err = lwqq_logout(lc, 5);
     if (err != LWQQ_EC_OK) {
         lwqq_log(LOG_DEBUG, "Logout failed\n");        
     } else {

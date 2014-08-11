@@ -476,8 +476,9 @@ class Lwqq(LwqqBase):
         for d in self.discus():
             if did and d.did == did: return d
     ###### http actions ######
-    def login(self,status): lib.lwqq_login(self.ref,status,0)
-    def logout(self): lib.lwqq_logout(self.ref,0)
+    def login(self, status): lib.lwqq_login(self.ref,status,0)
+    def logout(self, wait_time=5): 
+        lib.lwqq_logout(self.ref, wait_time)
     def relink(self): return Event(lib.lwqq_relink(self.ref))
 
     def get_onlines(self):
@@ -538,7 +539,7 @@ def register_library(lib):
 
     lib.lwqq_login.argtypes = [Lwqq.PT,Status,c_int]
 
-    lib.lwqq_logout.argtypes = [Lwqq.PT,c_int]
+    lib.lwqq_logout.argtypes = [Lwqq.PT,ctypes.c_uint]
 
     lib.lwqq_relink.argtypes = [Lwqq.PT]
     lib.lwqq_relink.restype = Event.PT
