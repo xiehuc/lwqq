@@ -419,7 +419,7 @@ LwqqAsyncEvent* lwqq_get_version(LwqqClient *lc, LwqqErrorCode *err)
 
 	const char* url = WEBQQ_VERSION_URL;
 	req = lwqq_http_create_default_request(lc,url , err);
-	lwqq_http_set_option(req, LWQQ_HTTP_ALL_TIMEOUT,5L);
+	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT,5L);
 
 	/* Send request */
 	lwqq_log(LOG_DEBUG, "Get webqq version from %s\n", WEBQQ_VERSION_URL);
@@ -775,7 +775,6 @@ void lwqq_logout(LwqqClient *client, LwqqErrorCode *err)
 	req->set_header(req, "Referer", WEBQQ_LOGIN_REF_URL);
 
 	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 10L); // this perform good when no network link
-	lwqq_http_set_option(req, LWQQ_HTTP_ALL_TIMEOUT,5L);
 	req->retry = 0;
 	ret = req->do_request(req, 0, NULL);
 	if (ret) {

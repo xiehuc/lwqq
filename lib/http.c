@@ -1143,9 +1143,6 @@ void lwqq_http_set_option(LwqqHttpRequest* req,LwqqHttpOption opt,...)
 			val = va_arg(args,unsigned long);
 			req_->tmo_inc = val;
 			break;
-		case LWQQ_HTTP_ALL_TIMEOUT:
-			curl_easy_setopt(req->req, CURLOPT_TIMEOUT,va_arg(args,unsigned long));
-			break;
 		case LWQQ_HTTP_NOT_FOLLOW:
 			curl_easy_setopt(req->req,CURLOPT_FOLLOWLOCATION,!va_arg(args,long));
 			break;

@@ -31,7 +31,6 @@ typedef enum {
 typedef enum {
 	LWQQ_HTTP_TIMEOUT,               // connection timeout
 	LWQQ_HTTP_TIMEOUT_INCRE,         // auto increment timeout
-	LWQQ_HTTP_ALL_TIMEOUT,           // all operand timeout
 	LWQQ_HTTP_NOT_FOLLOW,
 	LWQQ_HTTP_SAVE_FILE,
 	LWQQ_HTTP_RESET_URL,
