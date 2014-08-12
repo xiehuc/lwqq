@@ -126,6 +126,10 @@ typedef enum {
 	LWQQ_GROUP_QUN = 0,
 	LWQQ_GROUP_DISCU = 1
 }LwqqGroupType;
+typedef enum {
+	LWQQ_CLEANUP_WAITALL = 0,
+	LWQQ_CLEANUP_IGNORE  = 1
+}LwqqCleanUp;
 
 
 /* Lwqq Error Code */

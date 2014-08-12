@@ -161,9 +161,9 @@ LwqqHttpRequest *lwqq_http_create_default_request(LwqqClient* lc,const char *url
 		LwqqErrorCode *err);
 
 void lwqq_http_global_init();
-void lwqq_http_global_free();
+void lwqq_http_global_free(LwqqCleanUp cleanup);
 /** stop a client all http progressing request */
-void lwqq_http_cleanup(LwqqClient*lc);
+void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup);
 /** set the other option of request, like curl_easy_setopt */
 void lwqq_http_set_option(LwqqHttpRequest* req,LwqqHttpOption opt,...);
 /** regist http progressing callback */

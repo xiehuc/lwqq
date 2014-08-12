@@ -190,7 +190,7 @@ void lwqq_client_free(LwqqClient *client)
 		return ;
 
 	//important remove all http request
-	lwqq_http_cleanup(client);
+	lwqq_http_cleanup(client, LWQQ_CLEANUP_WAITALL);
 	lwqq_http_handle_free(lc_->http);
 
 	/* Free LwqqVerifyCode instance */

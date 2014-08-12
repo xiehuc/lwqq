@@ -982,7 +982,7 @@ static void safe_remove_link(LwqqClient* lc)
 }
 
 	LWQQ_EXPORT
-void lwqq_http_global_free()
+void lwqq_http_global_free(LwqqCleanUp cleanup)
 {
 	if(global.multi){
 		if(!LIST_EMPTY(&global.conn_link)){
@@ -998,7 +998,8 @@ void lwqq_http_global_free()
 			//let callback delete data
 			item->req->failcode = item->event->failcode = LWQQ_CALLBACK_CANCELED;
 			vp_do(item->cmd,NULL);
-			lwqq_async_event_finish(item->event);
+			if(cleanup == LWQQ_CLEANUP_WAITALL)
+				lwqq_async_event_finish(item->event);
 			s_free(item);
 		}
 
@@ -1016,9 +1017,9 @@ void lwqq_http_global_free()
 		global.conn_length = 0;
 	}
 }
-void lwqq_http_cleanup(LwqqClient*lc)
+void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 {
-	if(global.multi){
+	if(lc && global.multi){
 		/**must dispatch safe_remove_link first
 		 * then vp_do(item->cmd) because vp_do might release memory
 		 */
@@ -1037,7 +1038,10 @@ void lwqq_http_cleanup(LwqqClient*lc)
 			item->req->failcode = item->event->failcode = LWQQ_CALLBACK_CANCELED;
 			//let callback delete data
 			vp_do(item->cmd,NULL);
-			lwqq_async_event_finish(item->event);
+			// XXX if cleanup == IGNORE, this would cause mem leak
+			if(cleanup == LWQQ_CLEANUP_WAITALL){
+				lwqq_async_event_finish(item->event);
+			}
 			s_free(item);
 		}
 
