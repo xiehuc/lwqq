@@ -201,7 +201,7 @@ void lwqq_async_add_event_listener(LwqqAsyncEvent* event,LwqqCommand cmd)
 		event_->cmd = cmd;
 	else
 		vp_link(&event_->cmd,&cmd);
-	if(event->failcode == LWQQ_CALLBACK_SYNCED)
+	if(event_->req && lwqq_http_is_synced(event_->req))
 		lwqq_async_event_finish(event);
 }
 static void on_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
@@ -215,6 +215,7 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 {
 	/**indeed caller->lc may be NULL when recursor */
 	called->lc = caller->lc;
+	LwqqAsyncEvent_* caller_ = (LwqqAsyncEvent_*)caller;
 	LwqqAsyncEvent_* called_ = (LwqqAsyncEvent_*)called;
 	//cancel previous chained event
 	if(called_->chained){
@@ -222,7 +223,7 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 		vp_cancel0(chained_->cmd);
 	}
 	called_->chained = caller;
-	if(caller->failcode == LWQQ_CALLBACK_SYNCED){
+	if(caller_->req && lwqq_http_is_synced(caller_->req)){
 		//when sync enabled, caller and called must finished already.
 		//so free caller ,and do not trigger anything
 		called->result = caller->result;

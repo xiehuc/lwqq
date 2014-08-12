@@ -169,7 +169,6 @@ typedef enum {
 } LwqqOpCode;/* operate code */
 //**should depreciate **/
 typedef enum {
-	LWQQ_CALLBACK_SYNCED  = LWQQ_EC_CANCELED-1, //< -4
 	LWQQ_CALLBACK_CANCELED = LWQQ_EC_CANCELED, //< -3
 	LWQQ_CALLBACK_TIMEOUT = LWQQ_EC_TIMEOUT_OVER,//< -2
 	LWQQ_CALLBACK_FAILED = LWQQ_EC_ERROR, //< -1

@@ -54,23 +54,17 @@ typedef struct GLOBAL {
 #endif
 }GLOBAL;
 
+typedef enum{
+	HTTP_UNEXPECTED_RECV = 1<<0,
+	HTTP_FORCE_CANCEL    = 1<<1,
+	HTTP_SYNCED          = 1<<2
+}HttpBits;
+
 struct trunk_entry{
 	char* trunk;
 	size_t size;
 	SIMPLEQ_ENTRY(trunk_entry) entries;
 };
-
-	static
-	TABLE_BEGIN(proxy_map,long,0)
-	TR(LWQQ_HTTP_PROXY_HTTP,     CURLPROXY_HTTP  )
-	TR(LWQQ_HTTP_PROXY_SOCKS4,   CURLPROXY_SOCKS4)
-	TR(LWQQ_HTTP_PROXY_SOCKS5,   CURLPROXY_SOCKS5)
-TABLE_END()
-
-	typedef enum{
-		HTTP_UNEXPECTED_RECV = 1<<0,
-		HTTP_FORCE_CANCEL    = 1<<1,
-	}HttpBits;
 
 typedef struct LwqqHttpRequest_
 {
@@ -89,6 +83,12 @@ typedef struct LwqqHttpHandle_
 	pthread_mutex_t share_lock[4];
 }LwqqHttpHandle_;
 
+static
+TABLE_BEGIN(proxy_map,long,0)
+	TR(LWQQ_HTTP_PROXY_HTTP,     CURLPROXY_HTTP  )
+	TR(LWQQ_HTTP_PROXY_SOCKS4,   CURLPROXY_SOCKS4)
+	TR(LWQQ_HTTP_PROXY_SOCKS5,   CURLPROXY_SOCKS5)
+TABLE_END()
 
 static GLOBAL global = {0};
 static pthread_cond_t async_cond = PTHREAD_COND_INITIALIZER;
@@ -830,7 +830,6 @@ static LwqqAsyncEvent* lwqq_http_do_request_async(LwqqHttpRequest *request, int 
 		int err = lwqq_http_do_request(request,method,body);
 		vp_do(command,&err);
 		ev->result = err;
-		ev->failcode = LWQQ_CALLBACK_SYNCED;
 		return ev;
 	}
 
@@ -871,6 +870,8 @@ static int lwqq_http_do_request(LwqqHttpRequest *request, int method, char *body
 	CURLcode ret;
 	http_reset(request);
 	long http_code = 0;
+	// mark this request is synced
+	((LwqqHttpRequest_*)request)->bits |= HTTP_SYNCED;
 retry:
 	ret=0;
 
@@ -985,13 +986,10 @@ void lwqq_http_global_free()
 {
 	if(global.multi){
 		if(!LIST_EMPTY(&global.conn_link)){
-			safe_remove_link(NULL);
-			/*
 			lwqq_async_dispatch(_C_(p,safe_remove_link,NULL));
 			pthread_mutex_lock(&async_lock);
 			pthread_cond_wait(&async_cond,&async_lock);
 			pthread_mutex_unlock(&async_lock);
-			*/
 		}
 
 		D_ITEM * item,* tvar;
@@ -1025,14 +1023,11 @@ void lwqq_http_cleanup(LwqqClient*lc)
 		 * then vp_do(item->cmd) because vp_do might release memory
 		 */
 		if(!LIST_EMPTY(&global.conn_link)){
-			safe_remove_link(lc);
-			/*
 			lwqq_async_dispatch(_C_(p,safe_remove_link,lc));
 			pthread_mutex_lock(&async_lock);
 			//must use cond wait because timedcond might not trigger dispatch
 			pthread_cond_wait(&async_cond,&async_lock);
 			pthread_mutex_unlock(&async_lock);
-			*/
 		}
 
 		D_ITEM * item,* tvar;
@@ -1249,6 +1244,12 @@ const char* lwqq_http_get_url(LwqqHttpRequest* req)
 	char* url = NULL;
 	curl_easy_getinfo(req->req, CURLINFO_EFFECTIVE_URL,&url);
 	return url;
+}
+
+int lwqq_http_is_synced(LwqqHttpRequest* req)
+{
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
+	return req_ ? (req_->bits & HTTP_SYNCED) : 0;
 }
 
 // vim: ts=3 sw=3 sts=3 noet
