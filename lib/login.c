@@ -79,7 +79,7 @@ static int check_need_verify_back(LwqqHttpRequest* req)
 {
 	int err = LWQQ_EC_OK;
 	LwqqClient* lc = req->lc;
-	if(req->failcode != LWQQ_CALLBACK_VALID){
+	if(req->err != LWQQ_EC_OK){
 		err = LWQQ_EC_NETWORK_ERROR;
 		lc->args->login_ec = err;
 		vp_do_repeat(lc->events->login_complete, NULL);
@@ -638,10 +638,10 @@ static void login_stage_2(LwqqClient* lc,LwqqErrorCode* err)
 
 static void login_stage_3(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 {
-	if(lwqq_async_event_get_code(ev) == LWQQ_CALLBACK_FAILED) return;
-	int err = lwqq_async_event_get_result(ev);
+	if(ev->result != LWQQ_EC_OK) return;
+	int err = ev->result;
 	if(ec) *ec=err;
-	LwqqClient* lc = lwqq_async_event_get_owner(ev);
+	LwqqClient* lc = ev->lc;
 	if(!lwqq_client_valid(lc)) return;
 	switch (err) {
 		case LWQQ_EC_LOGIN_NEED_VC:
@@ -687,10 +687,10 @@ static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec)
 }
 static void login_stage_5(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 {
-	if(lwqq_async_event_get_code(ev) == LWQQ_CALLBACK_FAILED) return;
-	int err = lwqq_async_event_get_result(ev);
+	if(ev->result != LWQQ_EC_OK) return;
+	int err = ev->result;
 	if(ec)(*ec=err);
-	LwqqClient* lc = lwqq_async_event_get_owner(ev);
+	LwqqClient* lc = ev->lc;
 	if(!lwqq_client_valid(lc)) return;
 	/* Free old value */
 
@@ -705,10 +705,10 @@ static void login_stage_5(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 }
 static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
 {
-	if(lwqq_async_event_get_code(ev) == LWQQ_CALLBACK_FAILED) return;
-	int err = lwqq_async_event_get_result(ev);
+	if(ev->result != LWQQ_EC_OK) return;
+	int err = ev->result;
 	if(ec)(*ec=err);
-	LwqqClient* lc = lwqq_async_event_get_owner(ev);
+	LwqqClient* lc = ev->lc;
 	if(!lwqq_client_valid(lc)) return;
 
 	LwqqAsyncEvent* event = check_sig(lc);
@@ -716,10 +716,10 @@ static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
 }
 static void login_stage_f(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 {
-	if(lwqq_async_event_get_code(ev) == LWQQ_CALLBACK_FAILED) return;
-	int err = lwqq_async_event_get_result(ev);
+	if(ev->result != LWQQ_EC_OK) return;
+	int err = ev->result;
 	if(ec)(*ec=err);
-	LwqqClient* lc = lwqq_async_event_get_owner(ev);
+	LwqqClient* lc = ev->lc;
 	if(!lwqq_client_valid(lc)) return;
 
 	lwqq_vc_free(lc->vc);

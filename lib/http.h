@@ -58,7 +58,7 @@ struct _LwqqHttpRequest {
 	 */
 	short http_code; 
 	short retry;
-	LwqqCallbackCode failcode;
+	LwqqErrorCode err;
 
 	/* Server response, used when do async request */
 	char *location;

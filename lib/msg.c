@@ -1559,7 +1559,7 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 	LwqqClient* lc = req->lc;
 	LwqqRecvMsgList* list = lc->msg_list;
 	LwqqAsyncEvent* ev = NULL;
-	int ret = req->failcode;
+	LwqqErrorCode ret = req->err;
 	if(ret == LWQQ_EC_CANCELED) // cancel by user, so no need notify user
 		return LWQQ_EC_ERROR; 
 	if(!lwqq_client_logined(lc)) // client not valid, no way to notify user

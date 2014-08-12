@@ -39,7 +39,7 @@ typedef struct LwqqAsyncEvent {
 	 *  <0: errno from lwqq inner
 	 */
 	int result;
-	LwqqCallbackCode failcode; ///< would be depreciate
+	//LwqqCallbackCode failcode; ///< would be depreciate
 	LwqqClient* lc;
 }LwqqAsyncEvent;
 typedef struct LwqqAsyncEvset{
@@ -102,12 +102,6 @@ void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd);
  * so you can make a chain very long to create some complicate behavior
  */
 void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called);
-//#define type_assert(what,type) {type ptr = what;assert(ptr);}
-#define lwqq_async_event_set_result(ev,res) (ev->result=res)
-#define lwqq_async_event_set_code(ev,code)  (ev->failcode=code)
-#define lwqq_async_event_get_result(ev)     (ev?ev->result:LWQQ_EC_ERROR)
-#define lwqq_async_event_get_code(ev)       (ev?ev->failcode:LWQQ_CALLBACK_FAILED)
-#define lwqq_async_event_get_owner(ev)      (ev?ev->lc:NULL)
 /** this return the http request */
 LwqqHttpRequest* lwqq_async_event_get_conn(LwqqAsyncEvent* ev);
 

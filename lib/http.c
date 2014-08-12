@@ -602,9 +602,11 @@ static void async_complete(D_ITEM* conn)
 			uncompress_response(request);
 		}
 	}
-	if(conn->req)conn->req->failcode = conn->event->failcode;
+	// record error when network communication
+	if(conn->req) conn->req->err = conn->event->result;
 	vp_do(conn->cmd,&res);
-	lwqq_async_event_set_result(conn->event,res);
+	// copy out error code internal
+	conn->event->result = res;
 	lwqq_async_event_finish(conn->event);
 	s_free(conn);
 	return ;
@@ -663,8 +665,7 @@ static void check_multi_info(GLOBAL *g)
 					curl_multi_add_handle(g->multi, easy);
 					continue;
 				}
-				ev->failcode = ec;
-				ev->result = ret;
+				ev->result = ec;
 			}
 
 			curl_multi_remove_handle(g->multi, easy);
@@ -896,7 +897,7 @@ retry:
 		if(set_error_code(request, ret, &ec)){
 			goto retry;
 		}
-		request->failcode = ec;
+		request->err = ec;
 		return ec;
 	}
 
@@ -996,7 +997,7 @@ void lwqq_http_global_free(LwqqCleanUp cleanup)
 		LIST_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
 			LIST_REMOVE(item,entries);
 			//let callback delete data
-			item->req->failcode = item->event->failcode = LWQQ_CALLBACK_CANCELED;
+			item->req->err = item->event->result = LWQQ_EC_CANCELED;
 			vp_do(item->cmd,NULL);
 			if(cleanup == LWQQ_CLEANUP_WAITALL)
 				lwqq_async_event_finish(item->event);
@@ -1035,7 +1036,7 @@ void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 		LIST_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
 			if(item->req->lc != lc) continue;
 			LIST_REMOVE(item,entries);
-			item->req->failcode = item->event->failcode = LWQQ_CALLBACK_CANCELED;
+			item->req->err = item->event->result = LWQQ_EC_CANCELED;
 			//let callback delete data
 			vp_do(item->cmd,NULL);
 			// XXX if cleanup == IGNORE, this would cause mem leak

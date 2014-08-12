@@ -137,7 +137,6 @@ static char* ibmpc_ascii_character_convert(char *str)
 
 static void do_change_markname(LwqqAsyncEvent* ev,LwqqBuddy* b,LwqqGroup* g,char* mark)
 {
-	if(ev->failcode == LWQQ_CALLBACK_FAILED) {s_free(mark);return;}
 	if(ev->result != LWQQ_EC_OK) {s_free(mark);return;}
 	LwqqClient* lc = ev->lc;
 	if(b){
@@ -164,7 +163,6 @@ static void dispatch_poll_lost(LwqqClient* lc)
 }
 static void do_change_status(LwqqAsyncEvent* ev,LwqqClient* lc,LwqqStatus s)
 {
-	if(ev->failcode == LWQQ_CALLBACK_FAILED) return;
 	if(ev->result == 108)
 		lwqq_client_dispatch(lc,_C_(p,dispatch_poll_lost,lc));
 	if(ev->result != LWQQ_EC_OK) return;
@@ -177,7 +175,6 @@ static void do_mask_group(LwqqAsyncEvent* ev,LwqqGroup* g,LwqqMask m)
 }
 static void do_rename_discu(LwqqAsyncEvent* ev,LwqqGroup* d,char* name)
 {
-	if(ev->failcode == LWQQ_CALLBACK_FAILED) {s_free(name);return;}
 	if(ev->result != LWQQ_EC_OK) {s_free(name);return;}
 	LwqqClient* lc = ev->lc;
 	s_free(d->name);
@@ -2358,7 +2355,7 @@ LwqqAsyncEvent* lwqq_info_add_group_member_as_friend(LwqqClient* lc,LwqqBuddy* m
 static void create_discu_stage_2(LwqqAsyncEvent* called,LwqqVerifyCode* code,LwqqDiscuMemChange* chg,char* dname)
 {
 	if(!code->str){
-		called->failcode = LWQQ_EC_ERROR;
+		called->result = LWQQ_EC_WRONG_VERIFY;
 		lwqq_async_event_finish(called);
 		goto done;
 	}

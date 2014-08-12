@@ -107,8 +107,7 @@ LwqqAsyncEvent* lwqq_async_event_new(void* req)
 	LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
 	internal->req = req;
 	event->lc = req?internal->req->lc:NULL;
-	event->failcode = LWQQ_CALLBACK_VALID;
-	event->result = 0;
+	event->result = LWQQ_EC_OK;
 	return event;
 }
 
@@ -207,7 +206,6 @@ void lwqq_async_add_event_listener(LwqqAsyncEvent* event,LwqqCommand cmd)
 static void on_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 {
 	called->result = caller->result;
-	called->failcode = caller->failcode;
 	called->lc = caller->lc;
 	lwqq_async_event_finish(called);
 }
@@ -227,7 +225,6 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 		//when sync enabled, caller and called must finished already.
 		//so free caller ,and do not trigger anything
 		called->result = caller->result;
-		called->failcode = caller->failcode;
 		lwqq_async_event_finish(caller);
 	}else{
 		lwqq_async_add_event_listener(caller,_C_(2p,on_chain,caller,called));

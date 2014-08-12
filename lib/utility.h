@@ -30,7 +30,7 @@ void lwqq_ct_free(LwqqConfirmTable* table);
 int lwqq_util_mapto_type(const struct LwqqTypeMap* maps,const char* key);
 const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type);
 
-LwqqOpCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir);
+LwqqErrorCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir);
 
 char* lwqq_util_hashN(const char* uin,const char* ptwebqq,void*);
 char* lwqq_util_hashO(const char* uin,const char* ptwebqq,void*);

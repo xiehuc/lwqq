@@ -107,13 +107,11 @@ int lwqq__process_simple_response(LwqqHttpRequest* req);
 		err = LWQQ_EC_NOT_JSON_FORMAT; goto done;  }
 #define lwqq__jump_if_retcode_fail(retcode) if(retcode != LWQQ_EC_OK) goto done;
 #define lwqq__jump_if_ev_fail(ev,err) do{\
-	if(ev->failcode != LWQQ_CALLBACK_VALID){err=LWQQ_EC_ERROR;goto done;}\
-	if(ev->result != LWQQ_EC_OK){err=LWQQ_EC_ERROR;goto done;}\
+	if(ev == NULL || ev->result != LWQQ_EC_OK){err=LWQQ_EC_ERROR;goto done;}\
 }while(0);
 
 #define lwqq__return_if_ev_fail(ev) do{\
-	if(ev->failcode != LWQQ_CALLBACK_VALID) return;\
-	if(ev->result != LWQQ_EC_OK) return;\
+	if(ev == NULL || ev->result != LWQQ_EC_OK) return;\
 }while(0);
 
 #define lwqq__clean_json_and_req(json,req) do{\
