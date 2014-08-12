@@ -287,7 +287,6 @@ static enum{
 } ev_thread_status;
 static pthread_cond_t ev_thread_cond = PTHREAD_COND_INITIALIZER;
 static pthread_t pid;
-static LwqqAsyncTimerHandle bomb;
 static int global_quit_lock = 0;
 //### global data area ###//
 
@@ -341,14 +340,6 @@ static void start_ev_thread()
 	}
 }
 
-static void ev_bomb(LwqqAsyncTimerHandle timer,void* data)
-{
-	lwqq_puts("boom!!");
-	lwqq_async_timer_stop(timer);
-	lwqq_async_timer_free(bomb);
-	LWQQ__ASYNC_IMPL(loop_stop)();
-}
-
 LWQQ_EXPORT
 void lwqq_async_global_quit()
 {
@@ -359,8 +350,7 @@ void lwqq_async_global_quit()
 	if(ev_thread_status == THREAD_NOW_WAITING){
 		pthread_cond_signal(&ev_thread_cond);
 	}else if(ev_thread_status == THREAD_NOW_RUNNING){
-		bomb = lwqq_async_timer_new();
-		lwqq_async_timer_watch(bomb, 50, ev_bomb, NULL);
+		LWQQ__ASYNC_IMPL(loop_stop)();
 	}
 	ev_thread_status = THREAD_NOT_CREATED;
 	pthread_join(pid,NULL);

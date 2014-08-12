@@ -537,9 +537,9 @@ static int set_online_status_back(LwqqHttpRequest* req)
 	result = lwqq__parse_retcode_result(root, &err);
 	if(err) goto done;
 	if(result){
+		lwqq_override(lc->myself->uin,lwqq__json_get_value(result,"uin"));
 		lwqq_override(lc->seskey,lwqq__json_get_value(result,"seskey"));
 		lwqq_override(lc->cip,lwqq__json_get_value(result,"cip"));
-		lwqq_override(lc->myself->uin,lwqq__json_get_value(result,"uin"));
 		lwqq_override(lc->index,lwqq__json_get_value(result,"index"));
 		lwqq_override(lc->port,lwqq__json_get_value(result,"port"));
 		lwqq_override(lc->psessionid,lwqq__json_get_value(result,"psessionid"));

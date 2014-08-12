@@ -985,10 +985,13 @@ void lwqq_http_global_free()
 {
 	if(global.multi){
 		if(!LIST_EMPTY(&global.conn_link)){
+			safe_remove_link(NULL);
+			/*
 			lwqq_async_dispatch(_C_(p,safe_remove_link,NULL));
 			pthread_mutex_lock(&async_lock);
 			pthread_cond_wait(&async_cond,&async_lock);
 			pthread_mutex_unlock(&async_lock);
+			*/
 		}
 
 		D_ITEM * item,* tvar;
@@ -1022,11 +1025,14 @@ void lwqq_http_cleanup(LwqqClient*lc)
 		 * then vp_do(item->cmd) because vp_do might release memory
 		 */
 		if(!LIST_EMPTY(&global.conn_link)){
+			safe_remove_link(lc);
+			/*
 			lwqq_async_dispatch(_C_(p,safe_remove_link,lc));
 			pthread_mutex_lock(&async_lock);
 			//must use cond wait because timedcond might not trigger dispatch
 			pthread_cond_wait(&async_cond,&async_lock);
 			pthread_mutex_unlock(&async_lock);
+			*/
 		}
 
 		D_ITEM * item,* tvar;

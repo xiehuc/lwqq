@@ -29,10 +29,18 @@ static void (loop_run)()
 {
 	ev_run(ev_default,0);
 }
-
+static void loop_stop_cb(EV_P_ ev_idle* w, int action)
+{
+	ev_idle_stop(loop, w);
+	s_free(w);
+	ev_break(loop, EVBREAK_ALL);
+}
 static void (loop_stop)()
 {
-	ev_break(ev_default, EVBREAK_ALL);
+	//ev_break(ev_default, EVBREAK_ALL);
+	ev_idle *idle = s_malloc0(sizeof(ev_idle));
+	ev_idle_init(idle, loop_stop_cb);
+	ev_idle_start(ev_default, idle);
 }
 static void (loop_free)()
 {
