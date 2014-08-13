@@ -74,13 +74,20 @@ struct ds { char * d; int p; int s; };
 #define ds_poke(x,c) do { ds_redim((x)); (x).d[(x).p++] = c; } while(0)
 //#define ds_pokes(x,t) do { const char * p = t; while (*p) ds_poke((x), *p++); } while(0)
 #define ds_pokes(x,t) do {\
-	int size = strlen(t);\
+	size_t size = strlen(t);\
 	ds_sure((x),size); \
-	if((x).p&&!ds_last(x)) (x).p --;\
+	if((x).p&&!ds_last(x)) -- (x).p;\
 	strcpy((x).d+(x).p,t);\
 	(x).p+=size;}while(0);
+#define ds_pokes_n(x,t,n) do{\
+	size_t size = strlen(t);\
+	size = size<n?size:n;\
+	ds_sure((x), size);\
+	if((x).p&&!ds_last(x)) -- (x).p;\
+	strncpy((x).d+(x).p, t, n);\
+	(x).p+=size;}while(0);
 void ds_cat_(struct ds* str,...);
-#define ds_cat(x,...) ds_cat_(&x,__VA_ARGS__)
+#define ds_cat(x,...) ds_cat_(&x,__VA_ARGS__, NULL)
 const char* ds_itos(int n);
 #define ds_c_str(x) (x.d)
 #endif /* ds_init */

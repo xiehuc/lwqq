@@ -1743,51 +1743,56 @@ static void parse_unescape(char* source,char *buf,int buf_len)
 #define RIGHT "\\\""
 #define KEY(key) "\\\""key"\\\""
 
-static char* content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_cface)
+static struct ds content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_cface)
 {
 	//not thread safe. 
 	//you need ensure only one thread send msg in one time.
-	static char buf[8192];
-	strcpy(buf,"\"[");
+	char buf[8192] = {0};
+	struct ds str = ds_initializer;
+	ds_sure(str, 8192);
+	ds_cat(str, "\"[");
 	LwqqMsgContent* c;
 	int notext = 1;
 
 	TAILQ_FOREACH(c,&msg->content,entries){
 		switch(c->type){
 			case LWQQ_CONTENT_FACE:
-				format_append(buf,"["KEY("face")",%d],",c->data.face);
+				snprintf(buf, sizeof(buf), "["KEY("face")",%d],",c->data.face);
+				ds_cat(str, buf);
 				break;
 			case LWQQ_CONTENT_OFFPIC:
-				format_append(buf,"["KEY("offpic")","KEY("%s")","KEY("%s")",%lu],",
+				snprintf(buf,sizeof(buf),"["KEY("offpic")","KEY("%s")","KEY("%s")",%lu],",
 						c->data.img.file_path,
 						c->data.img.name,
 						(unsigned long)c->data.img.size);
+				ds_cat(str, buf);
 				break;
 			case LWQQ_CONTENT_CFACE:
 				//[\"cface\",\"group\",\"0C3AED06704CA9381EDCC20B7F552802.jPg\"]
 				if(c->data.cface.name){
 					if(msg_type == LWQQ_MS_GROUP_MSG || msg_type == LWQQ_MS_DISCU_MSG)
-						format_append(buf,"["KEY("cface")","KEY("group")","KEY("%s")"],",
+						snprintf(buf,sizeof(buf),"["KEY("cface")","KEY("group")","KEY("%s")"],",
 								c->data.cface.name);
 					else if(msg_type == LWQQ_MS_BUDDY_MSG || msg_type == LWQQ_MS_SESS_MSG)
-						format_append(buf,"["KEY("cface")","KEY("%s")"],",
+						snprintf(buf,sizeof(buf),"["KEY("cface")","KEY("%s")"],",
 								c->data.cface.name);
 					*has_cface = 1;
+					ds_cat(str, buf);
 				}
 				break;
 			case LWQQ_CONTENT_STRING:
 				notext = 0;
-				strcat(buf,LEFT);
+				strcpy(buf,""); // reset buf
 				parse_unescape(c->data.str,buf+strlen(buf),sizeof(buf)-strlen(buf));
-				strcat(buf,RIGHT",");
+				ds_cat(str, LEFT, buf, RIGHT",");
 				break;
 		}
 	}
 	//it looks like webqq server need at list one string
 	if(notext){
-		strcat(buf, LEFT"\\\\n"RIGHT",");
+		ds_cat(str, LEFT"\\\\n"RIGHT",");
 	}
-	snprintf(buf+strlen(buf),sizeof(buf)-strlen(buf),
+	snprintf(buf,sizeof(buf),
 			"["KEY("font")",{"
 			KEY("name")":"KEY("%s")","
 			KEY("size")":"KEY("%d")","
@@ -1799,7 +1804,8 @@ static char* content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_cfac
 			lwqq_bit_get(msg->f_style,LWQQ_FONT_ITALIC),
 			lwqq_bit_get(msg->f_style,LWQQ_FONT_UNDERLINE),
 			msg->f_color);
-	return buf;
+	ds_cat(str, buf);
+	return str;
 }
 
 static LwqqAsyncEvent* lwqq_msg_upload_offline_pic(
@@ -2040,9 +2046,9 @@ LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 {
 	LwqqHttpRequest *req = NULL;  
-	char *content = NULL;
-	char data[8192];
-	data[0] = '\0';
+	char data[8192] ={0};
+	struct ds body = ds_initializer, content = ds_initializer;
+	ds_sure(body, 8192);
 	LwqqMsgMessage *mmsg = msg;
 	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)lc->msg_list;
 	const char *apistr = NULL;
@@ -2083,8 +2089,9 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 	}
 
 	//we do send msg
-	format_append(data,"r={");
-	content = content_parse_string(mmsg,msg->super.super.type,&has_cface);
+	ds_cat(body, "r={");
+	strcpy(data, ""); // reset data
+	content = content_parse_string(mmsg, msg->super.super.type, &has_cface);
 	if(msg->super.super.type == LWQQ_MS_BUDDY_MSG){
 		format_append(data,"\"to\":%s,",mmsg->super.to);
 		apistr = "send_buddy_msg2";
@@ -2111,19 +2118,19 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 		assert(0);
 		return NULL;
 	}
-	format_append(data,
-			//"\"face\":0,"
-			"\"content\":%s,"
+	ds_cat(body, data);
+	ds_cat(body, "\"content\":", ds_c_str(content), ",");
+	snprintf(data, sizeof(data),
 			"\"msg_id\":%ld,"
 			"\"clientid\":\"%s\","
 			"\"psessionid\":\"%s\"}",
-			content,++list_->msg_id,lc->clientid,lc->psessionid);
+			++list_->msg_id,lc->clientid,lc->psessionid);
 	//format_append(data,"&clientid=%s&psessionid=%s",lc->clientid,lc->psessionid);
-	if(strlen(data)+1==sizeof(data)) return NULL;
+	ds_cat(body, data);
 
 	/* Create a POST request */
 	char url[512];
-	char* post = data;
+	char* post = ds_c_str(body);
 	snprintf(url, sizeof(url), "%s/channel/%s",WEBQQ_D_HOST, apistr);
 	req = lwqq_http_create_default_request(lc,url, NULL);
 	if (!req) {
@@ -2141,9 +2148,14 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 
 	lwqq_msg_incre_seq(lc, (LwqqMsg*)msg);
 
-	return req->do_request_async(req, lwqq__has_post(),_C_(p_i,lwqq__process_simple_response,req));
+	LwqqAsyncEvent* ret = req->do_request_async(req, lwqq__has_post(),_C_(p_i,lwqq__process_simple_response,req));
+	ds_free(body);
+	ds_free(content);
+	return ret;
 failed:
 	lwqq_http_request_free(req);
+	ds_free(body);
+	ds_free(content);
 	return NULL;
 }
 
