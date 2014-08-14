@@ -1,0 +1,13 @@
+setup.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq-cli.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/__init__.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/base.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/core.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/http.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/lwjs.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/lwqq.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/msg.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/queue.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/types.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq/vplist.py
+/home/xiehuc/PROJECT/lwqq/python/lwqq.egg-info/SOURCES.txt

@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: lwqq
+Version: 0.3.1
+Summary: light weight webqq protocol python binding
+Home-page: http://github.com/xiehuc/lwqq
+Author: xiehuc
+Author-email: xiehuc@gmail.com
+License: GPL
+Description: light weight webqq protocol python binding
+Keywords: webqq,lwqq
+Platform: UNKNOWN
