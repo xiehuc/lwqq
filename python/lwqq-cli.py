@@ -17,6 +17,7 @@ from six.moves.urllib import request
 import functools
 import sys
 import argparse
+import lwqq
 
 loop = IOLoop.instance()
 lc = None 
@@ -212,14 +213,32 @@ def main():
     lc.login(Status.ONLINE)
     pass
 
+def show_version():
+    print('version:',utf(lwqq.lwqq.version))
+    feature = {
+            Features.WITH_LIBEV: "libev",
+            Features.WITH_LIBUV: "libuv",
+            Features.WITH_MOZJS: "mozjs",
+            Features.WITH_SQLITE: "sqlite",
+            Features.WITH_SSL: "ssl"
+            }
+    print('feature:',[feature[x] for x in lwqq.lwqq.feature])
+    pass
+
 argp = argparse.ArgumentParser(description = 'command line tool to talk with qq friend')
-argp.add_argument('user',help='username')
-argp.add_argument('password',help='password')
-argp.add_argument('-v','--verbose',help='verbose level',type=int,nargs='?')
+arg1 = argp.add_argument_group()
+arg1.add_argument('user',help='username')
+arg1.add_argument('password',help='password')
+arg1.add_argument('-v',help='verbose level',action='count')
+arg2 = argp.add_argument_group()
+arg2.add_argument('--version', help='print version info', action='store_true')
 
 if __name__ == '__main__':
     args = argp.parse_args()
 
+    if args.version:
+        show_version()
+        exit(0)
     lc = Lwqq(cstr(args.user),cstr(args.password))
     if args.verbose:
         Lwqq.log_level(args.verbose)

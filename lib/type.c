@@ -39,6 +39,9 @@ const LwqqFeatures lwqq_features = 0
 #endif
 ;
 
+LWQQ_EXPORT 
+const char* lwqq_version = LWQQ_VERSION;
+
 #define HASH_ENTRY_SIZE 8
 
 static struct LwqqTypeMap status_type_map[] = {

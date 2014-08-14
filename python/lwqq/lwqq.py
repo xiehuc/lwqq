@@ -13,11 +13,15 @@ from .msg import Message,GroupSystemMessage,RecvMsgList
 
 from .lwjs import *
 
-__all__ = [ 'Lwqq', 'Buddy', 'SimpleBuddy', 'Category', 'Group', 'Discu' ]
+__all__ = [ 'Lwqq', 'Buddy', 'SimpleBuddy', 'Category', 'Group', 'Discu',
+    'feature', 'version' ]
 
 HASHFUNC = CFUNCTYPE(c_voidp,c_char_p,c_char_p,c_voidp)
 DISPATCH_FUNC = CFUNCTYPE(None,Command,c_ulong)
 FIND_BUDDY_FUNC = CFUNCTYPE(c_void_p,c_void_p,c_char_p)
+
+version = None
+feature = None
 
 class HashEntry(Structure):
     _fields_ = [
@@ -512,9 +516,15 @@ class Lwqq(LwqqBase):
     def add_hash_entry(self, hashfunc, data):
         lib.lwqq_hash_add_entry(self.lc, hashfunc, data)
 
+    ###### properties ######
+
     @classmethod
     def time(cls):
         return lib.lwqq_time()
+
+    @classmethod
+    def version(cls):
+        return lib.lwqq_version()
 
     @classmethod
     def log_level(cls,level):
@@ -607,7 +617,16 @@ def register_library(lib):
     lib.lwqq_hash_get_last.argtypes = [Lwqq.PT]
     lib.lwqq_hash_get_last.restype = POINTER(HashEntry)
 
-    
+    global feature
+    f = ctypes.c_uint.in_dll(lib, 'lwqq_features').value
+    feature_seq = (Features.WITH_LIBEV, Features.WITH_LIBUV,
+            Features.WITH_SQLITE, Features.WITH_MOZJS, Features.WITH_SSL)
+    feature = tuple(filter( lambda x: f & x , feature_seq))
+
+    global version
+    version = c_char_p.in_dll(lib, 'lwqq_version').value
+
+
     #orginal in msg.py but has conflicts
     lib.lwqq_info_get_stranger_info_by_msg.argtypes = [Lwqq.PT,GroupSystemMessage.PT,Buddy.PT]
     lib.lwqq_info_get_stranger_info_by_msg.restype = Event.PT

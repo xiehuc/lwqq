@@ -74,6 +74,7 @@ typedef enum {
 }LwqqFeatures;
 
 extern const LwqqFeatures lwqq_features;
+extern const char* lwqq_version;
 
 typedef enum {
 	LWQQ_STATUS_LOGOUT = 0,
