@@ -763,9 +763,11 @@ static int get_friends_info_back(LwqqHttpRequest* req, LwqqAsyncEvent* called)
 	}
 
 	json_tmp = lwqq__parse_retcode_result(json, &retcode);
-	if (retcode == LWQQ_EC_HASH_WRONG && !lwqq_hash_all_finished(lc)) {
+	if (retcode == LWQQ_EC_HASH_WRONG && called && !lwqq_hash_all_finished(lc)) {
 		lwqq_info_get_friends_info(lc, lwqq_hash_auto, called);
+		goto done;
 	}
+	lwqq_hash_set_beg(lc, NULL); // clear hash_next
 	if (retcode != LWQQ_EC_OK){
 		err = retcode;
 		goto done;
@@ -1062,9 +1064,11 @@ static int get_group_name_list_back(LwqqHttpRequest* req, LwqqAsyncEvent* called
 
 	int retcode;
 	json_tmp = lwqq__parse_retcode_result(json,&retcode);
-	if (retcode == LWQQ_EC_HASH_WRONG && !lwqq_hash_all_finished(lc)) {
+	if (retcode == LWQQ_EC_HASH_WRONG && called && !lwqq_hash_all_finished(lc)) {
 		lwqq_info_get_group_name_list(lc, lwqq_hash_auto, called);
+		goto done;
 	}
+	lwqq_hash_set_beg(lc, NULL); // clear hash_next 
 	if(retcode != LWQQ_EC_OK){
 		err = retcode;
 		goto done;

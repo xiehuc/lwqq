@@ -85,6 +85,8 @@ typedef struct LwqqClient_
 	LwqqHashEntry hash_entry[HASH_ENTRY_SIZE];
 	LwqqHashEntry* hash_beg;
 	LwqqHashEntry* hash_idx;
+	int hash_next; /* if first call hash_auto, it shouldn't goto next. if isn't,
+							it should try next entry */
 }LwqqClient_;
 
 /** 
@@ -566,16 +568,19 @@ LWQQ_EXPORT
 char* lwqq_hash_auto(const char* uin, const char* ptwebqq, void* lc)
 {
 	LwqqClient_* lc_ = lc;
+	if(lc_->hash_next){
+		lc_->hash_idx++;
+		if(lc_->hash_idx->name == NULL) lc_->hash_idx = lc_->hash_entry;
+	}
 	lwqq_verbose(2, "[using hash: %s]\n", lc_->hash_idx->name);
-	char* ret = lc_->hash_idx->func(uin,ptwebqq,lc_->hash_idx->data);
-	lc_->hash_idx++;
-	if(lc_->hash_idx->name == NULL) lc_->hash_idx = lc_->hash_entry;
-	return ret;
+	lc_->hash_next = 1;
+	return lc_->hash_idx->func(uin,ptwebqq,lc_->hash_idx->data);
 }
 
 LWQQ_EXPORT
 int lwqq_hash_all_finished(LwqqClient* lc)
 {
+	if(!lc) return 1;// always tring stop iteration
 	LwqqClient_* lc_ = (LwqqClient_*)lc;
 	return lc_->hash_idx == lc_->hash_beg;
 }
@@ -583,6 +588,7 @@ int lwqq_hash_all_finished(LwqqClient* lc)
 LWQQ_EXPORT
 void lwqq_hash_add_entry(LwqqClient* lc, const char* name, LwqqHashFunc func, void* data)
 {
+	if(!lc || !name || !func) return;
 	LwqqClient_* lc_ = (LwqqClient_*)lc;
 	LwqqHashEntry* entry;
 	for(entry = lc_->hash_entry ; entry != lc_->hash_entry + HASH_ENTRY_SIZE -1; entry++){
@@ -599,7 +605,10 @@ LWQQ_EXPORT
 void lwqq_hash_set_beg(LwqqClient* lc, const char* hash_name)
 {
 	LwqqClient_* lc_ = (LwqqClient_*)lc;
+	if(lc==NULL) return;
 	LwqqHashEntry* entry;
+	lc_->hash_next = 0;
+	if(hash_name == NULL) return; // only clear hash_next
 	for(entry = lc_->hash_entry ; entry != lc_->hash_entry + HASH_ENTRY_SIZE; entry++){
 		if(entry->name == NULL) break;
 		if(strcmp(entry->name, hash_name) == 0){
@@ -612,16 +621,9 @@ void lwqq_hash_set_beg(LwqqClient* lc, const char* hash_name)
 LWQQ_EXPORT
 const LwqqHashEntry* lwqq_hash_get_last(LwqqClient* lc)
 {
+	if(!lc) return NULL;
 	LwqqClient_* lc_ = (LwqqClient_*)lc;
-	LwqqHashEntry* entry = lc_->hash_idx;
-	if(lc_->hash_idx == lc_->hash_entry) { // if idx point at begin
-		for(entry = lc_->hash_entry + HASH_ENTRY_SIZE -1; entry >lc_->hash_entry; --entry){
-			// we find the last element
-			if(entry->name) return entry;
-		}
-		return lc_->hash_idx; // here unreachable
-	}else
-		return entry-1;
+	return lc_->hash_idx;
 }
 
 // vim: ts=3 sw=3 sts=3 noet
