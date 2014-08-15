@@ -6,7 +6,7 @@ from .core import has_feature
 from .types import Features
 import ctypes
 
-__all__ =['Lwjs']
+__all__ = ['Lwjs']
 
 class Lwjs():
     js = None

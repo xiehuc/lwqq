@@ -11,17 +11,11 @@ from .types import *
 from .queue import *
 from .msg import Message,GroupSystemMessage,RecvMsgList
 
-from .lwjs import *
-
-__all__ = [ 'Lwqq', 'Buddy', 'SimpleBuddy', 'Category', 'Group', 'Discu',
-    'feature', 'version' ]
+__all__ = [ 'Lwqq', 'Buddy', 'SimpleBuddy', 'Category', 'Group', 'Discu' ]
 
 HASHFUNC = CFUNCTYPE(c_voidp,c_char_p,c_char_p,c_voidp)
 DISPATCH_FUNC = CFUNCTYPE(None,Command,c_ulong)
 FIND_BUDDY_FUNC = CFUNCTYPE(c_void_p,c_void_p,c_char_p)
-
-version = None
-feature = None
 
 class HashEntry(Structure):
     _fields_ = [
@@ -487,10 +481,10 @@ class Lwqq(LwqqBase):
 
     def get_onlines(self):
         return Event(lib.lwqq_info_get_online_buddies(self.ref,None))
-    def get_friends_info(self,hashfunc,data):
+    def get_friend_list(self,hashfunc, data=None):
         return Event(lib.lwqq_info_get_friends_info(self.ref,HASHFUNC(hashfunc),data))
-    def get_group_list(self):
-        return Event(lib.lwqq_info_get_group_name_list(self.ref,None))
+    def get_group_list(self,hashfunc, data=None):
+        return Event(lib.lwqq_info_get_group_name_list(self.ref,HASHFUNC(hashfunc),data))
     def get_discu_list(self):
         return Event(lib.lwqq_info_get_discu_name_list(self.ref))
     def get_stranger_info(self,serv_id,out):
@@ -568,7 +562,7 @@ def register_library(lib):
     lib.lwqq_info_get_qqnumber.restype = Event.PT
     lib.lwqq_info_get_friend_detail_info.argtypes = [Lwqq.PT,Buddy.PT]
     lib.lwqq_info_get_friend_detail_info.restype = Event.PT
-    lib.lwqq_info_get_group_name_list.argtypes = [Lwqq.PT,c_void_p]
+    lib.lwqq_info_get_group_name_list.argtypes = [Lwqq.PT,HASHFUNC,c_void_p]
     lib.lwqq_info_get_group_name_list.restype = Event.PT
     lib.lwqq_info_get_discu_name_list.argtypes = [Lwqq.PT]
     lib.lwqq_info_get_discu_name_list.restype = Event.PT
@@ -616,16 +610,6 @@ def register_library(lib):
     lib.lwqq_hash_set_beg.argtypes = [Lwqq.PT, c_char_p]
     lib.lwqq_hash_get_last.argtypes = [Lwqq.PT]
     lib.lwqq_hash_get_last.restype = POINTER(HashEntry)
-
-    global feature
-    f = ctypes.c_uint.in_dll(lib, 'lwqq_features').value
-    feature_seq = (Features.WITH_LIBEV, Features.WITH_LIBUV,
-            Features.WITH_SQLITE, Features.WITH_MOZJS, Features.WITH_SSL)
-    feature = tuple(filter( lambda x: f & x , feature_seq))
-
-    global version
-    version = c_char_p.in_dll(lib, 'lwqq_version').value
-
 
     #orginal in msg.py but has conflicts
     lib.lwqq_info_get_stranger_info_by_msg.argtypes = [Lwqq.PT,GroupSystemMessage.PT,Buddy.PT]
