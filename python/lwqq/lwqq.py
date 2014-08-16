@@ -481,9 +481,9 @@ class Lwqq(LwqqBase):
 
     def get_onlines(self):
         return Event(lib.lwqq_info_get_online_buddies(self.ref,None))
-    def get_friend_list(self,hashfunc, data=None):
+    def get_friend_list(self,hashfunc=0, data=None):
         return Event(lib.lwqq_info_get_friends_info(self.ref,HASHFUNC(hashfunc),data))
-    def get_group_list(self,hashfunc, data=None):
+    def get_group_list(self,hashfunc=0, data=None):
         return Event(lib.lwqq_info_get_group_name_list(self.ref,HASHFUNC(hashfunc),data))
     def get_discu_list(self):
         return Event(lib.lwqq_info_get_discu_name_list(self.ref))

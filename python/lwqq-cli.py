@@ -8,7 +8,6 @@ from lwqq.lwqq import *
 from lwqq.msg import *
 from lwqq.core import Event,Evset
 from lwqq import core
-from lwqq import lwjs
 from lwqq import lwqq
 from lwqq import lwdb
 from ctypes import c_voidp,cast,POINTER,c_int,byref,c_char_p,pointer,CFUNCTYPE,py_object
@@ -22,7 +21,6 @@ import argparse
 
 loop = IOLoop.instance()
 lc = None 
-js = None
 make_cache = False
 prompt_hint = '>>>'
 
@@ -71,17 +69,12 @@ def init_listener(lc):
     lc.addListener(lc.events.poll_lost,message_lost)
 
 def load_info():
-    if not core.has_feature(Features.WITH_MOZJS):
-        lc.get_friend_list().addListener(load_group_info)
-    else:
-        lc.get_friend_list(js.hashfunc,js.js).addListener(load_group_info)
-    pass
+    lc.get_friend_list().addListener(load_group_info)
 
 def load_group_info():
     ev = Evset.new()
-    lc.get_group_list(js.hashfunc,js.js).addto(ev)
+    lc.get_group_list().addto(ev)
     lc.get_discu_list().addto(ev)
-    del js
     ev.addListener(poll_msg)
 
 def get_all_qqnumbers():
@@ -260,13 +253,10 @@ if __name__ == '__main__':
     lc = Lwqq(cstr(args.user),cstr(args.password))
     if hasattr(args,'verbose'):
         Lwqq.log_level(args.verbose)
-    if core.has_feature(Features.WITH_MOZJS):
-        js = lwjs.Lwjs()
-        hashjs = request.urlopen("http://pidginlwqq.sinaapp.com/hash.js")
-        js.load(hashjs.read())
     lc.setDispatcher(dispatch)
     init_listener(lc)
     loop.add_callback(main)
     loop.add_handler(0, command, loop.READ)
     loop.start()
+    del lc
 
