@@ -585,7 +585,16 @@ int lwqq_hash_all_finished(LwqqClient* lc)
 {
 	if(!lc) return 1;// always tring stop iteration
 	LwqqClient_* lc_ = (LwqqClient_*)lc;
-	return lc_->hash_idx == lc_->hash_beg;
+	LwqqHashEntry* entry = lc_->hash_beg;
+	if(entry == lc_->hash_entry) { // if idx point at begin
+		for(entry = lc_->hash_entry + HASH_ENTRY_SIZE -1; entry >lc_->hash_entry; --entry){
+			// we find the last element
+			if(entry->name) break;
+		}
+	}else
+		--entry;
+	// if hash_idx == hash_beg-1; then we have tried all hash 
+	return lc_->hash_idx == entry;
 }
 
 LWQQ_EXPORT
