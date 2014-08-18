@@ -1,23 +1,15 @@
-add_executable(lwqq-cli
-    cli.c
-    )
+add_executable(lwqq-cli cli.c)
 
 include_directories(
     ${PROJECT_BINARY_DIR}
 	../lib 
 	)
 
-#link_directories(
-#    ${CMAKE_CURRENT_BINARY_DIR}/../lib
-#    )
 if(WIN32)
-	target_link_libraries(lwqq-cli
-		lwqq-static
-		)
+	target_link_libraries(lwqq-cli lwqq-static)
 else()
-	target_link_libraries(lwqq-cli
-		lwqq
-		)
+	target_link_libraries(lwqq-cli lwqq)
 endif()
 
-install(TARGETS lwqq-cli DESTINATION bin)
+# after 0.4.0 use lwqq-cli.py instead
+# install(TARGETS lwqq-cli DESTINATION bin)
