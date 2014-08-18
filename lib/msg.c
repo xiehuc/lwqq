@@ -1702,42 +1702,34 @@ void lwqq_msglist_close(LwqqRecvMsgList* list)
 }
 
 ///low level special char mapping
-static void parse_unescape(char* source,char *buf,int buf_len)
+static void parse_unescape(char* source,struct ds* dest)
 {
 	char* ptr = source;
+	struct ds write = *dest;
 	size_t idx;
 	while(*ptr!='\0'){
-		if(buf_len<=0) return;
 		idx = strcspn(ptr,"\r\n\t\\;&\"+%");
 		if(ptr[idx] == '\0'){
-			strncpy(buf,ptr,buf_len);
-			buf+=idx;
-			buf_len-=idx;
+			ds_cat(write, ptr);
 			break;
 		}
-		strncpy(buf,ptr,(idx<buf_len)?idx:buf_len);
-		buf+=idx;
-		buf_len-=idx;
-		if(buf_len<=0) return;
+		ds_pokes_n(write, ptr, idx);
 		switch(ptr[idx]){
 			//note buf point the end position
-			case '\n': strncpy(buf,"\\\\n",buf_len);break;
-			case '\r': strncpy(buf,"\\\\n",buf_len);break;
-			case '\t': strncpy(buf,"\\\\t",buf_len);break;
-			case '\\': strncpy(buf,"\\\\\\\\",buf_len);break;
+			case '\n': ds_cat(write,"\\\\n");break;
+			case '\r': ds_cat(write,"\\\\n");break;
+			case '\t': ds_cat(write,"\\\\t");break;
+			case '\\': ds_cat(write,"\\\\\\\\");break;
 						  //i dont know why ; is not worked.so we use another expression
-			case ';' : strncpy(buf,"\\u003B",buf_len);break;
-			case '&' : strncpy(buf,"\\u0026",buf_len);break;
-			case '"' : strncpy(buf,"\\\\\\\"",buf_len);break;
-			case '+' : strncpy(buf,"\\u002B",buf_len);break;
-			case '%' : strncpy(buf,"\\u0025",buf_len);break;
+			case ';' : ds_cat(write,"\\u003B");break;
+			case '&' : ds_cat(write,"\\u0026");break;
+			case '"' : ds_cat(write,"\\\\\\\"");break;
+			case '+' : ds_cat(write,"\\u002B");break;
+			case '%' : ds_cat(write,"\\u0025");break;
 		}
 		ptr+=idx+1;
-		idx=strlen(buf);
-		buf+=idx;
-		buf_len-=idx;
 	}
-	*buf = '\0';
+	*dest = write;
 }
 #define LEFT "\\\""
 #define RIGHT "\\\""
@@ -1782,9 +1774,9 @@ static struct ds content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_
 				break;
 			case LWQQ_CONTENT_STRING:
 				notext = 0;
-				strcpy(buf,""); // reset buf
-				parse_unescape(c->data.str,buf+strlen(buf),sizeof(buf)-strlen(buf));
-				ds_cat(str, LEFT, buf, RIGHT",");
+				ds_cat(str, LEFT);
+				parse_unescape(c->data.str,&str);
+				ds_cat(str, RIGHT",");
 				break;
 		}
 	}

@@ -63,14 +63,15 @@ char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused);
 
 /* dynamic string manipulation nano-library */
 #ifndef ds_init
-struct ds { char * d; int p; int s; };
+struct ds { char * d; size_t p; size_t s; };
 #define ds_initializer {NULL,0,0}
 #define ds_init(x) do { x.d = (char *)0; x.p = x.s = 0; } while(0)
 #define ds_rewind(x) x.p = 0;
 #define ds_last(x) ((x).d[(x).p-1])
 #define ds_free(x) do { if (x.d) free(x.d); ds_init(x); } while(0)
 #define ds_redim(x) do { if (x.p >= x.s) x.d = realloc(x.d, x.s += 32); } while(0)
-#define ds_sure(x,sz) do { if ((x).p+sz >= (x).s) (x).d = realloc((x).d,(x).s += sz+32);} while(0);
+#define ds_sure(x,sz) do { if ((x).p+sz >= (x).s) (x).d = \
+	realloc((x).d,(x).s += ((x).s*1.5<sz?sz:(x).s*1.5)+32);} while(0);
 #define ds_poke(x,c) do { ds_redim((x)); (x).d[(x).p++] = c; } while(0)
 //#define ds_pokes(x,t) do { const char * p = t; while (*p) ds_poke((x), *p++); } while(0)
 #define ds_pokes(x,t) do {\
