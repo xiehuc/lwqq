@@ -30,6 +30,8 @@ A brief install guide::
    cmake ..
    make 
    sudo make install
+   make python  # create python egg install package
+   easy_install python/dist/*.egg # install python bindings (optional)
 
 You can fin more details concerning the build process in the wiki__
 

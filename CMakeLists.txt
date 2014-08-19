@@ -3,8 +3,8 @@
 project(liblwqq)
 cmake_minimum_required(VERSION 2.8)
 set(VERSION_MAJOR "0")
-set(VERSION_MINOR "3")
-set(VERSION_PATCH "1")
+set(VERSION_MINOR "4")
+set(VERSION_PATCH "0")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
@@ -34,7 +34,6 @@ if(CYGWIN)
 	pkg_check_modules(CURL REQUIRED libcurl)
 	pkg_check_modules(SQLITE REQUIRED sqlite3)
 	pkg_check_modules(ZLIB REQUIRED zlib)
-	pkg_check_modules(MOZJS mozjs-17.0)
 	pkg_check_modules(MOZJS mozjs-17.0)
 	set(MOZJS_17 ${MOZJS_FOUND} CACHE BOOL "use mozjs-17.0 version")
 	if(NOT MOZJS_FOUND)
