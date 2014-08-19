@@ -1,3 +1,14 @@
+version 0.4.0: (2014-08-19)
+	-  移除HTTP_ALL_TIMEOUT, LWQQ_CALLBACK_*, LWQQ_OP_*
+	*  lwqq_logout增加wait_time选项
+	*  使用ev的idle watcher来停止loop
+	+  增加lwqq_http_is_synced函数
+	+  退出时增加LwqqCleanUp控制是否执行回调
+	*  发送消息改用动态字符串, 支持更长信息的发送
+	*  简化 lwqq_auto_hash 的逻辑
+	+  增加安装python绑定的支持
+	+  lwqq-cli.py --make-cache 手动建立缓存
+
 version 0.3.1: (2014-06-14)
 	*  更新xcode配置，不再依赖mozjs
 	*  更改add evset 时refcount==0时候的行为  
