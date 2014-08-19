@@ -1018,6 +1018,8 @@ void lwqq_http_global_free(LwqqCleanUp cleanup)
 		global.conn_length = 0;
 	}
 }
+
+LWQQ_EXPORT
 void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 {
 	if(lc && global.multi){

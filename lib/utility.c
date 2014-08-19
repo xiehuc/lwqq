@@ -241,6 +241,7 @@ char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused)
 	return s_strdup(e2);
 }
 
+LWQQ_EXPORT
 void ds_cat_(struct ds* str,...)
 {
 	va_list args;
