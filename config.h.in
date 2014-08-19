@@ -9,6 +9,8 @@
 #cmakedefine MOZJS_185
 #cmakedefine MOZJS_17
 
+#cmakedefine HAVE_STRTOK_R
+
 #define LWQQ_VERSION "@VERSION@"
 
 //use a single thread to poll message

@@ -1,3 +1,5 @@
+#define NO_OLDNAMES
+//to get pass some problem about mkdir and macros
 #include "async_impl.h"
 #include "smemory.h"
 #include <uv.h>

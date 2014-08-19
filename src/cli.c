@@ -51,8 +51,10 @@ static CmdInfo cmdtab[] = {
     {"send", "s", send_f},
     {NULL, NULL, NULL},
 };
-#ifdef WIN32
-char *strtok_r(char *str, const char *delim, char **save)
+
+
+#ifndef HAVE_STRTOK_R
+char *strtok_r(char *str, const char * delim, char ** save)
 {
     char *res, *last;
 
@@ -71,6 +73,9 @@ char *strtok_r(char *str, const char *delim, char **save)
     }
     return res;
 }
+#endif
+
+#ifdef WIN32
 const char* iconv(unsigned int from,unsigned int to,const char* str,size_t sz)
 {
 	static char buf[2048];
