@@ -638,7 +638,6 @@ static void login_stage_2(LwqqClient* lc,LwqqErrorCode* err)
 
 static void login_stage_3(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 {
-	if(ev->result != LWQQ_EC_OK) return;
 	int err = ev->result;
 	if(ec) *ec=err;
 	LwqqClient* lc = ev->lc;
@@ -687,7 +686,6 @@ static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec)
 }
 static void login_stage_5(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 {
-	if(ev->result != LWQQ_EC_OK) return;
 	int err = ev->result;
 	if(ec)(*ec=err);
 	LwqqClient* lc = ev->lc;
@@ -705,7 +703,6 @@ static void login_stage_5(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 }
 static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
 {
-	if(ev->result != LWQQ_EC_OK) return;
 	int err = ev->result;
 	if(ec)(*ec=err);
 	LwqqClient* lc = ev->lc;
@@ -716,7 +713,6 @@ static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
 }
 static void login_stage_f(LwqqAsyncEvent* ev,LwqqErrorCode* ec)
 {
-	if(ev->result != LWQQ_EC_OK) return;
 	int err = ev->result;
 	if(ec)(*ec=err);
 	LwqqClient* lc = ev->lc;
