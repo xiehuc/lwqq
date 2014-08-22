@@ -708,6 +708,13 @@ static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
 	LwqqClient* lc = ev->lc;
 	if(!lwqq_client_valid(lc)) return;
 
+	if(err != LWQQ_EC_OK){
+		lc->stat = LWQQ_STATUS_LOGOUT;
+		lc->args->login_ec = err;
+		vp_do_repeat(lc->events->login_complete, NULL);
+		return;
+	}
+
 	LwqqAsyncEvent* event = check_sig(lc);
 	lwqq_async_add_event_listener(event, _C_(2p, login_stage_f, event, ec));
 }
