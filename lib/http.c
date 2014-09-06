@@ -45,10 +45,10 @@ typedef struct GLOBAL {
 	int conn_length;//< make sure there are only cache_size http request
 	//running
 	int cache_size;
-	LIST_HEAD(,D_ITEM) conn_link;
+	TAILQ_HEAD(,D_ITEM) conn_link;
 	LwqqAsyncTimerHandle timer_event;
 	LwqqAsyncIoHandle add_listener;
-	LIST_HEAD(,D_ITEM) add_link;
+	TAILQ_HEAD(,D_ITEM) add_link;
 #ifdef WITH_LIBEV
 	int pipe_fd[2];
 #endif
@@ -110,7 +110,7 @@ typedef struct D_ITEM{
 	LwqqHttpRequest* req;
 	LwqqAsyncEvent* event;
 	//void* data;
-	LIST_ENTRY(D_ITEM) entries;
+	TAILQ_ENTRY(D_ITEM) entries;
 }D_ITEM;
 /* For async request */
 
@@ -121,7 +121,7 @@ int lwqq_gdb_whats_running()
 	D_ITEM* item;
 	char* url;
 	int num = 0;
-	LIST_FOREACH(item,&global.conn_link,entries){
+	TAILQ_FOREACH(item,&global.conn_link,entries){
 		curl_easy_getinfo(item->req->req,CURLINFO_EFFECTIVE_URL,&url);
 		lwqq_puts(url);
 		num++;
@@ -660,8 +660,8 @@ static void check_multi_info(GLOBAL *g)
 					//re add it to libcurl
 					curl_multi_remove_handle(g->multi, easy);
 					http_clean(req);
-					LIST_REMOVE(conn, entries);
-					LIST_INSERT_HEAD(&global.add_link, conn, entries);
+					TAILQ_REMOVE(&global.conn_link, conn, entries);
+					TAILQ_INSERT_TAIL(&global.add_link, conn, entries);
 					global.conn_length --;
 					lwqq_log(LOG_WARNING,"retry left:%d\n", ((LwqqHttpRequest_*)req)->retry_);
 					continue;
@@ -670,7 +670,7 @@ static void check_multi_info(GLOBAL *g)
 			}
 
 			curl_multi_remove_handle(g->multi, easy);
-			LIST_REMOVE(conn,entries);
+			TAILQ_REMOVE(&global.conn_link, conn, entries);
 
 			global.conn_length --;
 
@@ -780,10 +780,10 @@ static int sock_cb(CURL* e,curl_socket_t s,int what,void* cbp,void* sockp)
 static void check_handle_and_add_to_conn_link()
 {
 	D_ITEM* di,*tvar;
-	LIST_FOREACH_SAFE(di,&global.add_link,entries,tvar){
+	TAILQ_FOREACH_SAFE(di, &global.add_link, entries, tvar){
 		if(global.conn_length >= global.cache_size) break;
-		LIST_REMOVE(di,entries);
-		LIST_INSERT_HEAD(&global.conn_link,di,entries);
+		TAILQ_REMOVE(&global.add_link, di, entries);
+		TAILQ_INSERT_TAIL(&global.conn_link,di,entries);
 		CURLMcode rc = curl_multi_add_handle(global.multi,di->req->req);
 		global.conn_length ++;
 
@@ -857,7 +857,7 @@ static LwqqAsyncEvent* lwqq_http_do_request_async(LwqqHttpRequest *request, int 
 	di->req = request;
 	di->event = lwqq_async_event_new(request);
 	pthread_mutex_lock(&add_lock);
-	LIST_INSERT_HEAD(&global.add_link,di,entries);
+	TAILQ_INSERT_TAIL(&global.add_link,di,entries);
 	pthread_mutex_unlock(&add_lock);
 	delay_add_handle();
 	return di->event;
@@ -957,6 +957,8 @@ void lwqq_http_global_init()
 		curl_multi_setopt(global.multi, CURLMOPT_TIMERDATA, &global);
 		global.cache_size = 100;
 		global.conn_length = 0;
+		TAILQ_INIT(&global.conn_link);
+		TAILQ_INIT(&global.add_link);
 
 
 #ifndef WITHOUT_ASYNC
@@ -974,7 +976,7 @@ static void safe_remove_link(LwqqClient* lc)
 {
 	D_ITEM * item,* tvar;
 	CURL* easy;
-	LIST_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
+	TAILQ_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
 		if(lc && (item->req->lc != lc) ) continue;
 		easy = item->req->req;
 		curl_easy_pause(easy, CURLPAUSE_ALL);
@@ -987,7 +989,7 @@ static void safe_remove_link(LwqqClient* lc)
 void lwqq_http_global_free(LwqqCleanUp cleanup)
 {
 	if(global.multi){
-		if(!LIST_EMPTY(&global.conn_link)){
+		if(!TAILQ_EMPTY(&global.conn_link)){
 			lwqq_async_dispatch(_C_(p,safe_remove_link,NULL));
 			pthread_mutex_lock(&async_lock);
 			pthread_cond_wait(&async_cond,&async_lock);
@@ -995,8 +997,8 @@ void lwqq_http_global_free(LwqqCleanUp cleanup)
 		}
 
 		D_ITEM * item,* tvar;
-		LIST_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
-			LIST_REMOVE(item,entries);
+		TAILQ_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
+			TAILQ_REMOVE(&global.conn_link, item,entries);
 			//let callback delete data
 			item->req->err = item->event->result = LWQQ_EC_CANCELED;
 			vp_do(item->cmd,NULL);
@@ -1027,7 +1029,7 @@ void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 		/**must dispatch safe_remove_link first
 		 * then vp_do(item->cmd) because vp_do might release memory
 		 */
-		if(!LIST_EMPTY(&global.conn_link)){
+		if(!TAILQ_EMPTY(&global.conn_link)){
 			lwqq_async_dispatch(_C_(p,safe_remove_link,lc));
 			pthread_mutex_lock(&async_lock);
 			//must use cond wait because timedcond might not trigger dispatch
@@ -1036,9 +1038,9 @@ void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 		}
 
 		D_ITEM * item,* tvar;
-		LIST_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
+		TAILQ_FOREACH_SAFE(item,&global.conn_link,entries,tvar){
 			if(item->req->lc != lc) continue;
-			LIST_REMOVE(item,entries);
+			TAILQ_REMOVE(&global.conn_link, item,entries);
 			item->req->err = item->event->result = LWQQ_EC_CANCELED;
 			//let callback delete data
 			vp_do(item->cmd,NULL);
