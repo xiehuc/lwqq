@@ -159,7 +159,7 @@ static void http_clean(LwqqHttpRequest* req)
 	req->http_code = 0;
 	curl_slist_free_all(req->recv_head);
 	req->recv_head = NULL;
-	req_->bits = 0;
+	req_->bits &= ~(HTTP_UNEXPECTED_RECV|HTTP_FORCE_CANCEL);
 }
 static void http_reset(LwqqHttpRequest* req)
 	//clean and reset between two call do_request_*
@@ -653,16 +653,15 @@ static void check_multi_info(GLOBAL *g)
 			conn=(D_ITEM*)pridat;
 			req = conn->req;
 			ev = conn->event;
-			if(ret != 0){
-				lwqq_log(LOG_WARNING,"async retcode:%d\n",ret);
-			}
 			if(ret != CURLE_OK){
+				lwqq_log(LOG_WARNING,"async retcode:%d %s\n",ret, curl_easy_strerror(ret));
 				LwqqErrorCode ec;
 				if(set_error_code(req, ret, &ec)){
 					//re add it to libcurl
 					curl_multi_remove_handle(g->multi, easy);
 					http_clean(req);
 					curl_multi_add_handle(g->multi, easy);
+					lwqq_log(LOG_WARNING,"retry left:%d\n", ((LwqqHttpRequest_*)req)->retry_);
 					continue;
 				}
 				ev->result = ec;

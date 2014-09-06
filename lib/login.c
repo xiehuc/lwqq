@@ -509,9 +509,9 @@ static LwqqAsyncEvent* set_online_status(LwqqClient *lc,const char *status)
 
 	snprintf(msg, sizeof(msg), "r={\"status\":\"%s\",\"ptwebqq\":\"%s\","
 			"\"passwd_sig\":""\"\",\"clientid\":\"%s\""
-			", \"psessionid\":null}"
+			", \"psessionid\":null}&clientid=%s&psessionid=null"
 			,status, ptwebqq
-			,lc->clientid);
+			,lc->clientid, lc->clientid);
 	urlencode(msg, 2);
 	s_free(ptwebqq);
 

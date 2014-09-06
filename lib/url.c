@@ -43,10 +43,22 @@ char *url_encode(char *str)
 
 	char *pstr = str, *buf = malloc(strlen(str) * 3 + 1), *pbuf = buf;
 	while (*pstr) {
-		if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' ) 
+		if(isalnum(*pstr)) 
 			*pbuf++ = *pstr;
-		else 
-			*pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
+		else
+			switch(*pstr){
+				case '-':
+				case '_':
+				case '.':
+				case '~':
+				case '&':
+				case '=':
+					*pbuf++ = *pstr;
+					break;
+				default:
+					*pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
+
+			}
 		pstr++;
 	}
 	*pbuf = '\0';
