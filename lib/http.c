@@ -660,7 +660,9 @@ static void check_multi_info(GLOBAL *g)
 					//re add it to libcurl
 					curl_multi_remove_handle(g->multi, easy);
 					http_clean(req);
-					curl_multi_add_handle(g->multi, easy);
+					LIST_REMOVE(conn, entries);
+					LIST_INSERT_HEAD(&global.add_link, conn, entries);
+					global.conn_length --;
 					lwqq_log(LOG_WARNING,"retry left:%d\n", ((LwqqHttpRequest_*)req)->retry_);
 					continue;
 				}
@@ -671,7 +673,6 @@ static void check_multi_info(GLOBAL *g)
 			LIST_REMOVE(conn,entries);
 
 			global.conn_length --;
-			delay_add_handle();
 
 			LwqqClient* lc = conn->req->lc;
 
@@ -680,6 +681,7 @@ static void check_multi_info(GLOBAL *g)
 				lwqq_client_dispatch(lc,_C_(p,async_complete,conn));
 		}
 	}
+	delay_add_handle();
 }
 static void timer_cb(LwqqAsyncTimerHandle timer,void* data)
 {
