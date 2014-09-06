@@ -161,6 +161,7 @@ int lwqq__process_simple_response(LwqqHttpRequest* req)
 	if(retcode != LWQQ_EC_OK){
 		err = retcode;
 	}
+	lwqq_verbose(3, "%s", req->response);
 done:
 	lwqq__log_if_error(err, req);
 	lwqq__clean_json_and_req(root,req);
