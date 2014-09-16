@@ -480,7 +480,7 @@ static char *generate_clientid()
 		return NULL;
 	}
 	t = tv.tv_usec % 1000000;
-	snprintf(buf, sizeof(buf), "%d%ld", r, t);
+	snprintf(buf, sizeof(buf), "%2d%6ld", r, t);
 	return s_strdup(buf);
 }
 
@@ -519,9 +519,9 @@ static LwqqAsyncEvent* set_online_status(LwqqClient *lc,const char *status)
 	char url[512] ={0};
 	snprintf(url,sizeof(url),"%s/channel/login2",WEBQQ_D_HOST);
 	req = lwqq_http_create_default_request(lc,url, NULL);
+	LWQQ_DEBUG(lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L));
 
 	/* Set header needed by server */
-	//req->set_header(req, "Cookie2", "$Version=1");
 	req->set_header(req, "Referer", WEBQQ_D_REF_URL);
 	req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
 	return  req->do_request_async(req, lwqq__has_post(),_C_(p_i,set_online_status_back,req));

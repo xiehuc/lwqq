@@ -24,8 +24,8 @@
 #include "utility.h"
 #include "internal.h"
 
-#define LWQQ_HTTP_USER_AGENT "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0"
-//#define LWQQ_HTTP_USER_AGENT "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
+//#define LWQQ_HTTP_USER_AGENT "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0"
+#define LWQQ_HTTP_USER_AGENT "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
 
 static int lwqq_http_do_request(LwqqHttpRequest *request, int method, char *body);
 static void lwqq_http_set_header(LwqqHttpRequest *request, const char *name,
@@ -701,8 +701,6 @@ static void timer_cb(LwqqAsyncTimerHandle timer,void* data)
 }
 static int multi_timer_cb(CURLM *multi, long timeout_ms, void *userp)
 {
-	//lwqq_log(LOG_NOTICE,"multi_timer,timeout:%ld\n",timeout_ms);
-	lwqq_verbose(5,"multi_timer,timeout:%ld\n",timeout_ms);
 	//this function call only when timeout clock '''changed'''.
 	//called by curl
 	GLOBAL* g = userp;
