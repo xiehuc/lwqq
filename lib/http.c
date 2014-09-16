@@ -422,6 +422,7 @@ LwqqHttpRequest *lwqq_http_request_new(const char *uri)
 	curl_easy_setopt(request->req,CURLOPT_LOW_SPEED_LIMIT,8*5);
 	curl_easy_setopt(request->req,CURLOPT_LOW_SPEED_TIME,req_->timeout);
 	curl_easy_setopt(request->req,CURLOPT_SSL_VERIFYPEER,0);
+	curl_easy_setopt(request->req,CURLOPT_SSL_VERIFYHOST,0);
 	curl_easy_setopt(request->req,CURLOPT_DEBUGFUNCTION,curl_debug_redirect);
 	request->do_request = lwqq_http_do_request;
 	request->do_request_async = lwqq_http_do_request_async;

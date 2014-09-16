@@ -2125,12 +2125,10 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 	char* post = ds_c_str(body);
 	snprintf(url, sizeof(url), "%s/channel/%s",WEBQQ_D_HOST, apistr);
 	req = lwqq_http_create_default_request(lc,url, NULL);
-	if (!req) {
-		goto failed;
-	}
 	req->set_header(req, "Referer", WEBQQ_D_REF_URL);
-	req->set_header(req, "Content-Transfer-Encoding", "binary");
-	req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
+	//req->set_header(req, "Content-Transfer-Encoding", "binary");
+	//req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
+	LWQQ_DEBUG(lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L));
 
 	if(!list_->running){
 		//message list stoped accidently
