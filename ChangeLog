@@ -1,3 +1,7 @@
+version 0.4.1: (2014-12-02)
+	*  修正好友图片接收问题
+	*  修正cookie问题, 应该对发送消息有帮助
+
 version 0.4.0: (2014-08-19)
 	-  移除HTTP_ALL_TIMEOUT, LWQQ_CALLBACK_*, LWQQ_OP_*
 	*  lwqq_logout增加wait_time选项
