@@ -69,6 +69,7 @@ struct trunk_entry{
 typedef struct LwqqHttpRequest_
 {
 	LwqqHttpRequest parent;
+	char* cookie;							  // cookie used in current request
 	HttpBits bits;                     // store http internal status
 	short retry_;
 	short timeout;                     // timeout orginal
@@ -267,7 +268,7 @@ char *lwqq_http_get_cookie(LwqqHttpHandle* h, const char *name)
 	}
 	return NULL;
 }
-void lwqq_http_set_cookie(LwqqHttpRequest* req,const char* name,const char* val)
+void lwqq_http_set_cookie(LwqqHttpRequest* req,const char* name,const char* val, int store)
 {
 	if (!name) {
 		lwqq_log(LOG_ERROR, "Invalid parameter\n");
@@ -275,9 +276,19 @@ void lwqq_http_set_cookie(LwqqHttpRequest* req,const char* name,const char* val)
 	}
 	if(!val) val="";
 	char buf[1024];
-	snprintf(buf,sizeof(buf),"%s=%s",name,val);
+	CURLcode ret = 0;
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
 
-	curl_easy_setopt(req->req, CURLOPT_COOKIE,buf);
+	if(store){
+		snprintf(buf,sizeof(buf),"Set-Cookie: %s=%s;",name,val);
+		ret = curl_easy_setopt(req->req, CURLOPT_COOKIELIST, buf);
+	}else{
+		snprintf(buf,sizeof(buf),"%s %s=%s;",req_->cookie?:"", name,val);
+		lwqq_override(req_->cookie, strdup(buf));
+		ret = curl_easy_setopt(req->req, CURLOPT_COOKIE, req_->cookie);
+	}
+	if(ret != CURLE_OK)
+		lwqq_log(LOG_WARNING, "unable set cookie:%s", curl_easy_strerror(ret));
 }
 /** 
  * Free Http Request
@@ -289,6 +300,7 @@ int lwqq_http_request_free(LwqqHttpRequest *request)
 {
 	if (!request)
 		return 0;
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) request;
 
 	if (request) {
 		composite_trunks(request);
@@ -300,6 +312,7 @@ int lwqq_http_request_free(LwqqHttpRequest *request)
 		if(request->req){
 			curl_easy_cleanup(request->req);
 		}
+		s_free(req_->cookie);
 		s_free(request);
 	}
 	return 0;

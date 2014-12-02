@@ -62,6 +62,12 @@ const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type)
 	return NULL;
 }
 
+size_t lwqq_util_rand(size_t seed, size_t e)
+{
+	srand(seed);
+	return (rand()/9+e/10)%e;
+}
+
 LWQQ_EXPORT
 char* lwqq_util_hashN(const char* uin,const char* ptwebqq,void* unused)
 {

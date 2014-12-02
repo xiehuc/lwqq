@@ -1216,13 +1216,14 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 	LwqqErrorCode error;
 	LwqqErrorCode *err = &error;
 	char url[512];
+	char cookie[14];
 	char *file_path = url_encode(c->data.img.file_path);
 #ifdef OFFPIC_USE_WQQ
 	const char* d_host = WQQ_D_HOST;
-	const char* refurl = "http://"WQQ_HOST;
+	const char* refurl = WQQ_HOST"/";
 #else
 	const char* d_host = WEBQQ_D_HOST;
-	const char* refurl = "http://"WEBQQ_HOST;
+	const char* refurl = WEBQQ_HOST"/";
 #endif
 	snprintf(url, sizeof(url),
 			"%s/channel/get_offpic2?file_path=%s&f_uin=%s&clientid=%s&psessionid=%s",
@@ -1234,6 +1235,10 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 		goto done;
 	}
 	req->set_header(req, "Referer", refurl);
+	lwqq_http_set_cookie(req, "ts_last", "w.qq.com/", 0);
+	lwqq_http_set_cookie(req, "ts_refer", "web2.qq.com/", 0);
+	snprintf(cookie, sizeof(cookie), "%lu", lwqq_util_rand(time(0),1E10));
+	lwqq_http_set_cookie(req, "ts_uid", cookie, 0);
 
 	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
 
@@ -1594,7 +1599,7 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 		case LWQQ_EC_PTWEBQQ:
 			//just need do some things when relogin
 			//lwqq_set_cookie(lc->cookies, "ptwebqq", lc->new_ptwebqq);
-			lwqq_http_set_cookie(req, "ptwebqq", lc->new_ptwebqq);
+			lwqq_http_set_cookie(req, "ptwebqq", lc->new_ptwebqq, 1);
 			break;
 		case LWQQ_EC_NOT_JSON_FORMAT:
 			lwqq_client_dispatch(lc,_C_(p,dispatch_poll_lost,lc));

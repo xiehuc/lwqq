@@ -36,6 +36,7 @@ char* lwqq_util_hashN(const char* uin,const char* ptwebqq,void*);
 char* lwqq_util_hashO(const char* uin,const char* ptwebqq,void*);
 char* lwqq_util_hashP(const char* uin,const char* ptwebqq,void*);
 char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused);
+size_t lwqq_util_rand(size_t seed, size_t e);
 
 #define lwqq_group_pretty_name(g) (g->markname?:g->name)
 #define lwqq_buddy_pretty_name(b) (b->markname?:b->nick)

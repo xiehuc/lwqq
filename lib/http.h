@@ -22,7 +22,8 @@
 	"https://d.web2.qq.com/cfproxy.html?v=20110331002&callback=1":\
 "http://d.web2.qq.com/proxy.html?v=20110331002&callback=1"
 #define WEBQQ_D_HOST        __H("d.web2.qq.com")
-#define WQQ_D_HOST          __H("w.qq.com/d")
+// at now, only get_offpic2 use WQQ_D_HOST
+#define WQQ_D_HOST          "http://w.qq.com/d"
 
 typedef enum {
 	LWQQ_FORM_FILE,// use add_file_content instead
@@ -172,7 +173,11 @@ const char* lwqq_http_get_url(LwqqHttpRequest* req);
 int lwqq_http_is_synced(LwqqHttpRequest* req);
 
 char *lwqq_http_get_cookie(LwqqHttpHandle* h, const char *name);
-void  lwqq_http_set_cookie(LwqqHttpRequest *request, const char *name,const char* val);
+/** add a cookie with name=val to request,
+ * if @store, this would store in cache,
+ * if not, this would only affect single request
+ */
+void lwqq_http_set_cookie(LwqqHttpRequest *request, const char *name,const char* val, int store);
 /** 
  * force stop a request 
  * require set LWQQ_HTTP_CANCELABLE option first

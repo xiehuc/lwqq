@@ -552,25 +552,22 @@ done:
 	return err;
 }
 
-#include <curl/curl.h>
-
 static LwqqAsyncEvent* check_sig(LwqqClient* lc)
 {
 	char url[512] = {0};
 	char cookie[80] = {0};
-	unsigned pgv_info;
-	unsigned pgv_pvid;
 	snprintf(url, sizeof(url), "http://ptlogin4.web2.qq.com/check_sig?"
 			"pttype=1&uin=%s&service=login&nodirect=1",lc->myself->uin);
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, 0);
 	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L);
 	lwqq_http_set_option(req, LWQQ_HTTP_MAXREDIRS, 0L);
-	srand(time(0));
-	pgv_info = rand()%(unsigned)1E11;
-	srand(~time(0));
-	pgv_pvid = rand()%(unsigned)1E11;
-	snprintf(cookie, sizeof(cookie), "pgv_info=ssid=s%u; pgv_pvid=%u;", pgv_info, pgv_pvid);
-	curl_easy_setopt(req->req, CURLOPT_COOKIE, cookie);
+	snprintf(cookie, sizeof(cookie), "ssid=s%lu", lwqq_util_rand(time(0),1E10));
+	lwqq_http_set_cookie(req, "pgv_info", cookie, 1);
+	snprintf(cookie, sizeof(cookie), "%lu", lwqq_util_rand(~time(0),1E10));
+	lwqq_http_set_cookie(req, "pgv_pvid", cookie, 1);
+	snprintf(cookie, sizeof(cookie), "o%s", lc->myself->uin);
+	lwqq_http_set_cookie(req, "uin", cookie, 1);
+	lwqq_http_set_cookie(req, "p_uin", cookie, 1);
 
 	return req->do_request_async(req, lwqq__hasnot_post(), _C_(p, lwqq__process_empty, req));
 }
@@ -867,7 +864,7 @@ LwqqAsyncEvent* lwqq_relink(LwqqClient* lc)
 	snprintf(post, sizeof(post), "r={\"status\":\"%s\",\"ptwebqq\":\"%s\",\"passwd_sig\":\"\",\"clientid\":\"%s\",\"psessionid\":\"%s\"}",lwqq_status_to_str(lc->stat),lc->new_ptwebqq,lc->clientid,lc->psessionid);
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
 	req->set_header(req,"Referer",WEBQQ_D_REF_URL);
-	lwqq_http_set_cookie(req, "ptwebqq", lc->new_ptwebqq);
+	lwqq_http_set_cookie(req, "ptwebqq", lc->new_ptwebqq, 1);
 	req->retry = 0;
 	return req->do_request_async(req,lwqq__has_post(),_C_(p_i,process_login2,req));
 }
