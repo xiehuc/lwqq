@@ -243,30 +243,29 @@ static const char *lwqq_http_get_header(LwqqHttpRequest *request, const char *na
 	return h;
 }
 
-char *lwqq_http_get_cookie(LwqqHttpHandle* h, const char *name)
+char *lwqq_http_get_cookie(LwqqHttpRequest* req, const char *name)
 {
 	if (!name) {
 		lwqq_log(LOG_ERROR, "Invalid parameter\n");
 		return NULL; 
 	}
-	LwqqHttpHandle_* h_ = (LwqqHttpHandle_*)h;
-	struct curl_slist* list ;
-	CURL* easy = curl_easy_init();
-	curl_easy_setopt(easy, CURLOPT_SHARE,h_->share);
-	curl_easy_getinfo(easy, CURLINFO_COOKIELIST,&list);
-	curl_easy_cleanup(easy);
-	char* n,*v;
+	struct curl_slist* list ,*cookie;
+	curl_easy_getinfo(req->req, CURLINFO_COOKIELIST,&cookie);
+	list = cookie;
+	char* n,*v = NULL;
 	while(list!=NULL){
 		v = strrchr(list->data,'\t')+1;
 		n = v-2;
 		while(n--,*n!='\t');
 		n++;
 		if(v-n-1 == strlen(name) && strncmp(name,n,v-n-1)==0){
-			return s_strdup(v);
+			break;
 		}
 		list = list->next;
 	}
-	return NULL;
+	char* res = s_strdup(v);
+	curl_slist_free_all(cookie);
+	return res;
 }
 void lwqq_http_set_cookie(LwqqHttpRequest* req,const char* name,const char* val, int store)
 {

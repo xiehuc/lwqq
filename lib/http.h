@@ -171,8 +171,12 @@ void lwqq_http_set_option(LwqqHttpRequest* req,LwqqHttpOption opt,...);
 void lwqq_http_on_progress(LwqqHttpRequest* req,LWQQ_PROGRESS progress,void* prog_data);
 const char* lwqq_http_get_url(LwqqHttpRequest* req);
 int lwqq_http_is_synced(LwqqHttpRequest* req);
-
-char *lwqq_http_get_cookie(LwqqHttpHandle* h, const char *name);
+/** get cookie which key==name, 
+ *  req's url affect cookie list, 
+ *  if a cookie registerd with domain 'web2.qq.com' 
+ *  then a req with url='pp.com' couldn't get this cookie
+ */
+char *lwqq_http_get_cookie(LwqqHttpRequest* req, const char *name);
 /** add a cookie with name=val to request,
  * if @store, this would store in cache,
  * if not, this would only affect single request

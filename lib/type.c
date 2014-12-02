@@ -213,6 +213,7 @@ void lwqq_client_free(LwqqClient *client)
 	s_free(client->psessionid);
 	s_free(client->new_ptwebqq);
 	s_free(client->login_sig);
+	s_free(client->session.ptwebqq);
 	lwqq_buddy_free(client->myself);
 
 	//remove all extensions

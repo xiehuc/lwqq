@@ -1216,7 +1216,6 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 	LwqqErrorCode error;
 	LwqqErrorCode *err = &error;
 	char url[512];
-	char cookie[14];
 	char *file_path = url_encode(c->data.img.file_path);
 #ifdef OFFPIC_USE_WQQ
 	const char* d_host = WQQ_D_HOST;
@@ -1235,10 +1234,6 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 		goto done;
 	}
 	req->set_header(req, "Referer", refurl);
-	lwqq_http_set_cookie(req, "ts_last", "w.qq.com/", 0);
-	lwqq_http_set_cookie(req, "ts_refer", "web2.qq.com/", 0);
-	snprintf(cookie, sizeof(cookie), "%lu", lwqq_util_rand(time(0),1E10));
-	lwqq_http_set_cookie(req, "ts_uid", cookie, 0);
 
 	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
 
@@ -1833,7 +1828,7 @@ static LwqqAsyncEvent* lwqq_msg_upload_offline_pic(
 	req->add_form(req,LWQQ_FORM_CONTENT,"locallangid","2052");
 	req->add_form(req,LWQQ_FORM_CONTENT,"clientversion","1409");
 	req->add_form(req,LWQQ_FORM_CONTENT,"uin",lc->username);///<this may error
-	char* skey = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "skey");
+	char* skey = lwqq_http_get_cookie(req, "skey");
 	req->add_form(req,LWQQ_FORM_CONTENT,"skey",skey);
 	s_free(skey);
 	req->add_form(req,LWQQ_FORM_CONTENT,"appid","1002101");
@@ -2327,7 +2322,7 @@ LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_upload_offline_file(LwqqClient* lc,LwqqMsgOffFile* file,LwqqUploadFlag flags)
 {
 	char url[512];
-	snprintf(url,sizeof(url),"http://weboffline.ftn.qq.com/ftn_access/upload_offline_file?time=%ld",LTIME);
+	snprintf(url,sizeof(url),"http://weboffline.ftn.qq.com/ftn_access/upload_offline_file?time=%ld", LTIME);
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
 	req->set_header(req,"Referer","http://web2.qq.com/");
 	req->set_header(req,"Origin","http://web2.qq.com");
@@ -2344,7 +2339,7 @@ LwqqAsyncEvent* lwqq_msg_upload_offline_file(LwqqClient* lc,LwqqMsgOffFile* file
 	req->add_form(req,LWQQ_FORM_CONTENT,"locallangid","2052");
 	req->add_form(req,LWQQ_FORM_CONTENT,"clientversion","1409");
 	req->add_form(req,LWQQ_FORM_CONTENT,"uin",file->super.from);
-	char* skey = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "skey");
+	char* skey = lwqq_http_get_cookie(req, "skey");
 	req->add_form(req,LWQQ_FORM_CONTENT,"skey",skey);
 	s_free(skey);
 	req->add_form(req,LWQQ_FORM_CONTENT,"appid","1002101");

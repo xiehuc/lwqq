@@ -327,6 +327,9 @@ struct LwqqClient {
 	char *login_sig;
 	char *error_description;
 	char *new_ptwebqq;              /**< this only used when relogin */
+	struct {
+		char* ptwebqq;
+	}session;
 
 	LwqqBuddy *myself;          /**< Myself */
 	LwqqVerifyCode *vc;         /**< Verify Code */
