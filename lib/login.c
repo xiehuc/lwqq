@@ -542,9 +542,6 @@ static int set_online_status_back(LwqqHttpRequest* req)
 		lwqq_override(lc->vfwebqq,lwqq__json_get_value(result,"vfwebqq"));
 		lc->stat = lwqq_status_from_str(json_parse_simple_value(result, "status"));
 	}
-	//cookie 提权
-	lwqq_http_set_cookie(req, "p_skey", lwqq_http_get_cookie(req, "p_skey"), 1);
-	lwqq_http_set_cookie(req, "p_uin", lwqq_http_get_cookie(req, "p_uin"), 1);
 done:
 	lwqq__log_if_error(err, req);
 	lwqq__clean_json_and_req(root,req);

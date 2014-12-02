@@ -1234,8 +1234,12 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 		goto done;
 	}
 	req->set_header(req, "Referer", refurl);
+	LwqqHttpRequest* req_cookie = lwqq_http_create_default_request(lc, WEBQQ_HOST, 0);
+	lwqq_http_set_cookie(req, "p_skey", lwqq_http_get_cookie(req_cookie, "p_skey"), 0);
+	lwqq_http_set_cookie(req, "p_uin", lwqq_http_get_cookie(req_cookie, "p_uin"), 0);
+	lwqq_http_request_free(req_cookie);
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, LWQQ_VERBOSE_LEVEL>=4);
 
 	return req->do_request_async(req, lwqq__hasnot_post(),_C_(2p_i,set_content_picture_data,req,c));
 done:
