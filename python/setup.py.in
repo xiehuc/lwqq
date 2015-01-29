@@ -1,0 +1,19 @@
+from setuptools import setup
+
+
+setup( name="lwqq",
+       version="@VERSION@",
+       description="light weight webqq protocol python binding",
+       long_description="light weight webqq protocol python binding",
+       author="xiehuc",
+       author_email="xiehuc@gmail.com",
+       url="http://github.com/xiehuc/lwqq",
+       license="GPL",
+       keywords=("webqq", "lwqq"),
+       zip_safe=False,
+       
+       package_dir={'':'@PROJECT_SOURCE_DIR@/python'},
+       packages=['lwqq'],
+       scripts=['@PROJECT_SOURCE_DIR@/python/lwqq-cli.py']
+
+       )

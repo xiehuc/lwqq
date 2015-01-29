@@ -11,8 +11,6 @@ from .types import *
 from .queue import *
 from .msg import Message,GroupSystemMessage,RecvMsgList
 
-from .lwjs import *
-
 __all__ = [ 'Lwqq', 'Buddy', 'SimpleBuddy', 'Category', 'Group', 'Discu' ]
 
 HASHFUNC = CFUNCTYPE(c_voidp,c_char_p,c_char_p,c_voidp)
@@ -248,7 +246,7 @@ class Group(LwqqBase):
                 ('markname',c_char_p),
                 ('face',c_char_p),
                 ('memo',c_char_p),
-                ('class_type',c_char_p),
+                ('classes',c_char_p),
                 ('fingermemo',c_char_p),
                 ('createtime',c_ulong),
                 ('level',c_char_p),
@@ -295,7 +293,7 @@ class Group(LwqqBase):
     @property
     def memo(self): return self.ref[0].memo
     @property
-    def class_type(self): return self.ref[0].class_type
+    def classes(self): return self.ref[0].classes
     @property
     def fingermemo(self): return self.ref[0].fingermemo
     @property
@@ -476,16 +474,17 @@ class Lwqq(LwqqBase):
         for d in self.discus():
             if did and d.did == did: return d
     ###### http actions ######
-    def login(self,status): lib.lwqq_login(self.ref,status,0)
-    def logout(self): lib.lwqq_logout(self.ref,0)
+    def login(self, status): lib.lwqq_login(self.ref,status,0)
+    def logout(self, wait_time=5): 
+        lib.lwqq_logout(self.ref, wait_time)
     def relink(self): return Event(lib.lwqq_relink(self.ref))
 
     def get_onlines(self):
         return Event(lib.lwqq_info_get_online_buddies(self.ref,None))
-    def get_friends_info(self,hashfunc,data):
+    def get_friend_list(self,hashfunc=0, data=None):
         return Event(lib.lwqq_info_get_friends_info(self.ref,HASHFUNC(hashfunc),data))
-    def get_group_list(self):
-        return Event(lib.lwqq_info_get_group_name_list(self.ref,None))
+    def get_group_list(self,hashfunc=0, data=None):
+        return Event(lib.lwqq_info_get_group_name_list(self.ref,HASHFUNC(hashfunc),data))
     def get_discu_list(self):
         return Event(lib.lwqq_info_get_discu_name_list(self.ref))
     def get_stranger_info(self,serv_id,out):
@@ -511,9 +510,15 @@ class Lwqq(LwqqBase):
     def add_hash_entry(self, hashfunc, data):
         lib.lwqq_hash_add_entry(self.lc, hashfunc, data)
 
+    ###### properties ######
+
     @classmethod
     def time(cls):
         return lib.lwqq_time()
+
+    @classmethod
+    def version(cls):
+        return lib.lwqq_version()
 
     @classmethod
     def log_level(cls,level):
@@ -538,7 +543,7 @@ def register_library(lib):
 
     lib.lwqq_login.argtypes = [Lwqq.PT,Status,c_int]
 
-    lib.lwqq_logout.argtypes = [Lwqq.PT,c_int]
+    lib.lwqq_logout.argtypes = [Lwqq.PT,ctypes.c_uint]
 
     lib.lwqq_relink.argtypes = [Lwqq.PT]
     lib.lwqq_relink.restype = Event.PT
@@ -557,7 +562,7 @@ def register_library(lib):
     lib.lwqq_info_get_qqnumber.restype = Event.PT
     lib.lwqq_info_get_friend_detail_info.argtypes = [Lwqq.PT,Buddy.PT]
     lib.lwqq_info_get_friend_detail_info.restype = Event.PT
-    lib.lwqq_info_get_group_name_list.argtypes = [Lwqq.PT,c_void_p]
+    lib.lwqq_info_get_group_name_list.argtypes = [Lwqq.PT,HASHFUNC,c_void_p]
     lib.lwqq_info_get_group_name_list.restype = Event.PT
     lib.lwqq_info_get_discu_name_list.argtypes = [Lwqq.PT]
     lib.lwqq_info_get_discu_name_list.restype = Event.PT
@@ -606,7 +611,6 @@ def register_library(lib):
     lib.lwqq_hash_get_last.argtypes = [Lwqq.PT]
     lib.lwqq_hash_get_last.restype = POINTER(HashEntry)
 
-    
     #orginal in msg.py but has conflicts
     lib.lwqq_info_get_stranger_info_by_msg.argtypes = [Lwqq.PT,GroupSystemMessage.PT,Buddy.PT]
     lib.lwqq_info_get_stranger_info_by_msg.restype = Event.PT

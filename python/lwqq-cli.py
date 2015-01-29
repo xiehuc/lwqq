@@ -5,10 +5,11 @@ from __future__ import unicode_literals
 from lwqq.types import *
 from lwqq.vplist import *
 from lwqq.lwqq import *
+from lwqq.msg import *
 from lwqq.core import Event,Evset
 from lwqq import core
-from lwqq import lwjs
-from lwqq.msg import *
+from lwqq import lwqq
+from lwqq import lwdb
 from ctypes import c_voidp,cast,POINTER,c_int,byref,c_char_p,pointer,CFUNCTYPE,py_object
 from tornado.ioloop import IOLoop
 from os import read
@@ -20,6 +21,7 @@ import argparse
 
 loop = IOLoop.instance()
 lc = None 
+make_cache = False
 prompt_hint = '>>>'
 
 class ArgsParser(argparse.ArgumentParser):
@@ -36,11 +38,6 @@ def cstr(x):
 def prompt(hint='>>>'):
     print_(hint,end='')
     sys.stdout.flush()
-
-def start_login(p_login_ec):
-    login_ec = cast(p_login_ec,POINTER(c_int))[0]
-    print_("login_ec",login_ec)
-    print_("===start_login===")
 
 def need_verify(p_vf_image):
     vf = core.VerifyCode(cast(p_vf_image,POINTER(core.VerifyCode.PT))[0])
@@ -66,27 +63,36 @@ def message_lost():
     exit(0)
 
 def init_listener(lc):
-    lc.addListener(lc.events.start_login,Command.make('p',start_login,lc.args.login_ec))
     lc.addListener(lc.events.need_verify,Command.make('p',need_verify,lc.args.vf_image))
     lc.addListener(lc.events.login_complete,load_info)
     lc.addListener(lc.events.poll_msg,message_cb)
     lc.addListener(lc.events.poll_lost,message_lost)
 
 def load_info():
-    if not core.has_feature(Features.WITH_MOZJS):
-        lc.get_friends_info(None,None).addListener(load_group_info)
-    else:
-        js = lwjs.Lwjs()
-        hashjs = request.urlopen("http://pidginlwqq.sinaapp.com/hash.js")
-        js.load(hashjs.read())
-        lc.get_friends_info(js.hashfunc,js.js).addListener(load_group_info)
-    pass
+    lc.get_friend_list().addListener(load_group_info)
 
 def load_group_info():
     ev = Evset.new()
     lc.get_group_list().addto(ev)
     lc.get_discu_list().addto(ev)
     ev.addListener(poll_msg)
+
+def get_all_qqnumbers():
+    ev = Evset.new()
+    for b in lc.friends():
+        b.get_qqnumber().addto(ev)
+    for g in lc.groups():
+        g.get_qqnumber().addto(ev)
+    ev.addListener(cache_database)
+
+def cache_database():
+    db = lwdb.Lwdb(lc)
+    db.begin()
+    for b in lc.friends():
+        db.insert(b)
+    for g in lc.groups():
+        db.insert(g)
+    db.commit()
 
 def print_help():
     print_("""avaliable command:
@@ -97,6 +103,9 @@ def print_help():
     """)
 
 def poll_msg():
+    global make_cache
+    if make_cache:
+        get_all_qqnumbers()
     lc.msg_list.poll(0)
     print_help()
     prompt()
@@ -212,20 +221,42 @@ def main():
     lc.login(Status.ONLINE)
     pass
 
+def show_version():
+    print('version:',utf(lwqq.version))
+    feature = {
+            0:None,
+            Features.WITH_LIBEV: "libev",
+            Features.WITH_LIBUV: "libuv",
+            Features.WITH_MOZJS: "mozjs",
+            Features.WITH_SQLITE: "sqlite",
+            Features.WITH_SSL: "ssl"
+            }
+    print('feature:',tuple(filter(None,[feature[core.has_feature(x)] for x in feature.keys()])))
+    pass
+
 argp = argparse.ArgumentParser(description = 'command line tool to talk with qq friend')
-argp.add_argument('user',help='username')
-argp.add_argument('password',help='password')
-argp.add_argument('-v','--verbose',help='verbose level',type=int,nargs='?')
+arg1 = argp.add_argument_group()
+arg1.add_argument('user',help='username')
+arg1.add_argument('password',help='password')
+arg1.add_argument('-v',help='verbose level',action='count')
+arg2 = argp.add_argument_group()
+arg2.add_argument('--version', help='print version info', action='store_true')
+arg2.add_argument('--make-cache', help='update database cache', action='store_true')
 
 if __name__ == '__main__':
     args = argp.parse_args()
 
+    if args.version:
+        show_version()
+        exit(0)
+    make_cache = args.make_cache
     lc = Lwqq(cstr(args.user),cstr(args.password))
-    if args.verbose:
+    if hasattr(args,'verbose'):
         Lwqq.log_level(args.verbose)
     lc.setDispatcher(dispatch)
     init_listener(lc)
     loop.add_callback(main)
-    loop.add_handler(0,command,loop.READ)
+    loop.add_handler(0, command, loop.READ)
     loop.start()
+    del lc
 

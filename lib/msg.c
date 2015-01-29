@@ -1217,18 +1217,29 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 	LwqqErrorCode *err = &error;
 	char url[512];
 	char *file_path = url_encode(c->data.img.file_path);
-	//there are face 1 to face 10 server to accelerate speed.
+#ifdef OFFPIC_USE_WQQ
+	const char* d_host = WQQ_D_HOST;
+	const char* refurl = WQQ_HOST"/";
+#else
+	const char* d_host = WEBQQ_D_HOST;
+	const char* refurl = WEBQQ_HOST"/";
+#endif
 	snprintf(url, sizeof(url),
 			"%s/channel/get_offpic2?file_path=%s&f_uin=%s&clientid=%s&psessionid=%s",
-			WEBQQ_D_HOST,file_path,f_uin,lc->clientid,lc->psessionid);
+			d_host,
+			file_path,f_uin,lc->clientid,lc->psessionid);
 	s_free(file_path);
 	req = lwqq_http_create_default_request(lc,url, err);
 	if (!req) {
 		goto done;
 	}
-	req->set_header(req, "Referer", "http://web2.qq.com/");
+	req->set_header(req, "Referer", refurl);
+	LwqqHttpRequest* req_cookie = lwqq_http_create_default_request(lc, WEBQQ_HOST, 0);
+	lwqq_http_set_cookie(req, "p_skey", lwqq_http_get_cookie(req_cookie, "p_skey"), 0);
+	lwqq_http_set_cookie(req, "p_uin", lwqq_http_get_cookie(req_cookie, "p_uin"), 0);
+	lwqq_http_request_free(req_cookie);
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, LWQQ_VERBOSE_LEVEL>=4);
 
 	return req->do_request_async(req, lwqq__hasnot_post(),_C_(2p_i,set_content_picture_data,req,c));
 done:
@@ -1552,7 +1563,7 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 	LwqqClient* lc = req->lc;
 	LwqqRecvMsgList* list = lc->msg_list;
 	LwqqAsyncEvent* ev = NULL;
-	int ret = req->failcode;
+	LwqqErrorCode ret = req->err;
 	if(ret == LWQQ_EC_CANCELED) // cancel by user, so no need notify user
 		return LWQQ_EC_ERROR; 
 	if(!lwqq_client_logined(lc)) // client not valid, no way to notify user
@@ -1587,7 +1598,7 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 		case LWQQ_EC_PTWEBQQ:
 			//just need do some things when relogin
 			//lwqq_set_cookie(lc->cookies, "ptwebqq", lc->new_ptwebqq);
-			lwqq_http_set_cookie(req, "ptwebqq", lc->new_ptwebqq);
+			lwqq_http_set_cookie(req, "ptwebqq", lc->new_ptwebqq, 1);
 			break;
 		case LWQQ_EC_NOT_JSON_FORMAT:
 			lwqq_client_dispatch(lc,_C_(p,dispatch_poll_lost,lc));
@@ -1695,92 +1706,89 @@ void lwqq_msglist_close(LwqqRecvMsgList* list)
 }
 
 ///low level special char mapping
-static void parse_unescape(char* source,char *buf,int buf_len)
+static void parse_unescape(char* source,struct ds* dest)
 {
 	char* ptr = source;
+	struct ds write = *dest;
 	size_t idx;
 	while(*ptr!='\0'){
-		if(buf_len<=0) return;
 		idx = strcspn(ptr,"\r\n\t\\;&\"+%");
 		if(ptr[idx] == '\0'){
-			strncpy(buf,ptr,buf_len);
-			buf+=idx;
-			buf_len-=idx;
+			ds_cat(write, ptr);
 			break;
 		}
-		strncpy(buf,ptr,(idx<buf_len)?idx:buf_len);
-		buf+=idx;
-		buf_len-=idx;
-		if(buf_len<=0) return;
+		ds_pokes_n(write, ptr, idx);
 		switch(ptr[idx]){
 			//note buf point the end position
-			case '\n': strncpy(buf,"\\\\n",buf_len);break;
-			case '\r': strncpy(buf,"\\\\n",buf_len);break;
-			case '\t': strncpy(buf,"\\\\t",buf_len);break;
-			case '\\': strncpy(buf,"\\\\\\\\",buf_len);break;
+			case '\n': ds_cat(write,"\\\\n");break;
+			case '\r': ds_cat(write,"\\\\n");break;
+			case '\t': ds_cat(write,"\\\\t");break;
+			case '\\': ds_cat(write,"\\\\\\\\");break;
 						  //i dont know why ; is not worked.so we use another expression
-			case ';' : strncpy(buf,"\\u003B",buf_len);break;
-			case '&' : strncpy(buf,"\\u0026",buf_len);break;
-			case '"' : strncpy(buf,"\\\\\\\"",buf_len);break;
-			case '+' : strncpy(buf,"\\u002B",buf_len);break;
-			case '%' : strncpy(buf,"\\u0025",buf_len);break;
+			case ';' : ds_cat(write,"\\u003B");break;
+			case '&' : ds_cat(write,"\\u0026");break;
+			case '"' : ds_cat(write,"\\\\\\\"");break;
+			case '+' : ds_cat(write,"\\u002B");break;
+			case '%' : ds_cat(write,"\\u0025");break;
 		}
 		ptr+=idx+1;
-		idx=strlen(buf);
-		buf+=idx;
-		buf_len-=idx;
 	}
-	*buf = '\0';
+	*dest = write;
 }
 #define LEFT "\\\""
 #define RIGHT "\\\""
 #define KEY(key) "\\\""key"\\\""
 
-static char* content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_cface)
+static struct ds content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_cface)
 {
 	//not thread safe. 
 	//you need ensure only one thread send msg in one time.
-	static char buf[8192];
-	strcpy(buf,"\"[");
+	char buf[8192] = {0};
+	struct ds str = ds_initializer;
+	ds_sure(str, 8192);
+	ds_cat(str, "\"[");
 	LwqqMsgContent* c;
 	int notext = 1;
 
 	TAILQ_FOREACH(c,&msg->content,entries){
 		switch(c->type){
 			case LWQQ_CONTENT_FACE:
-				format_append(buf,"["KEY("face")",%d],",c->data.face);
+				snprintf(buf, sizeof(buf), "["KEY("face")",%d],",c->data.face);
+				ds_cat(str, buf);
 				break;
 			case LWQQ_CONTENT_OFFPIC:
-				format_append(buf,"["KEY("offpic")","KEY("%s")","KEY("%s")",%lu],",
+				snprintf(buf,sizeof(buf),"["KEY("offpic")","KEY("%s")","KEY("%s")",%lu],",
 						c->data.img.file_path,
 						c->data.img.name,
 						(unsigned long)c->data.img.size);
+				ds_cat(str, buf);
 				break;
 			case LWQQ_CONTENT_CFACE:
 				//[\"cface\",\"group\",\"0C3AED06704CA9381EDCC20B7F552802.jPg\"]
 				if(c->data.cface.name){
 					if(msg_type == LWQQ_MS_GROUP_MSG || msg_type == LWQQ_MS_DISCU_MSG)
-						format_append(buf,"["KEY("cface")","KEY("group")","KEY("%s")"],",
+						snprintf(buf,sizeof(buf),"["KEY("cface")","KEY("group")","KEY("%s")"],",
 								c->data.cface.name);
 					else if(msg_type == LWQQ_MS_BUDDY_MSG || msg_type == LWQQ_MS_SESS_MSG)
-						format_append(buf,"["KEY("cface")","KEY("%s")"],",
+						snprintf(buf,sizeof(buf),"["KEY("cface")","KEY("%s")"],",
 								c->data.cface.name);
 					*has_cface = 1;
+					ds_cat(str, buf);
 				}
 				break;
 			case LWQQ_CONTENT_STRING:
 				notext = 0;
-				strcat(buf,LEFT);
-				parse_unescape(c->data.str,buf+strlen(buf),sizeof(buf)-strlen(buf));
-				strcat(buf,RIGHT",");
+				ds_cat(str, LEFT);
+				parse_unescape(c->data.str,&str);
+				ds_cat(str, RIGHT",");
 				break;
 		}
 	}
 	//it looks like webqq server need at list one string
 	if(notext){
-		strcat(buf, LEFT"\\\\n"RIGHT",");
+		ds_cat(str, LEFT"\\\\n"RIGHT",");
 	}
-	snprintf(buf+strlen(buf),sizeof(buf)-strlen(buf),
+	snprintf(buf,sizeof(buf),
 			"["KEY("font")",{"
 			KEY("name")":"KEY("%s")","
 			KEY("size")":"KEY("%d")","
@@ -1792,7 +1800,8 @@ static char* content_parse_string(LwqqMsgMessage* msg,int msg_type,int *has_cfac
 			lwqq_bit_get(msg->f_style,LWQQ_FONT_ITALIC),
 			lwqq_bit_get(msg->f_style,LWQQ_FONT_UNDERLINE),
 			msg->f_color);
-	return buf;
+	ds_cat(str, buf);
+	return str;
 }
 
 static LwqqAsyncEvent* lwqq_msg_upload_offline_pic(
@@ -1823,7 +1832,7 @@ static LwqqAsyncEvent* lwqq_msg_upload_offline_pic(
 	req->add_form(req,LWQQ_FORM_CONTENT,"locallangid","2052");
 	req->add_form(req,LWQQ_FORM_CONTENT,"clientversion","1409");
 	req->add_form(req,LWQQ_FORM_CONTENT,"uin",lc->username);///<this may error
-	char* skey = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "skey");
+	char* skey = lwqq_http_get_cookie(req, "skey");
 	req->add_form(req,LWQQ_FORM_CONTENT,"skey",skey);
 	s_free(skey);
 	req->add_form(req,LWQQ_FORM_CONTENT,"appid","1002101");
@@ -2033,9 +2042,9 @@ LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 {
 	LwqqHttpRequest *req = NULL;  
-	char *content = NULL;
-	char data[8192];
-	data[0] = '\0';
+	char data[8192] ={0};
+	struct ds body = ds_initializer, content = ds_initializer;
+	ds_sure(body, 8192);
 	LwqqMsgMessage *mmsg = msg;
 	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)lc->msg_list;
 	const char *apistr = NULL;
@@ -2076,8 +2085,9 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 	}
 
 	//we do send msg
-	format_append(data,"r={");
-	content = content_parse_string(mmsg,msg->super.super.type,&has_cface);
+	ds_cat(body, "r={");
+	strcpy(data, ""); // reset data
+	content = content_parse_string(mmsg, msg->super.super.type, &has_cface);
 	if(msg->super.super.type == LWQQ_MS_BUDDY_MSG){
 		format_append(data,"\"to\":%s,",mmsg->super.to);
 		apistr = "send_buddy_msg2";
@@ -2104,27 +2114,25 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 		assert(0);
 		return NULL;
 	}
-	format_append(data,
-			//"\"face\":0,"
-			"\"content\":%s,"
+	ds_cat(body, data);
+	ds_cat(body, "\"content\":", ds_c_str(content), ",");
+	snprintf(data, sizeof(data),
 			"\"msg_id\":%ld,"
 			"\"clientid\":\"%s\","
 			"\"psessionid\":\"%s\"}",
-			content,++list_->msg_id,lc->clientid,lc->psessionid);
+			++list_->msg_id,lc->clientid,lc->psessionid);
 	//format_append(data,"&clientid=%s&psessionid=%s",lc->clientid,lc->psessionid);
-	if(strlen(data)+1==sizeof(data)) return NULL;
+	ds_cat(body, data);
 
 	/* Create a POST request */
 	char url[512];
-	char* post = data;
+	char* post = ds_c_str(body);
 	snprintf(url, sizeof(url), "%s/channel/%s",WEBQQ_D_HOST, apistr);
 	req = lwqq_http_create_default_request(lc,url, NULL);
-	if (!req) {
-		goto failed;
-	}
 	req->set_header(req, "Referer", WEBQQ_D_REF_URL);
-	req->set_header(req, "Content-Transfer-Encoding", "binary");
-	req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
+	//req->set_header(req, "Content-Transfer-Encoding", "binary");
+	//req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
+	LWQQ_DEBUG(lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L));
 
 	if(!list_->running){
 		//message list stoped accidently
@@ -2134,9 +2142,14 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 
 	lwqq_msg_incre_seq(lc, (LwqqMsg*)msg);
 
-	return req->do_request_async(req, lwqq__has_post(),_C_(p_i,lwqq__process_simple_response,req));
+	LwqqAsyncEvent* ret = req->do_request_async(req, lwqq__has_post(),_C_(p_i,lwqq__process_simple_response,req));
+	ds_free(body);
+	ds_free(content);
+	return ret;
 failed:
 	lwqq_http_request_free(req);
+	ds_free(body);
+	ds_free(content);
 	return NULL;
 }
 
@@ -2313,7 +2326,7 @@ LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_upload_offline_file(LwqqClient* lc,LwqqMsgOffFile* file,LwqqUploadFlag flags)
 {
 	char url[512];
-	snprintf(url,sizeof(url),"http://weboffline.ftn.qq.com/ftn_access/upload_offline_file?time=%ld",LTIME);
+	snprintf(url,sizeof(url),"http://weboffline.ftn.qq.com/ftn_access/upload_offline_file?time=%ld", LTIME);
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
 	req->set_header(req,"Referer","http://web2.qq.com/");
 	req->set_header(req,"Origin","http://web2.qq.com");
@@ -2330,7 +2343,7 @@ LwqqAsyncEvent* lwqq_msg_upload_offline_file(LwqqClient* lc,LwqqMsgOffFile* file
 	req->add_form(req,LWQQ_FORM_CONTENT,"locallangid","2052");
 	req->add_form(req,LWQQ_FORM_CONTENT,"clientversion","1409");
 	req->add_form(req,LWQQ_FORM_CONTENT,"uin",file->super.from);
-	char* skey = lwqq_http_get_cookie(lwqq_get_http_handle(lc), "skey");
+	char* skey = lwqq_http_get_cookie(req, "skey");
 	req->add_form(req,LWQQ_FORM_CONTENT,"skey",skey);
 	s_free(skey);
 	req->add_form(req,LWQQ_FORM_CONTENT,"appid","1002101");

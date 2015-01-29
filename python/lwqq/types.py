@@ -13,6 +13,7 @@ class Features(c_int):
     WITH_LIBUV  = 1<<1
     WITH_SQLITE = 1<<2
     WITH_MOZJS  = 1<<3
+    WITH_SSL    = 1<<4
 
 class Status(c_int):
     LOGOUT  = 0
