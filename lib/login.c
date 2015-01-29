@@ -129,7 +129,7 @@ static LwqqAsyncEvent* check_need_verify(LwqqClient *lc,const char* appid)
 	srand48(time(NULL));
 	double random = drand48();
 	snprintf(url, sizeof(url), WEBQQ_CHECK_HOST"/check?uin=%s&appid=%s&"
-			"js_ver=10112&js_type=0&%s%s&pt_tea=1&r=%.16lf",
+			"js_ver=10037&js_type=0&%s%s&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html&r=%.16lf",
 			lc->username, appid,
 			lc->login_sig?"login_sig=":"",
 			lc->login_sig?:"",

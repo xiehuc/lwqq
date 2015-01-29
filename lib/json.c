@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <memory.h>
 #include <sys/types.h>
-
+#include <inttypes.h>
 
 enum LEX_VALUE
 { LEX_MORE = 0,
@@ -1335,7 +1335,7 @@ json_unescape (const char *text)
 					}
 					else
 					{
-						fprintf (stderr, "JSON: unsupported unicode value: 0x%lX\n", unicode);
+						fprintf (stderr, "JSON: unsupported unicode value: 0x%" PRIx64 "\n", unicode);
 					}
 				}
 				break;
