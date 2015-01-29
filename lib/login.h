@@ -28,9 +28,9 @@ LwqqAsyncEvent* lwqq_relink(LwqqClient* lc);
  * WebQQ logout function
  * 
  * @param client Lwqq Client 
- * @param err Error code
+ * @param wait_time block wait to quit until wait_time 
  */
-void lwqq_logout(LwqqClient *client, LwqqErrorCode *err);
+LwqqErrorCode lwqq_logout(LwqqClient *client, unsigned wait_time);
 
 LwqqAsyncEvent* lwqq_get_version(LwqqClient *lc, LwqqErrorCode *err);
 #endif  /* LWQQ_LOGIN_H */

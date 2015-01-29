@@ -8,12 +8,13 @@ from .base import lib,s_strdup,LwqqBase
 from .vplist import Command
 
 
-__all__ = [ 'Event', 'Events', 'Arguments', 'has_feature', 'VerifyCode' ]
+__all__ = [ 'Event', 'Events', 'Arguments', 'has_feature', 'version', 'VerifyCode' ]
 
-lwqq_feature = c_long.in_dll(lib,"lwqq_features")
+feature = c_long.in_dll(lib,"lwqq_features").value
+version = c_char_p.in_dll(lib, 'lwqq_version').value
 
-def has_feature(feature):
-    return lwqq_feature.value&feature
+def has_feature(f):
+    return feature&f
 
 class Event(LwqqBase):
     class T(Structure):

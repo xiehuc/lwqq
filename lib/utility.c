@@ -24,9 +24,9 @@ void lwqq_ct_free(LwqqConfirmTable* table)
 }
 
 LWQQ_EXPORT
-LwqqOpCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir)
+LwqqErrorCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir)
 {
-	if(!ptr||!path) return LWQQ_OP_FAILED;
+	if(!ptr||!path) return LWQQ_EC_NULL_POINTER;
 	char fullpath[1024];
 	snprintf(fullpath,sizeof(fullpath),"%s%s%s",dir?:"",dir?"/":"",path);
 	FILE* f = fopen(fullpath,"wb");
@@ -34,13 +34,13 @@ LwqqOpCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* 
 		if(dir){
 			mkdir(dir,0755);
 			f = fopen(fullpath,"wb");
-		}else return LWQQ_OP_FAILED;
+		}else return LWQQ_EC_ERROR;
 	}
-	if(f==NULL) return LWQQ_OP_FAILED;
+	if(f==NULL) return LWQQ_EC_ERROR;
 
 	fwrite(ptr,len,1,f);
 	fclose(f);
-	return LWQQ_OP_OK;
+	return LWQQ_EC_OK;
 }
 
 int lwqq_util_mapto_type(const struct LwqqTypeMap* maps,const char* key)
@@ -60,6 +60,12 @@ const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type)
 		maps++;
 	}
 	return NULL;
+}
+
+size_t lwqq_util_rand(size_t seed, size_t e)
+{
+	srand(seed);
+	return (rand()/9+e/10)%e;
 }
 
 LWQQ_EXPORT
@@ -241,6 +247,7 @@ char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused)
 	return s_strdup(e2);
 }
 
+LWQQ_EXPORT
 void ds_cat_(struct ds* str,...)
 {
 	va_list args;

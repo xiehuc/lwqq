@@ -107,8 +107,7 @@ LwqqAsyncEvent* lwqq_async_event_new(void* req)
 	LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
 	internal->req = req;
 	event->lc = req?internal->req->lc:NULL;
-	event->failcode = LWQQ_CALLBACK_VALID;
-	event->result = 0;
+	event->result = LWQQ_EC_OK;
 	return event;
 }
 
@@ -201,13 +200,12 @@ void lwqq_async_add_event_listener(LwqqAsyncEvent* event,LwqqCommand cmd)
 		event_->cmd = cmd;
 	else
 		vp_link(&event_->cmd,&cmd);
-	if(event->failcode == LWQQ_CALLBACK_SYNCED)
+	if(event_->req && lwqq_http_is_synced(event_->req))
 		lwqq_async_event_finish(event);
 }
 static void on_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 {
 	called->result = caller->result;
-	called->failcode = caller->failcode;
 	called->lc = caller->lc;
 	lwqq_async_event_finish(called);
 }
@@ -215,6 +213,7 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 {
 	/**indeed caller->lc may be NULL when recursor */
 	called->lc = caller->lc;
+	LwqqAsyncEvent_* caller_ = (LwqqAsyncEvent_*)caller;
 	LwqqAsyncEvent_* called_ = (LwqqAsyncEvent_*)called;
 	//cancel previous chained event
 	if(called_->chained){
@@ -222,11 +221,10 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller,LwqqAsyncEvent* called)
 		vp_cancel0(chained_->cmd);
 	}
 	called_->chained = caller;
-	if(caller->failcode == LWQQ_CALLBACK_SYNCED){
+	if(caller_->req && lwqq_http_is_synced(caller_->req)){
 		//when sync enabled, caller and called must finished already.
 		//so free caller ,and do not trigger anything
 		called->result = caller->result;
-		called->failcode = caller->failcode;
 		lwqq_async_event_finish(caller);
 	}else{
 		lwqq_async_add_event_listener(caller,_C_(2p,on_chain,caller,called));
@@ -287,7 +285,6 @@ static enum{
 } ev_thread_status;
 static pthread_cond_t ev_thread_cond = PTHREAD_COND_INITIALIZER;
 static pthread_t pid;
-static LwqqAsyncTimerHandle bomb;
 static int global_quit_lock = 0;
 //### global data area ###//
 
@@ -341,14 +338,6 @@ static void start_ev_thread()
 	}
 }
 
-static void ev_bomb(LwqqAsyncTimerHandle timer,void* data)
-{
-	lwqq_puts("boom!!");
-	lwqq_async_timer_stop(timer);
-	lwqq_async_timer_free(bomb);
-	LWQQ__ASYNC_IMPL(loop_stop)();
-}
-
 LWQQ_EXPORT
 void lwqq_async_global_quit()
 {
@@ -359,8 +348,7 @@ void lwqq_async_global_quit()
 	if(ev_thread_status == THREAD_NOW_WAITING){
 		pthread_cond_signal(&ev_thread_cond);
 	}else if(ev_thread_status == THREAD_NOW_RUNNING){
-		bomb = lwqq_async_timer_new();
-		lwqq_async_timer_watch(bomb, 50, ev_bomb, NULL);
+		LWQQ__ASYNC_IMPL(loop_stop)();
 	}
 	ev_thread_status = THREAD_NOT_CREATED;
 	pthread_join(pid,NULL);

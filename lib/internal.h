@@ -17,6 +17,8 @@
 #define WEBQQ_LOGIN_HOST    "https://ssl.ptlogin2.qq.com"
 #define WEBQQ_CHECK_HOST    WEBQQ_LOGIN_HOST
 #define WEBQQ_S_HOST        "http://s.web2.qq.com"
+#define WEBQQ_HOST          "http://web2.qq.com"
+#define WQQ_HOST            "http://w.qq.com"
 
 #define WEBQQ_S_REF_URL     WEBQQ_S_HOST"/proxy.html?v=201104120011&callback=1&id=1"
 #define WEBQQ_LOGIN_REF_URL WEBQQ_LOGIN_HOST"/proxy.html"
@@ -96,20 +98,20 @@ LwqqAsyncEvent* lwqq__request_captcha(LwqqClient* lc,LwqqVerifyCode* c);
 int lwqq__process_empty(LwqqHttpRequest* req);
 int lwqq__process_simple_response(LwqqHttpRequest* req);
 
-#define lwqq__jump_if_http_fail(req,err) if(req->http_code !=200) {err=LWQQ_EC_ERROR;goto done;}
+// check http response is 200 OK
+#define lwqq__jump_if_http_fail(req, err) if(req->http_code !=200) {err=LWQQ_EC_ERROR;goto done;}
+// parse http response as json object
 #define lwqq__jump_if_json_fail(json,str,err) \
 	if(json_parse_document(&json,str)!=JSON_OK){\
 		lwqq_log(LOG_ERROR, "Parse json object from response failed: %s\n", str);\
 		err = LWQQ_EC_NOT_JSON_FORMAT; goto done;  }
 #define lwqq__jump_if_retcode_fail(retcode) if(retcode != LWQQ_EC_OK) goto done;
 #define lwqq__jump_if_ev_fail(ev,err) do{\
-	if(ev->failcode != LWQQ_CALLBACK_VALID){err=LWQQ_EC_ERROR;goto done;}\
-	if(ev->result != LWQQ_EC_OK){err=LWQQ_EC_ERROR;goto done;}\
+	if(ev == NULL || ev->result != LWQQ_EC_OK){err=LWQQ_EC_ERROR;goto done;}\
 }while(0);
 
 #define lwqq__return_if_ev_fail(ev) do{\
-	if(ev->failcode != LWQQ_CALLBACK_VALID) return;\
-	if(ev->result != LWQQ_EC_OK) return;\
+	if(ev == NULL || ev->result != LWQQ_EC_OK) return;\
 }while(0);
 
 #define lwqq__clean_json_and_req(json,req) do{\
@@ -121,8 +123,8 @@ int lwqq__process_simple_response(LwqqHttpRequest* req);
 		req->http_code,req->response);
 #define lwqq__has_post() (lwqq_verbose(3,"%s\n%s\n",url,post),1),post
 #define lwqq__hasnot_post() (lwqq_verbose(3,"%s\n",url),0),NULL
-#define __LWQQ_API_LEVEL_4__ if(LWQQ_VERBOSE_LEVEL>=4)\
-																	 lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,1L);
+#define __LWQQ_API_LEVEL_4__ if(LWQQ_VERBOSE_LEVEL>=4){\
+	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,1L);}
 
 /** ===================json part==================*/
 #define lwqq__json_get_int(json,k,def) s_atoi(json_parse_simple_value(json,k),def)

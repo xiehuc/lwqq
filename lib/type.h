@@ -74,6 +74,7 @@ typedef enum {
 }LwqqFeatures;
 
 extern const LwqqFeatures lwqq_features;
+extern const char* lwqq_version;
 
 typedef enum {
 	LWQQ_STATUS_LOGOUT = 0,
@@ -126,6 +127,10 @@ typedef enum {
 	LWQQ_GROUP_QUN = 0,
 	LWQQ_GROUP_DISCU = 1
 }LwqqGroupType;
+typedef enum {
+	LWQQ_CLEANUP_WAITALL = 0,
+	LWQQ_CLEANUP_IGNORE  = 1
+}LwqqCleanUp;
 
 
 /* Lwqq Error Code */
@@ -133,9 +138,9 @@ typedef enum {
 	//db error
 	LWQQ_EC_DB_EXEC_FAILED   = -50,
 	//login error
-	LWQQ_EC_FAILD_VERIFY     = -42,
-	LWQQ_EC_WRONG_VERIFY     = -41,
-	LWQQ_EC_WRONG_PASS       = -40,
+	LWQQ_EC_FAILD_VERIFY     = -42, // verify failed by other reason
+	LWQQ_EC_WRONG_VERIFY     = -41, // verify code is wrong, default
+	LWQQ_EC_WRONG_PASS       = -40, 
 	//response unexpected
 	LWQQ_EC_NOT_JSON_FORMAT  = -30,
 	//upload error code
@@ -163,18 +168,6 @@ typedef enum {
 	LWQQ_EC_LOST_CONN        = 121,
 	LWQQ_EC_LOGIN_NEED_BARCODE   = 10005
 } LwqqErrorCode;
-typedef enum {
-	LWQQ_OP_OK = 1,
-	LWQQ_OP_FAILED = 0,
-} LwqqOpCode;/* operate code */
-//**should depreciate **/
-typedef enum {
-	LWQQ_CALLBACK_SYNCED  = LWQQ_EC_CANCELED-1, //< -4
-	LWQQ_CALLBACK_CANCELED = LWQQ_EC_CANCELED, //< -3
-	LWQQ_CALLBACK_TIMEOUT = LWQQ_EC_TIMEOUT_OVER,//< -2
-	LWQQ_CALLBACK_FAILED = LWQQ_EC_ERROR, //< -1
-	LWQQ_CALLBACK_VALID = LWQQ_EC_OK, //< 0
-}LwqqCallbackCode;
 
 #define LWQQ_FRIEND_CATE_IDX_DEFAULT 0
 #define LWQQ_FRIEND_CATE_IDX_PASSERBY -1
@@ -276,7 +269,7 @@ Discu: (with lwdb) the only one and stable key reference
 	/* ginfo */
 	char *face;
 	char *memo;
-	char *class;
+	char *classes;
 	char *fingermemo;
 	time_t createtime;
 	char *level;
@@ -334,6 +327,9 @@ struct LwqqClient {
 	char *login_sig;
 	char *error_description;
 	char *new_ptwebqq;              /**< this only used when relogin */
+	struct {
+		char* ptwebqq;
+	}session;
 
 	LwqqBuddy *myself;          /**< Myself */
 	LwqqVerifyCode *vc;         /**< Verify Code */

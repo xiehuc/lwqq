@@ -9,6 +9,8 @@
 #cmakedefine MOZJS_185
 #cmakedefine MOZJS_17
 
+#cmakedefine HAVE_STRTOK_R
+
 #define LWQQ_VERSION "@VERSION@"
 
 //use a single thread to poll message
@@ -30,6 +32,8 @@
 // set poll_msg timeout {?} seconds
 // default : 90
 #define POLL_MSG_TIMEOUT 75
+
+#define OFFPIC_USE_WQQ
 
 #endif /* __CONFIG_H__ */
 

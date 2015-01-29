@@ -59,6 +59,7 @@ int lwqq_log_get_level();
 
 void lwqq_log_redirect(LwqqLogRedirectFunc func);
 #define LWQQ_VERBOSE_LEVEL lwqq_log_get_level()
+#define LWQQ_DEBUG(expr) if(LWQQ_VERBOSE_LEVEL > 4){ expr;}
 
 
 #endif  /* LWQQ_LOGGER_H */

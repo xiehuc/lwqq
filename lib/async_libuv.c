@@ -1,3 +1,5 @@
+#define NO_OLDNAMES
+//to get pass some problem about mkdir and macros
 #include "async_impl.h"
 #include "smemory.h"
 #include <uv.h>
@@ -21,9 +23,19 @@ static void (loop_run)()
 	uv_run(loop,UV_RUN_DEFAULT);
 }
 
+static void loop_stop_cb(uv_idle_t* idle, int action)
+{
+	uv_idle_stop(idle);
+	s_free(idle);
+	uv_stop(loop);
+}
+
 static void (loop_stop)()
 {
 	uv_stop(loop);
+	uv_idle_t *idle = s_malloc0(sizeof(*idle));
+	uv_idle_init(loop, idle);
+	uv_idle_start(idle, loop_stop_cb);
 }
 static void (loop_free)()
 {

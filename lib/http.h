@@ -15,6 +15,16 @@
 #include "type.h"
 #include "async.h"
 
+#define lwqq_http_ssl(lc) (lwqq_get_http_handle(lc)->ssl)
+#define __SSL lwqq_http_ssl(lc)
+#define __H(url) __SSL?"https://"url:"http://"url
+#define WEBQQ_D_REF_URL (__SSL)?\
+	"https://d.web2.qq.com/cfproxy.html?v=20110331002&callback=1":\
+"http://d.web2.qq.com/proxy.html?v=20110331002&callback=1"
+#define WEBQQ_D_HOST        __H("d.web2.qq.com")
+// at now, only get_offpic2 use WQQ_D_HOST
+#define WQQ_D_HOST          "http://w.qq.com/d"
+
 typedef enum {
 	LWQQ_FORM_FILE,// use add_file_content instead
 	LWQQ_FORM_CONTENT
@@ -22,7 +32,6 @@ typedef enum {
 typedef enum {
 	LWQQ_HTTP_TIMEOUT,               // connection timeout
 	LWQQ_HTTP_TIMEOUT_INCRE,         // auto increment timeout
-	LWQQ_HTTP_ALL_TIMEOUT,           // all operand timeout
 	LWQQ_HTTP_NOT_FOLLOW,
 	LWQQ_HTTP_SAVE_FILE,
 	LWQQ_HTTP_RESET_URL,
@@ -50,7 +59,7 @@ struct _LwqqHttpRequest {
 	 */
 	short http_code; 
 	short retry;
-	LwqqCallbackCode failcode;
+	LwqqErrorCode err;
 
 	/* Server response, used when do async request */
 	char *location;
@@ -120,13 +129,6 @@ void lwqq_http_handle_free(LwqqHttpHandle* http);
 		h->proxy.password = s_strdup(_password);\
 	}while(0);
 
-#define lwqq_http_ssl(lc) (lwqq_get_http_handle(lc)->ssl)
-#define __SSL lwqq_http_ssl(lc)
-#define __H(url) __SSL?"https://"url:"http://"url
-#define WEBQQ_D_REF_URL (__SSL)?\
-	"https://d.web2.qq.com/cfproxy.html?v=20110331002&callback=1":\
-"http://d.web2.qq.com/proxy.html?v=20110331002&callback=1"
-#define WEBQQ_D_HOST        __H("d.web2.qq.com")
 
 void lwqq_http_proxy_apply(LwqqHttpHandle* handle,LwqqHttpRequest* req);
 
@@ -160,17 +162,26 @@ LwqqHttpRequest *lwqq_http_create_default_request(LwqqClient* lc,const char *url
 		LwqqErrorCode *err);
 
 void lwqq_http_global_init();
-void lwqq_http_global_free();
+void lwqq_http_global_free(LwqqCleanUp cleanup);
 /** stop a client all http progressing request */
-void lwqq_http_cleanup(LwqqClient*lc);
+void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup);
 /** set the other option of request, like curl_easy_setopt */
 void lwqq_http_set_option(LwqqHttpRequest* req,LwqqHttpOption opt,...);
 /** regist http progressing callback */
 void lwqq_http_on_progress(LwqqHttpRequest* req,LWQQ_PROGRESS progress,void* prog_data);
 const char* lwqq_http_get_url(LwqqHttpRequest* req);
-
-char *lwqq_http_get_cookie(LwqqHttpHandle* h, const char *name);
-void  lwqq_http_set_cookie(LwqqHttpRequest *request, const char *name,const char* val);
+int lwqq_http_is_synced(LwqqHttpRequest* req);
+/** get cookie which key==name, 
+ *  req's url affect cookie list, 
+ *  if a cookie registerd with domain 'web2.qq.com' 
+ *  then a req with url='pp.com' couldn't get this cookie
+ */
+char *lwqq_http_get_cookie(LwqqHttpRequest* req, const char *name);
+/** add a cookie with name=val to request,
+ * if @store, this would store in cache,
+ * if not, this would only affect single request
+ */
+void lwqq_http_set_cookie(LwqqHttpRequest *request, const char *name,const char* val, int store);
 /** 
  * force stop a request 
  * require set LWQQ_HTTP_CANCELABLE option first
