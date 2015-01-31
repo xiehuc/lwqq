@@ -771,17 +771,18 @@ LwqqErrorCode lwdb_userdb_update_group_info(LwdbUserDB* db,LwqqGroup** p_group)
 	const char* sql;
 	if(group->type == LWQQ_GROUP_QUN)
 		sql = "UPDATE groups SET name=? ,"
-			"markname=?,memo=?,last_modify=datetime('now') WHERE account=?;";
+			"markname=?,mask=?,memo=?,last_modify=datetime('now') WHERE account=?;";
 	else
 		sql = "UPDATE discus SET name=? ,"
-			"markname=?,memo=?,last_modify=datetime('now') WHERE account=?;";
+			"markname=?,mask=?,memo=?,last_modify=datetime('now') WHERE account=?;";
 
 	enable_cache(stmt,sql,cache);
 
 	sws_query_bind(stmt,1,SWS_BIND_TEXT,group->name);
 	sws_query_bind(stmt,2,SWS_BIND_TEXT,group->markname);
-	sws_query_bind(stmt,3,SWS_BIND_TEXT,group->memo);
-	sws_query_bind(stmt,4,SWS_BIND_TEXT,group->account);
+	sws_query_bind(stmt,3,SWS_BIND_INT, group->mask);
+	sws_query_bind(stmt,4,SWS_BIND_TEXT,group->memo);
+	sws_query_bind(stmt,5,SWS_BIND_TEXT,group->account);
 	sws_query_next(stmt, NULL);
 	sws_query_reset(stmt);
 
@@ -994,17 +995,17 @@ LwqqErrorCode lwdb_userdb_query_group(LwdbUserDB* db,LwqqGroup* group)
 	if(!db ||!group ||!group->account) return LWQQ_EC_ERROR;
 	SwsStmt* stmt = NULL;
 	LwqqErrorCode cache=0;
-	const char* sql = "SELECT memo FROM groups WHERE account=? and last_modify != 0;";
+	const char* sql = "SELECT memo,mask FROM groups WHERE account=? and last_modify != 0;";
 
 	enable_cache(stmt,sql,cache);
 
 	sws_query_bind(stmt, 1, SWS_BIND_TEXT,group->account);
 	sws_query_next(stmt, NULL);
 	char buf[1024];
-	if(!sws_query_column(stmt, 0, buf, sizeof(buf), NULL)){
-		s_free(group->memo);
-		group->memo = s_strdup(buf);
-	}
+	if(!sws_query_column(stmt, 0, buf, sizeof(buf), NULL))
+		lwqq_override(group->memo, s_strdup(buf))
+	if(!sws_query_column(stmt, 1, buf, sizeof(buf), NULL))
+		group->mask = s_atoi(buf,0);
 	sws_query_reset(stmt);
 
 	if(cache != LWQQ_EC_OK) sws_query_end(stmt, NULL);
