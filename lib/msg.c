@@ -1717,16 +1717,17 @@ static void parse_unescape(char* source,struct ds* dest)
 		ds_pokes_n(write, ptr, idx);
 		switch(ptr[idx]){
 			//note buf point the end position
-			case '\n': ds_cat(write,"\\\\n");break;
-			case '\r': ds_cat(write,"\\\\n");break;
-			case '\t': ds_cat(write,"\\\\t");break;
-			case '\\': ds_cat(write,"\\\\\\\\");break;
+			case '\n': ds_cat(write,"\\\\n");    break;
+			case '\r': ds_cat(write,"\\\\n");    break;
+			case '\t': ds_cat(write,"\\\\t");    break;
+			case '\\': ds_cat(write,"\\\\\\\\"); break;
 						  //i dont know why ; is not worked.so we use another expression
-			case ';' : ds_cat(write,"\\u003B");break;
-			case '&' : ds_cat(write,"\\u0026");break;
-			case '"' : ds_cat(write,"\\\\\\\"");break;
-			case '+' : ds_cat(write,"\\u002B");break;
-			case '%' : ds_cat(write,"\\u0025");break;
+			case ';' : ds_cat(write,"\\u003B");  break;
+			case '&' : ds_cat(write,"\\u0026");  break;
+			case '"' : ds_cat(write,"\\\\\\\""); break;
+			case '+' : ds_cat(write,"\\u002B");  break;
+			case '%' : ds_cat(write,"\\u0025");  break;
+			case '\'': ds_cat(write,"\\u0027");  break;
 		}
 		ptr+=idx+1;
 	}
