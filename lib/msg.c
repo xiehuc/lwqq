@@ -76,6 +76,19 @@ static struct LwqqTypeMap msg_type_map[] = {
 	{LWQQ_MT_UNKNOWN,            "unknow",                  },
 	{LWQQ_MT_UNKNOWN,            NULL,                      }
 };
+#define UNESCAPE(f,t) case f: ds_cat(write,t); break;
+//this table defines unsecape rule in send
+#define UNESCAPE_TABLE()       \
+   UNESCAPE('\n', "\\\\n");    \
+   UNESCAPE('\r', "\\\\n");    \
+   UNESCAPE('\t', "\\\\t");    \
+   UNESCAPE('\\', "\\\\\\\\"); \
+   UNESCAPE(';', "\\u003B");   \
+   UNESCAPE('&', "\\u0026");   \
+   UNESCAPE('"', "\\\\\\\"");  \
+   UNESCAPE('+', "\\u002B");   \
+   UNESCAPE('%', "\\u0025");   \
+   UNESCAPE('\'', "\\u0027");
 
 
 static void group_member_has_chged(LwqqClient* lc,LwqqGroup* g)
@@ -1717,17 +1730,7 @@ static void parse_unescape(char* source,struct ds* dest)
 		ds_pokes_n(write, ptr, idx);
 		switch(ptr[idx]){
 			//note buf point the end position
-			case '\n': ds_cat(write,"\\\\n");    break;
-			case '\r': ds_cat(write,"\\\\n");    break;
-			case '\t': ds_cat(write,"\\\\t");    break;
-			case '\\': ds_cat(write,"\\\\\\\\"); break;
-						  //i dont know why ; is not worked.so we use another expression
-			case ';' : ds_cat(write,"\\u003B");  break;
-			case '&' : ds_cat(write,"\\u0026");  break;
-			case '"' : ds_cat(write,"\\\\\\\""); break;
-			case '+' : ds_cat(write,"\\u002B");  break;
-			case '%' : ds_cat(write,"\\u0025");  break;
-			case '\'': ds_cat(write,"\\u0027");  break;
+			UNESCAPE_TABLE();
 		}
 		ptr+=idx+1;
 	}
