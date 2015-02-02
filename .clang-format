@@ -1,0 +1,7 @@
+---
+BasedOnStyle: WebKit
+IndentWidth: 3
+---
+Language: Cpp
+PointerAlignment: Left
+...

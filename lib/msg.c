@@ -361,47 +361,47 @@ static int process_group_msg_list(LwqqHttpRequest* req,char* unused,LwqqHistoryM
 #define SET_ERR {\
 	list->begin = list->end = -1;\
 	err = LWQQ_EC_NO_RESULT;\
-	goto done;\
-}
-int err = 0;
-json_t* root = NULL,*result;
-lwqq__jump_if_http_fail(req,err);
-lwqq__jump_if_json_fail(root,req->response,err);
-result = lwqq__parse_retcode_result(root, &err);
-lwqq__jump_if_retcode_fail(err);
-if(!result) goto done;
-lwqq__json_parse_child(result,"data",result);
-if(!result || result->type == JSON_NULL) SET_ERR;
-lwqq__json_parse_child(result,"cl",result);
-if(!result) SET_ERR;
-result = result->child;
-list->begin = lwqq__json_get_int(result,"bs",0);
-list->end = lwqq__json_get_int(result,"es",0);
-//const char* gid = json_parse_simple_value(result, "g");
-lwqq__json_parse_child(result,"cl",result);
-if(!result) SET_ERR;
-result = result->child;
-while(result){
-	LwqqMsgMessage* msg = (LwqqMsgMessage*)lwqq_msg_new(LWQQ_MS_GROUP_MSG);
-	msg->super.from = lwqq__json_get_value(result,"u");
-	msg->time = lwqq__json_get_long(result,"t",0);
-	//parse_content(result, "v", msg);
-	LwqqMsgContent* c = s_malloc0(sizeof(*c));
-	c->type = LWQQ_CONTENT_STRING;
-	c->data.str = lwqq__json_get_string(result,"v");
-	TAILQ_INSERT_TAIL(&msg->content,c,entries);
-	LwqqRecvMsg* wrapper = s_malloc0(sizeof(*wrapper));
-	wrapper->msg = (LwqqMsg*)msg;
-	TAILQ_INSERT_TAIL(&list->msg_list,wrapper,entries);
+	goto done;}
 
-	result = result->next;
-}
+	int err = 0;
+	json_t* root = NULL,*result;
+	lwqq__jump_if_http_fail(req,err);
+	lwqq__jump_if_json_fail(root,req->response,err);
+	result = lwqq__parse_retcode_result(root, &err);
+	lwqq__jump_if_retcode_fail(err);
+	if(!result) goto done;
+	lwqq__json_parse_child(result,"data",result);
+	if(!result || result->type == JSON_NULL) SET_ERR;
+	lwqq__json_parse_child(result,"cl",result);
+	if(!result) SET_ERR;
+	result = result->child;
+	list->begin = lwqq__json_get_int(result,"bs",0);
+	list->end = lwqq__json_get_int(result,"es",0);
+	//const char* gid = json_parse_simple_value(result, "g");
+	lwqq__json_parse_child(result,"cl",result);
+	if(!result) SET_ERR;
+	result = result->child;
+	while(result){
+		LwqqMsgMessage* msg = (LwqqMsgMessage*)lwqq_msg_new(LWQQ_MS_GROUP_MSG);
+		msg->super.from = lwqq__json_get_value(result,"u");
+		msg->time = lwqq__json_get_long(result,"t",0);
+		//parse_content(result, "v", msg);
+		LwqqMsgContent* c = s_malloc0(sizeof(*c));
+		c->type = LWQQ_CONTENT_STRING;
+		c->data.str = lwqq__json_get_string(result,"v");
+		TAILQ_INSERT_TAIL(&msg->content,c,entries);
+		LwqqRecvMsg* wrapper = s_malloc0(sizeof(*wrapper));
+		wrapper->msg = (LwqqMsg*)msg;
+		TAILQ_INSERT_TAIL(&list->msg_list,wrapper,entries);
+
+		result = result->next;
+	}
 
 done:
-//output only error.
-lwqq__log_if_error(err, req);
-lwqq__clean_json_and_req(root,req);
-return err;
+	//output only error.
+	lwqq__log_if_error(err, req);
+	lwqq__clean_json_and_req(root,req);
+	return err;
 #undef SET_ERR
 }
 /**
@@ -992,90 +992,87 @@ static int parse_blist_change(json_t* json,void* opaque,void* _lc)
 	}
 	return 0;
 }
-static int parse_sys_g_msg(json_t *json,void* opaque,LwqqClient* lc)
+static int parse_sys_g_msg(json_t* json, void* opaque, LwqqClient* lc)
 {
-	/*group create
-	  {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":39194,"from_uin":1528509098,"to_uin":xxxxxxxxx,"msg_id2":539171,"msg_type":38,"reply_ip":176752410,"type":"group_create","gcode":2676780935,"t_gcode":249818602,"owner_uin":xxxxxxxxx}}]}
 
-	  group join
-	  {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":5940,"from_uin":370154409,"to_uin":2501542492,"msg_id2":979390,"msg_type":33,"reply_ip":176498394,"type":"group_join","gcode":2570026216,"t_gcode":249818602,"op_type":3,"new_member":2501542492,"t_new_member":"","admin_uin":1448380605,"admin_nick":"\u521B\u5EFA\u8005"}}]}
+   // group create
+   // {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":39194,"from_uin":1528509098,"to_uin":xxxxxxxxx,"msg_id2":539171,"msg_type":38,"reply_ip":176752410,"type":"group_create","gcode":2676780935,"t_gcode":249818602,"owner_uin":xxxxxxxxx}}]}
 
-	  group leave
-	  {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":51488,"from_uin":1528509098,"to_uin":xxxxxxxxx,"msg_id2":180256,"msg_type":34,"reply_ip":176882139,"type":"group_leave","gcode":2676780935,"t_gcode":249818602,"op_type":2,"old_member":574849996,"t_old_member":""}}]}
-	  {"poll_type":"sys_g_msg","value""msg_id":14601,"from_uin":529044675,"to_uin":411927578,"msg_id2":563796,"msg_type":34,"reply_ip":176752044,"type":"group_leave","gcode":423970275,"t_gcode":57128682,"op_type":3,"old_member":1096278260,"t_old_member":"","admin_uin":2738646735,"t_admin_uin":"","admin_nick":"\347\256\241\347\220\206\345\221\230"}}
+   // group join
+   // {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":5940,"from_uin":370154409,"to_uin":2501542492,"msg_id2":979390,"msg_type":33,"reply_ip":176498394,"type":"group_join","gcode":2570026216,"t_gcode":249818602,"op_type":3,"new_member":2501542492,"t_new_member":"","admin_uin":1448380605,"admin_nick":"\u521B\u5EFA\u8005"}}]}
 
-	  group request
-	  {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":10899,"from_uin":3060007976,"to_uin":xxxxxxxxx,"msg_id2":693883,"msg_type":35,"reply_ip":176752016,"type":"group_request_join","gcode":406247342,"t_gcode":249818602,"request_uin":2297680537,"t_request_uin":"","msg":""}}]}
+   // group leave
+   // {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":51488,"from_uin":1528509098,"to_uin":xxxxxxxxx,"msg_id2":180256,"msg_type":34,"reply_ip":176882139,"type":"group_leave","gcode":2676780935,"t_gcode":249818602,"op_type":2,"old_member":574849996,"t_old_member":""}}]}
+   // {"poll_type":"sys_g_msg","value""msg_id":14601,"from_uin":529044675,"to_uin":411927578,"msg_id2":563796,"msg_type":34,"reply_ip":176752044,"type":"group_leave","gcode":423970275,"t_gcode":57128682,"op_type":3,"old_member":1096278260,"t_old_member":"","admin_uin":2738646735,"t_admin_uin":"","admin_nick":"\347\256\241\347\220\206\345\221\230"}}
 
-	  group request join agree
-	  {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":29407,"from_uin":1735178063,"to_uin":2501542492,"msg_id2":28428,"msg_type":36,"reply_ip":176498075,"type":"group_request_join_agree","gcode":3557387121,"t_gcode":249818602,"admin_uin":4005533729,"msg":""}}]}
+   // group request
+   // {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":10899,"from_uin":3060007976,"to_uin":xxxxxxxxx,"msg_id2":693883,"msg_type":35,"reply_ip":176752016,"type":"group_request_join","gcode":406247342,"t_gcode":249818602,"request_uin":2297680537,"t_request_uin":"","msg":""}}]}
 
-	  group request join deny
-	  {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":1253,"from_uin":1735178063,"to_uin":2501542492,"msg_id2":93655,"msg_type":37,"reply_ip":176622059,"type":"group_request_join_deny","gcode":3557387121,"t_gcode":249818602,"admin_uin":4005533729,"msg":"123"}}]}
+   // group request join agree
+   // {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":29407,"from_uin":1735178063,"to_uin":2501542492,"msg_id2":28428,"msg_type":36,"reply_ip":176498075,"type":"group_request_join_agree","gcode":3557387121,"t_gcode":249818602,"admin_uin":4005533729,"msg":""}}]}
 
-*/
-LwqqMsgSysGMsg* msg = opaque;
-const char* type = json_parse_simple_value(json,"type");
-msg->group_uin = s_strdup(json_parse_simple_value(json,"from_uin"));
-msg->gcode = s_strdup(json_parse_simple_value(json,"gcode"));
-msg->account = s_strdup(json_parse_simple_value(json,"t_gcode"));
-int add_new_group = 0;
-//try to find group in lwqqclient.
-//it is always well formed when admin receive group message
-//if it is self receive message .it should be NULL.
-//and when add_new_group it would be assign to new group .
-msg->group = lwqq_group_find_group_by_gid(lc,msg->group_uin);
-if(strcmp(type,"group_create")==0)msg->type = GROUP_CREATE;
-else if(strcmp(type,"group_join")==0){
-	msg->type = GROUP_JOIN;
-	msg->member_uin = s_strdup(json_parse_simple_value(json,"new_member"));
-	msg->member = lwqq__json_get_string(json,"t_new_member");
-	msg->admin_uin = s_strdup(json_parse_simple_value(json,"admin_uin"));
-	msg->admin = lwqq__json_get_string(json,"admin_nick");
-	add_new_group = msg->member_uin?strcmp(msg->member_uin,lc->myself->uin)==0:1;
-}
-else if(strcmp(type,"group_leave")==0){
-	msg->type = GROUP_LEAVE;
-	msg->member_uin = s_strdup(json_parse_simple_value(json,"old_member"));
-	msg->member = lwqq__json_get_string(json,"t_old_member");
-	msg->admin_uin = s_strdup(json_parse_simple_value(json,"admin_uin"));
-	msg->admin = lwqq__json_get_string(json,"admin_nick");
-	msg->is_myself = msg->member_uin?strcmp(lc->myself->uin,msg->member_uin)==0:1;
-	if(msg->is_myself&&msg->group)
-		LIST_REMOVE(msg->group,entries);
-}
-else if(strcmp(type,"group_request_join")==0){
-	msg->type = GROUP_REQUEST_JOIN;
-	msg->member_uin = s_strdup(json_parse_simple_value(json,"request_uin"));
-	msg->member = lwqq__json_get_string(json,"t_request_uin");
-	msg->msg = lwqq__json_get_string(json, "msg");
-}else if(strcmp(type,"group_request_join_agree")==0){
-	msg->type = GROUP_REQUEST_JOIN_AGREE;
-	msg->member_uin = s_strdup(json_parse_simple_value(json,"new_member"));
-	msg->member = lwqq__json_get_string(json,"t_new_member");
-	add_new_group = msg->member_uin?
-		strcmp(msg->member_uin,lc->myself->uin)==0:
-		1;
-}else if(strcmp(type,"group_request_join_deny")==0){
-	msg->type = GROUP_REQUEST_JOIN_DENY;
-	msg->msg = lwqq__json_get_string(json, "msg");
-	msg->member_uin = s_strdup(json_parse_simple_value(json,"old_member"));
-	msg->member = lwqq__json_get_string(json,"t_old_member");
-}
-else msg->type = GROUP_UNKNOW;
-if(add_new_group){
-	msg->is_myself = 1;
-	LwqqGroup* g = lwqq_group_new(LWQQ_GROUP_QUN);
-	g->account = s_strdup(msg->account);
-	g->code = s_strdup(msg->gcode);
-	g->gid = s_strdup(msg->group_uin);
-	msg->group = g;
-	LIST_INSERT_HEAD(&lc->groups,g,entries);
-	LwqqAsyncEvent* ev = lwqq_info_get_group_public_info(lc,g);
-	lwqq_async_add_event_listener(ev, _C_(2p,insert_msg_delay_by_request_content,lc->msg_list,msg));
-	return RET_DELAYINS_MSG;
-}
-return 0;
+   // group request join deny
+   // {"retcode":0,"result":[{"poll_type":"sys_g_msg","value":{"msg_id":1253,"from_uin":1735178063,"to_uin":2501542492,"msg_id2":93655,"msg_type":37,"reply_ip":176622059,"type":"group_request_join_deny","gcode":3557387121,"t_gcode":249818602,"admin_uin":4005533729,"msg":"123"}}]}
+   LwqqMsgSysGMsg* msg = opaque;
+   const char* type = json_parse_simple_value(json, "type");
+   msg->group_uin = s_strdup(json_parse_simple_value(json, "from_uin"));
+   msg->gcode = s_strdup(json_parse_simple_value(json, "gcode"));
+   msg->account = s_strdup(json_parse_simple_value(json, "t_gcode"));
+   int add_new_group = 0;
+   // try to find group in lwqqclient.
+   // it is always well formed when admin receive group message
+   // if it is self receive message .it should be NULL.
+   // and when add_new_group it would be assign to new group .
+   msg->group = lwqq_group_find_group_by_gid(lc, msg->group_uin);
+   if (strcmp(type, "group_create") == 0)
+      msg->type = GROUP_CREATE;
+   else if (strcmp(type, "group_join") == 0) {
+      msg->type = GROUP_JOIN;
+      msg->member_uin = s_strdup(json_parse_simple_value(json, "new_member"));
+      msg->member = lwqq__json_get_string(json, "t_new_member");
+      msg->admin_uin = s_strdup(json_parse_simple_value(json, "admin_uin"));
+      msg->admin = lwqq__json_get_string(json, "admin_nick");
+      add_new_group = msg->member_uin ? strcmp(msg->member_uin, lc->myself->uin) == 0 : 1;
+   } else if (strcmp(type, "group_leave") == 0) {
+      msg->type = GROUP_LEAVE;
+      msg->member_uin = s_strdup(json_parse_simple_value(json, "old_member"));
+      msg->member = lwqq__json_get_string(json, "t_old_member");
+      msg->admin_uin = s_strdup(json_parse_simple_value(json, "admin_uin"));
+      msg->admin = lwqq__json_get_string(json, "admin_nick");
+      msg->is_myself = msg->member_uin ? strcmp(lc->myself->uin, msg->member_uin) == 0 : 1;
+      if (msg->is_myself && msg->group)
+         LIST_REMOVE(msg->group, entries);
+   } else if (strcmp(type, "group_request_join") == 0) {
+      msg->type = GROUP_REQUEST_JOIN;
+      msg->member_uin = s_strdup(json_parse_simple_value(json, "request_uin"));
+      msg->member = lwqq__json_get_string(json, "t_request_uin");
+      msg->msg = lwqq__json_get_string(json, "msg");
+   } else if (strcmp(type, "group_request_join_agree") == 0) {
+      msg->type = GROUP_REQUEST_JOIN_AGREE;
+      msg->member_uin = s_strdup(json_parse_simple_value(json, "new_member"));
+      msg->member = lwqq__json_get_string(json, "t_new_member");
+      add_new_group = msg->member_uin ? strcmp(msg->member_uin, lc->myself->uin) == 0 : 1;
+   } else if (strcmp(type, "group_request_join_deny") == 0) {
+      msg->type = GROUP_REQUEST_JOIN_DENY;
+      msg->msg = lwqq__json_get_string(json, "msg");
+      msg->member_uin = s_strdup(json_parse_simple_value(json, "old_member"));
+      msg->member = lwqq__json_get_string(json, "t_old_member");
+   } else
+      msg->type = GROUP_UNKNOW;
+   if (add_new_group) {
+      msg->is_myself = 1;
+      LwqqGroup* g = lwqq_group_new(LWQQ_GROUP_QUN);
+      g->account = s_strdup(msg->account);
+      g->code = s_strdup(msg->gcode);
+      g->gid = s_strdup(msg->group_uin);
+      msg->group = g;
+      LIST_INSERT_HEAD(&lc->groups, g, entries);
+      LwqqAsyncEvent* ev = lwqq_info_get_group_public_info(lc, g);
+      lwqq_async_add_event_listener(
+          ev, _C_(2p, insert_msg_delay_by_request_content, lc->msg_list, msg));
+      return RET_DELAYINS_MSG;
+   }
+   return 0;
 }
 static int parse_push_offfile(json_t* json,void* opaque)
 {
