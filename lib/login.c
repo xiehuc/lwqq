@@ -54,7 +54,7 @@ static int get_login_sig_back(LwqqHttpRequest* req)
 	lwqq__jump_if_http_fail(req, err);
 	if(!req->response){err = LWQQ_EC_ERROR;goto done;}
 	char* beg = strstr(req->response,"var g_login_sig=");
-	char login_sig[256];
+	char login_sig[64];
 	sscanf(beg,"var g_login_sig=encodeURIComponent(\"%[^\"]\")",login_sig);
 	lwqq_override(lc->login_sig, s_strdup(login_sig));
 done:
