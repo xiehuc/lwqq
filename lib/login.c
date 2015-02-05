@@ -365,6 +365,7 @@ static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)
 			goto done;
 
 		case 6:
+		case 71: //ptuiCB('71','0','','0','您的帐号由于异常禁止登录，请联系客服。(2009081021)', 'QQNUMBER');
 			lwqq_log(LOG_WARNING, "You may need to try login again\n");
 			lc->last_err = "You may need to try login again";
 			err = LWQQ_EC_ERROR;
