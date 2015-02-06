@@ -32,6 +32,7 @@
 #include "async.h"
 #include "utility.h"
 #include "internal.h"
+#include "lwjs.h"
 
 /* URL for webqq login */
 #define APPID "1003903"
@@ -109,8 +110,12 @@ static int check_need_verify_back(LwqqHttpRequest* req)
 
 	if (need_vf == 0) {
 		/* We need get the ptvfsession from the header "Set-Cookie" */
+		char* pt_verifysession = lwqq_http_get_cookie(req, "ptvfsession");
+		lc->pt_verifysession = pt_verifysession;
+//		s_free(pt_verifysession);
 		lwqq_log(LOG_NOTICE, "Verify code: %s\n", lc->vc->str);
 	} else if (need_vf == 1) {
+//		lc->pt_verifysession = lwqq_http_get_cookie(req,"verifysession");
 		err = LWQQ_EC_LOGIN_NEED_VC;
 		lwqq_log(LOG_NOTICE, "We need verify code image: %s\n", lc->vc->str);
 	}
@@ -129,7 +134,7 @@ static LwqqAsyncEvent* check_need_verify(LwqqClient *lc,const char* appid)
 	srand48(time(NULL));
 	double random = drand48();
 	snprintf(url, sizeof(url), WEBQQ_CHECK_HOST"/check?uin=%s&appid=%s&"
-			"js_ver=10112&js_type=0&%s%s&pt_tea=1&r=%.16lf",
+			"js_ver=10113&js_type=0&%s%s&pt_tea=1&u1=http%%3A%%2F%%2Fweb.qq.com%%2Floginproxy.html&r=%.16lf",
 			lc->username, appid,
 			lc->login_sig?"login_sig=":"",
 			lc->login_sig?:"",
@@ -153,6 +158,9 @@ static int request_captcha_back(LwqqHttpRequest* req,LwqqVerifyCode* code)
 	code->size = req->resp_len;
 	req->response = NULL;
 	lc->args->vf_image = code;
+	char* pt_verifysession = lwqq_http_get_cookie(req, "verifysession");
+	lc->pt_verifysession = pt_verifysession;
+
 	vp_do_repeat(lc->events->need_verify, NULL);
 done:
 	lwqq_http_request_free(req);
@@ -182,6 +190,58 @@ static void upcase_string(char *str, int len)
 			str[i]= toupper(str[i]);
 	}
 }
+
+
+
+char * replace(
+		char const * const original, 
+		char const * const pattern, 
+		char const * const replacement
+		) {
+	size_t const replen = strlen(replacement);
+	size_t const patlen = strlen(pattern);
+	size_t const orilen = strlen(original);
+
+	size_t patcnt = 0;
+	const char * oriptr;
+	const char * patloc;
+
+	// find how many times the pattern occurs in the original string
+	for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+	{
+		patcnt++;
+	}
+
+	{
+		// allocate memory for the new string
+		size_t const retlen = orilen + patcnt * (replen - patlen);
+		char * const returned = (char *) malloc( sizeof(char) * (retlen + 1) );
+
+		if (returned != NULL)
+		{
+			// copy the original string, 
+			// replacing all the instances of the pattern
+			char * retptr = returned;
+			for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
+			{
+				size_t const skplen = patloc - oriptr;
+				// copy the section until the occurence of the pattern
+				strncpy(retptr, oriptr, skplen);
+				retptr += skplen;
+				// copy the replacement 
+				strncpy(retptr, replacement, replen);
+				retptr += replen;
+			}
+			//                                                                                                                                   // copy the rest of the string.
+			strcpy(retptr, oriptr);
+		}
+		return returned;
+	}
+}
+
+
+
+
 /**
  * I hacked the javascript file named comm.js, which received from tencent
  * server, and find that fuck tencent has changed encryption algorithm
@@ -201,6 +261,7 @@ static void upcase_string(char *str, int len)
  */
 static char *lwqq_enc_pwd(const char *pwd, const char *vc, const char *uin)
 {
+	return lwqq_js_enc_pwd(pwd,replace(uin,"\\","-"),vc);
 	int i;
 	int uin_byte_length;
 	char buf[128] = {0};
@@ -232,6 +293,7 @@ static char *lwqq_enc_pwd(const char *pwd, const char *vc, const char *uin)
 		}
 		_uin[i] = tmp;
 	}
+	char* salt = s_strdup(_uin);
 	/* Equal to "var I=hexchar2bin(md5(M));" */
 	md5_buffer(pwd,strlen(pwd),sig);
 	memcpy(buf,sig,sizeof(sig));
@@ -253,6 +315,8 @@ static char *lwqq_enc_pwd(const char *pwd, const char *vc, const char *uin)
 	return s_strdup(buf);
 }
 
+
+
 /** 
  * Do really login
  * 
@@ -267,13 +331,34 @@ static LwqqAsyncEvent* do_login(LwqqClient *lc, const char *md5, LwqqErrorCode *
 	LwqqHttpRequest *req;
 
 	snprintf(url, sizeof(url), WEBQQ_LOGIN_HOST"/login?"
-			"u=%s&p=%s&verifycode=%s&"
-			"webqq_type=%d&remember_uin=1&aid=1003903&login2qq=1&"
-			"u1=http%%3A%%2F%%2Fweb.qq.com%%2Floginproxy.html"
-			"%%3Flogin2qq%%3D1%%26webqq_type%%3D10&h=1&ptredirect=0&"
-			"ptlang=2052&daid=164&from_ui=1&pttype=1&dumy=&fp=loginerroralert&"
-			"action=2-10-5837&mibao_css=m_webqq&t=1&g=1&js_type=0&js_ver=10034&login_sig=%s",
-			lc->username, md5, lc->vc->str,lc->stat,lc->login_sig);
+			"u=%s"
+			"&p=%s"
+			"&verifycode=%s"
+			"&webqq_type=%d"
+			"&remember_uin=1"
+			"&aid=1003903"
+			"&login2qq=1"
+			"&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10"
+			"&h=1"
+			"&ptredirect=0"
+			"&ptlang=2052"
+			"&daid=164"
+			"&from_ui=1"
+			"&pttype=1"
+			"&dumy="
+			"&fp=loginerroralert"
+			"&action=2-10-5837"
+			"&mibao_css=m_webqq"
+			"&t=1"
+			"&g=1"
+			"&js_type=0"
+			"&js_ver=10113"
+			"&login_sig=%s"
+			"&pt_uistyle=5"
+			"&pt_randsalt=0"
+			"&pt_vcode_v1=0"
+			"&pt_verifysession_v1=%s",
+			lc->username, md5, lc->vc->str,lc->stat,lc->login_sig,lc->pt_verifysession?:"");
 
 	req = lwqq_http_create_default_request(lc,url, err);
 	/* Setup http header */

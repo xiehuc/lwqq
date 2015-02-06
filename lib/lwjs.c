@@ -3,6 +3,7 @@
 #include "internal.h"
 
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #ifdef WITH_MOZJS
@@ -94,6 +95,32 @@ char* lwqq_js_hash(const char* uin,const char* ptwebqq,lwqq_js_t* js)
 	argv[0] = STRING_TO_JSVAL(uin_);
 	argv[1] = STRING_TO_JSVAL(ptwebqq_);
 	JS_CallFunctionName(js->context, global, "P", 2, argv, &res);
+
+	res_ = JS_EncodeString(js->context,JSVAL_TO_STRING(res));
+	char* ret = strdup(res_);
+	JS_free(js->context,res_);
+
+	return ret;
+}
+
+LWQQ_EXPORT
+char* lwqq_js_enc_pwd(const char* pwd, const char* salt, const char* vcode)
+{
+	lwqq_js_t* js = lwqq_js_init();
+//lwqq_js_load_buffer(js, buf );
+	lwqq_jso_t* obj = lwqq_js_load(js, "/tmp/encrypt.js");
+	JSObject* global = JS_GetGlobalObject(js->context);
+	jsval res;
+	jsval argv[2];
+	char* res_;
+
+	JSString* pwd_= JS_NewStringCopyZ(js->context, pwd);
+	JSString* salt_= JS_NewStringCopyZ(js->context, salt);
+	JSString* vcode_= JS_NewStringCopyZ(js->context, vcode);
+	argv[0] = STRING_TO_JSVAL(pwd_);
+	argv[1] = STRING_TO_JSVAL(salt_);
+	argv[2] = STRING_TO_JSVAL(vcode_);
+	JS_CallFunctionName(js->context, global, "encryption", 3, argv, &res);
 
 	res_ = JS_EncodeString(js->context,JSVAL_TO_STRING(res));
 	char* ret = strdup(res_);
