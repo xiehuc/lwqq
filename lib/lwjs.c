@@ -111,7 +111,7 @@ char* lwqq_js_enc_pwd(const char* pwd, const char* salt, const char* vcode)
 	lwqq_jso_t* obj = lwqq_js_load(js, "/tmp/encrypt.js");
 	JSObject* global = JS_GetGlobalObject(js->context);
 	jsval res;
-	jsval argv[2];
+	jsval argv[3];
 	char* res_;
 
 	JSString* pwd_= JS_NewStringCopyZ(js->context, pwd);
