@@ -123,6 +123,8 @@ if(ENABLE_DOCS AND NOT SPHINX_FOUND)
 	message(FATAL_ERROR "Reuired python-sphinx package not found")
 endif()
 
+set(RES_DIR "${CMAKE_INSTALL_PREFIX}/share/lwqq" CACHE STRING "A resource dir")
+
 #always true because we force enable sqlite
 set(WITH_SQLITE True)
 
@@ -145,12 +147,14 @@ configure_file(config.h.in ${PROJECT_BINARY_DIR}/lwqq-config.h)
 configure_file(lwqq.pc.in ${PROJECT_BINARY_DIR}/lwqq.pc @ONLY)
 install(FILES "${PROJECT_BINARY_DIR}/lwqq-config.h" DESTINATION include/lwqq)
 install(FILES "${PROJECT_BINARY_DIR}/lwqq.pc" DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+install(FILES encrypt.js DESTINATION "${RES_DIR}")
 add_subdirectory(lib)
 add_subdirectory(src)
 add_subdirectory(python)
 if(ENABLE_DOCS)
 	add_subdirectory(doc)
 endif()
+
 
 # package settings
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "lwqq provide a lightweight interconnection library to connect to the QQ network threw WebQQ")

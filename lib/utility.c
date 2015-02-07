@@ -69,6 +69,7 @@ const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type)
 	return NULL;
 }
 
+
 LWQQ_EXPORT
 void lwqq_util_add_path(const char* path)
 {
@@ -86,12 +87,11 @@ LWQQ_EXPORT
 char* lwqq_util_load_res(const char* resource, int security)
 {
 	char* filepath = NULL;
-	if(security){
-		struct ds filepath_ds = ds_initializer;
-		ds_cat(filepath_ds, LIST_FIRST(&resource_path)->path, "/", resource);
-		if(access(ds_c_str(filepath_ds), F_OK)==0)
-			filepath = ds_c_str(filepath_ds);
-	}else{
+	struct ds filepath_ds = ds_initializer;
+	ds_cat(filepath_ds, RES_DIR, "/", resource);
+	if(access(ds_c_str(filepath_ds), F_OK)==0)
+		filepath = ds_c_str(filepath_ds);
+	if(!security){
 		path_t* item;
 		LIST_FOREACH(item, &resource_path, entries){
 			struct ds filepath_ds = ds_initializer;

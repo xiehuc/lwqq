@@ -12,6 +12,7 @@
 #cmakedefine HAVE_STRTOK_R
 
 #define LWQQ_VERSION "@VERSION@"
+#define RES_DIR "@RES_DIR@"
 
 //use a single thread to poll message
 #define USE_MSG_THREAD 1
