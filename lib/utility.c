@@ -73,6 +73,8 @@ const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type)
 LWQQ_EXPORT
 void lwqq_util_add_path(const char* path)
 {
+	// TODO should consider file system security
+	// TODO should ignore path ends with '/'
 	path_t* item;
 	if(path==NULL) return;
 	LIST_FOREACH(item, &resource_path, entries){
