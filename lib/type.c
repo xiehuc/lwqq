@@ -211,10 +211,10 @@ void lwqq_client_free(LwqqClient *client)
 	s_free(client->port);
 	s_free(client->vfwebqq);
 	s_free(client->psessionid);
-	s_free(client->pt_verifysession);
 	s_free(client->new_ptwebqq);
 	s_free(client->login_sig);
 	s_free(client->session.ptwebqq);
+	s_free(client->session.pt_verifysession);
 	lwqq_buddy_free(client->myself);
 
 	//remove all extensions

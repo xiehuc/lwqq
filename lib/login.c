@@ -37,6 +37,14 @@
 /* URL for webqq login */
 #define APPID "1003903"
 
+#define replace(str, f, t)           \
+   do {                              \
+      char* chr = str;               \
+      while ((chr = strchr(chr, f))) \
+         *chr = t;                   \
+   } while (0)
+
+
 
 static LwqqAsyncEvent* set_online_status(LwqqClient *lc,const char *status);
 static int get_version_back(LwqqHttpRequest* req);
@@ -110,12 +118,9 @@ static int check_need_verify_back(LwqqHttpRequest* req)
 
 	if (need_vf == 0) {
 		/* We need get the ptvfsession from the header "Set-Cookie" */
-		char* pt_verifysession = lwqq_http_get_cookie(req, "ptvfsession");
-		lc->pt_verifysession = pt_verifysession;
-//		s_free(pt_verifysession);
+		lwqq_override(lc->session.pt_verifysession, lwqq_http_get_cookie(req, "ptvfsession"));
 		lwqq_log(LOG_NOTICE, "Verify code: %s\n", lc->vc->str);
 	} else if (need_vf == 1) {
-//		lc->pt_verifysession = lwqq_http_get_cookie(req,"verifysession");
 		err = LWQQ_EC_LOGIN_NEED_VC;
 		lwqq_log(LOG_NOTICE, "We need verify code image: %s\n", lc->vc->str);
 	}
@@ -158,8 +163,8 @@ static int request_captcha_back(LwqqHttpRequest* req,LwqqVerifyCode* code)
 	code->size = req->resp_len;
 	req->response = NULL;
 	lc->args->vf_image = code;
-	char* pt_verifysession = lwqq_http_get_cookie(req, "verifysession");
-	lc->pt_verifysession = pt_verifysession;
+
+	lwqq_override(lc->session.pt_verifysession, lwqq_http_get_cookie(req, "verifysession"));
 
 	vp_do_repeat(lc->events->need_verify, NULL);
 done:
@@ -181,140 +186,6 @@ static LwqqAsyncEvent* get_verify_image(LwqqClient *lc)
 	req->set_header(req, "Cookie", chkuin);
 	return req->do_request_async(req, lwqq__hasnot_post(),_C_(2p_i,request_captcha_back,req,lc->vc));
 }
-
-static void upcase_string(char *str, int len)
-{
-	int i;
-	for (i = 0; i < len; ++i) {
-		if (islower(str[i]))
-			str[i]= toupper(str[i]);
-	}
-}
-
-
-
-char * replace(
-		char const * const original, 
-		char const * const pattern, 
-		char const * const replacement
-		) {
-	size_t const replen = strlen(replacement);
-	size_t const patlen = strlen(pattern);
-	size_t const orilen = strlen(original);
-
-	size_t patcnt = 0;
-	const char * oriptr;
-	const char * patloc;
-
-	// find how many times the pattern occurs in the original string
-	for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
-	{
-		patcnt++;
-	}
-
-	{
-		// allocate memory for the new string
-		size_t const retlen = orilen + patcnt * (replen - patlen);
-		char * const returned = (char *) malloc( sizeof(char) * (retlen + 1) );
-
-		if (returned != NULL)
-		{
-			// copy the original string, 
-			// replacing all the instances of the pattern
-			char * retptr = returned;
-			for (oriptr = original; patloc = strstr(oriptr, pattern); oriptr = patloc + patlen)
-			{
-				size_t const skplen = patloc - oriptr;
-				// copy the section until the occurence of the pattern
-				strncpy(retptr, oriptr, skplen);
-				retptr += skplen;
-				// copy the replacement 
-				strncpy(retptr, replacement, replen);
-				retptr += replen;
-			}
-			//                                                                                                                                   // copy the rest of the string.
-			strcpy(retptr, oriptr);
-		}
-		return returned;
-	}
-}
-
-
-
-
-/**
- * I hacked the javascript file named comm.js, which received from tencent
- * server, and find that fuck tencent has changed encryption algorithm
- * for password in webqq3 . The new algorithm is below(descripted with javascript):
- * var M=C.p.value; // M is the qq password 
- * var I=hexchar2bin(md5(M)); // Make a md5 digest
- * var H=md5(I+pt.uin); // Make md5 with I and uin(see below)
- * var G=md5(H+C.verifycode.value.toUpperCase());
- * 
- * @param pwd User's password
- * @param vc Verify Code. e.g. "!M6C"
- * @param uin A string like "\x00\x00\x00\x00\x54\xb3\x3c\x53", NB: it
- *        must contain 8 hexadecimal number, in this example, it equaled
- *        to "0x0,0x0,0x0,0x0,0x54,0xb3,0x3c,0x53"
- * 
- * @return Encoded password on success, else NULL on failed
- */
-static char *lwqq_enc_pwd(const char *pwd, const char *vc, const char *uin)
-{
-	return lwqq_js_enc_pwd(pwd,replace(uin,"\\","-"),vc);
-	int i;
-	int uin_byte_length;
-	char buf[128] = {0};
-	unsigned char sig[32];
-	char _uin[9] = {0};
-
-	if (!pwd || !vc || !uin) {
-		lwqq_log(LOG_ERROR, "Null parameterment\n");
-		return NULL;
-	}
-
-
-	/* Calculate the length of uin (it must be 8?) */
-	uin_byte_length = strlen(uin) / 4;
-
-	/**
-	 * Ok, parse uin from string format.
-	 * "\x00\x00\x00\x00\x54\xb3\x3c\x53" -> {0,0,0,0,54,b3,3c,53}
-	 */
-	for (i = 0; i < uin_byte_length ; i++) {
-		char u[5] = {0};
-		char tmp;
-		strncpy(u, uin + i * 4 + 2, 2);
-
-		errno = 0;
-		tmp = strtol(u, NULL, 16);
-		if (errno) {
-			return NULL;
-		}
-		_uin[i] = tmp;
-	}
-	char* salt = s_strdup(_uin);
-	/* Equal to "var I=hexchar2bin(md5(M));" */
-	md5_buffer(pwd,strlen(pwd),sig);
-	memcpy(buf,sig,sizeof(sig));
-
-	/* Equal to "var H=md5(I+pt.uin);" */
-	memcpy(buf + 16, _uin, uin_byte_length);
-	md5_buffer(buf, 16 + uin_byte_length, sig);
-	md5_sig_to_string(sig,buf,sizeof(buf));
-
-	/* Equal to var G=md5(H+C.verifycode.value.toUpperCase()); */
-	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s", vc);
-	upcase_string(buf, strlen(buf));
-
-	md5_buffer(buf, strlen(buf), sig);
-	md5_sig_to_string(sig,buf,sizeof(buf));
-	upcase_string(buf, strlen(buf));
-
-	/* OK, seems like every is OK */
-	return s_strdup(buf);
-}
-
 
 
 /** 
@@ -358,7 +229,7 @@ static LwqqAsyncEvent* do_login(LwqqClient *lc, const char *md5, LwqqErrorCode *
 			"&pt_randsalt=0"
 			"&pt_vcode_v1=0"
 			"&pt_verifysession_v1=%s",
-			lc->username, md5, lc->vc->str,lc->stat,lc->login_sig,lc->pt_verifysession?:"");
+			lc->username, md5, lc->vc->str,lc->stat,lc->login_sig,lc->session.pt_verifysession?:"");
 
 	req = lwqq_http_create_default_request(lc,url, err);
 	/* Setup http header */
@@ -733,12 +604,18 @@ static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec)
 {
 	if(!lwqq_client_valid(lc)) return;
 	if(!lc->vc) return;
-	/* Third: calculate the md5 */
-	char *md5 = lwqq_enc_pwd(lc->password, lc->vc->str, lc->vc->uin);
+
+	char* js_txt = lwqq_util_load_res("encrypt.js", 1);
+	lwqq_js_t* js = lwqq_js_init();
+	lwqq_js_load_buffer(js, js_txt);
+	replace(lc->vc->uin, '\\', '-');
+	char* enc = lwqq_js_enc_pwd(lc->password, lc->vc->uin, lc->vc->str, js);
+	s_free(js_txt);
+	lwqq_js_close(js);
 
 	/* Last: do real login */
-	LwqqAsyncEvent* ev = do_login(lc, md5, NULL);
-	s_free(md5);
+	LwqqAsyncEvent* ev = do_login(lc, enc, NULL);
+	s_free(enc);
 	lwqq_async_add_event_listener(ev,_C_(2p,login_stage_5,ev,ec));
 
 }

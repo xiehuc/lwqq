@@ -328,6 +328,7 @@ struct LwqqClient {
 	char *new_ptwebqq;              /**< this only used when relogin */
 	struct {
 		char* ptwebqq;
+		char* pt_verifysession;
 	}session;
 
 	LwqqBuddy *myself;          /**< Myself */
@@ -352,7 +353,6 @@ struct LwqqClient {
 	/** non data area **/
 	void* data;                     /**< user defined data*/
 	int magic;          /**< 0x4153 **/
-	char *pt_verifysession;
 };
 #define lwqq_client_userdata(lc) (lc->data)
 #define lwqq_client_dispatch(lc,cmd) (lc->dispatch(cmd,0))

@@ -104,11 +104,8 @@ char* lwqq_js_hash(const char* uin,const char* ptwebqq,lwqq_js_t* js)
 }
 
 LWQQ_EXPORT
-char* lwqq_js_enc_pwd(const char* pwd, const char* salt, const char* vcode)
+char* lwqq_js_enc_pwd(const char* pwd, const char* salt, const char* vcode, lwqq_js_t* js)
 {
-	lwqq_js_t* js = lwqq_js_init();
-//lwqq_js_load_buffer(js, buf );
-	lwqq_jso_t* obj = lwqq_js_load(js, "/tmp/encrypt.js");
 	JSObject* global = JS_GetGlobalObject(js->context);
 	jsval res;
 	jsval argv[3];
