@@ -8,6 +8,13 @@
 #include "smemory.h"
 #include "internal.h"
 
+typedef struct path_t{
+	char* path;
+	LIST_ENTRY(path_t) entries;
+}path_t;
+
+static LIST_HEAD(, path_t) resource_path;
+
 LWQQ_EXPORT
 void lwqq_ct_free(LwqqConfirmTable* table)
 {
@@ -62,10 +69,50 @@ const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type)
 	return NULL;
 }
 
-size_t lwqq_util_rand(size_t seed, size_t e)
+LWQQ_EXPORT
+void lwqq_util_add_path(const char* path)
 {
-	srand(seed);
-	return (rand()/9+e/10)%e;
+	path_t* item;
+	if(path==NULL) return;
+	LIST_FOREACH(item, &resource_path, entries){
+		if(strcmp(item->path, path)==0) return;
+	}
+	path_t* ins = s_malloc0(sizeof(path_t));
+	ins->path = s_strdup(path);
+	LIST_INSERT_AFTER(item, ins, entries);
+}
+
+LWQQ_EXPORT
+char* lwqq_util_load_res(const char* resource, int security)
+{
+	char* filepath = NULL;
+	if(security){
+		struct ds filepath_ds = ds_initializer;
+		ds_cat(filepath_ds, LIST_FIRST(&resource_path)->path, "/", resource);
+		if(access(ds_c_str(filepath_ds), F_OK)==0)
+			filepath = ds_c_str(filepath_ds);
+	}else{
+		path_t* item;
+		LIST_FOREACH(item, &resource_path, entries){
+			struct ds filepath_ds = ds_initializer;
+			ds_cat(filepath_ds, item->path, "/", resource);
+			if(access(ds_c_str(filepath_ds), F_OK)==0){
+				filepath = ds_c_str(filepath_ds);
+			}
+			ds_free(filepath_ds);
+		}
+	}
+	if(filepath==NULL) return NULL;
+	FILE* f = fopen(filepath, "r");
+	fseek(f, 0, SEEK_END);
+	size_t length = ftell(f);
+	char* buffer = malloc(length);
+	fseek(f, 0, SEEK_SET);
+	fread(buffer, length, 1, f);
+
+	s_free(filepath);
+	fclose(f);
+	return buffer;
 }
 
 LWQQ_EXPORT

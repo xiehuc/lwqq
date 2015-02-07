@@ -231,21 +231,20 @@ typedef struct LwqqBuddy {
 	LIST_ENTRY(LwqqBuddy) entries; /* FIXME: Do we really need this? */
 } LwqqBuddy;
 
-
-typedef LIST_HEAD(LwqqFriendList,LwqqBuddy) 
-	LwqqFriendList;
-	typedef struct LwqqSimpleBuddy{
-		char* uin;
-		char* qq;
-		char* nick;
-		char* card;                 /* 群名片 */
-		LwqqClientType client_type;
-		LwqqStatus stat;
-		LwqqMemberFlags mflag;
-		char* cate_index;
-		char* group_sig;            /* only use at sess message */
-		LIST_ENTRY(LwqqSimpleBuddy) entries;
-	}LwqqSimpleBuddy;
+typedef LIST_HEAD(LwqqFriendList, LwqqBuddy)
+    LwqqFriendList;
+typedef struct LwqqSimpleBuddy {
+   char* uin;
+   char* qq;
+   char* nick;
+   char* card; /* 群名片 */
+   LwqqClientType client_type;
+   LwqqStatus stat;
+   LwqqMemberFlags mflag;
+   char* cate_index;
+   char* group_sig; /* only use at sess message */
+   LIST_ENTRY(LwqqSimpleBuddy) entries;
+} LwqqSimpleBuddy;
 
 /* QQ group */
 typedef struct LwqqGroup {
