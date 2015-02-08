@@ -605,10 +605,13 @@ static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec)
 	if(!lc->vc) return;
 
 	char* js_txt = lwqq_util_load_res("encrypt.js", 1);
+	size_t js_txt_len = strlen(js_txt);
 	lwqq_js_t* js = lwqq_js_init();
 	lwqq_js_load_buffer(js, js_txt);
 	replace(lc->vc->uin, '\\', '-');
 	char* enc = lwqq_js_enc_pwd(lc->password, lc->vc->uin, lc->vc->str, js);
+	// detect memory bug, could delete when stable
+	assert(js_txt_len == strlen(js_txt) && "memory collapse");
 	s_free(js_txt);
 	lwqq_js_close(js);
 

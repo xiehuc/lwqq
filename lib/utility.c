@@ -108,9 +108,10 @@ char* lwqq_util_load_res(const char* resource, int security)
 	FILE* f = fopen(filepath, "r");
 	fseek(f, 0, SEEK_END);
 	size_t length = ftell(f);
-	char* buffer = malloc(length);
+	char* buffer = malloc(length+1);
 	fseek(f, 0, SEEK_SET);
 	fread(buffer, length, 1, f);
+	buffer[length] = 0;
 
 	s_free(filepath);
 	fclose(f);
