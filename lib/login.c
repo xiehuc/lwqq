@@ -26,7 +26,6 @@
 #include "logger.h"
 #include "http.h"
 #include "smemory.h"
-#include "md5.h"
 #include "url.h"
 #include "json.h"
 #include "async.h"

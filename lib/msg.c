@@ -28,7 +28,7 @@
 #include "login.h"
 #include "info.h"
 
-#define LWQQ_MT_BITS  (~((-1)<<8))
+#define LWQQ_MT_BITS (~((-1) << 8))
 #ifdef WITHOUT_ASYNC
 #undef USE_MSG_THREAD
 #define USE_MSG_THREAD 1
@@ -43,14 +43,14 @@ static int upload_offline_file_back(LwqqHttpRequest* req,void* data);
 static int send_offfile_back(LwqqHttpRequest* req,void* data);
 static void insert_recv_msg_with_order(LwqqRecvMsgList* list,LwqqMsg* msg);
 
-typedef struct LwqqRecvMsgList_{
-	struct LwqqRecvMsgList parent;
-	LwqqPollOption flags;
-	LwqqHttpRequest* req;
-	unsigned long msg_id; // send message id, auto increment
-	int last_id;         // received last msg_id
-	pthread_t tid;
-	int running;
+typedef struct LwqqRecvMsgList_ {
+   struct LwqqRecvMsgList parent;
+   LwqqPollOption flags;
+   LwqqHttpRequest* req;
+   unsigned long msg_id; // send message id, auto increment
+   int last_id; // received last msg_id
+   pthread_t tid;
+   int running;
 } LwqqRecvMsgList_;
 #define RET_WELLFORM_MSG 0
 #define RET_DELAYINS_MSG 1
@@ -76,20 +76,20 @@ static struct LwqqTypeMap msg_type_map[] = {
 	{LWQQ_MT_UNKNOWN,            "unknow",                  },
 	{LWQQ_MT_UNKNOWN,            NULL,                      }
 };
-#define UNESCAPE(f,t) case f: ds_cat(write,t); break;
 //this table defines unsecape rule in send
-#define UNESCAPE_TABLE()       \
-   UNESCAPE('\n', "\\\\n");    \
-   UNESCAPE('\r', "\\\\n");    \
-   UNESCAPE('\t', "\\\\t");    \
-   UNESCAPE('\\', "\\\\\\\\"); \
-   UNESCAPE(';', "\\u003B");   \
-   UNESCAPE('&', "\\u0026");   \
-   UNESCAPE('"', "\\\\\\\"");  \
-   UNESCAPE('+', "\\u002B");   \
-   UNESCAPE('%', "\\u0025");   \
-   UNESCAPE('\'', "\\u0027");
-
+static
+TABLE_BEGIN_LONG(unescape, const char*, const char, "")
+TR('\n', "\\\\n");
+TR('\r', "\\\\n");
+TR('\t', "\\\\t");
+TR('\\', "\\\\\\\\");
+TR(';', "\\u003B");
+TR('&', "\\u0026");
+TR('"', "\\\\\\\"");
+TR('+', "\\u002B");
+TR('%', "\\u0025");
+TR('\'', "\\u0027");
+TABLE_END()
 
 static void group_member_has_chged(LwqqClient* lc,LwqqGroup* g)
 {
@@ -1728,9 +1728,9 @@ static void parse_unescape(char* source,struct ds* dest)
 			break;
 		}
 		ds_pokes_n(write, ptr, idx);
-		switch(ptr[idx]){
-			//note buf point the end position
-			UNESCAPE_TABLE();
+		const char* t;
+		if((t = unescape(ptr[idx]))){
+			ds_cat(write, t);
 		}
 		ptr+=idx+1;
 	}
