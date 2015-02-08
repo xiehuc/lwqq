@@ -82,7 +82,7 @@ void lwqq_util_add_path(const char* path)
 	}
 	path_t* ins = s_malloc0(sizeof(path_t));
 	ins->path = s_strdup(path);
-	LIST_INSERT_AFTER(item, ins, entries);
+	LIST_INSERT_HEAD(&resource_path, ins, entries);
 }
 
 LWQQ_EXPORT
@@ -90,14 +90,14 @@ char* lwqq_util_load_res(const char* resource, int security)
 {
 	char* filepath = NULL;
 	struct ds filepath_ds = ds_initializer;
-	ds_cat(filepath_ds, RES_DIR, "/", resource);
+	ds_cat(filepath_ds, RES_DIR, LWQQ_PATH_SEP, resource);
 	if(access(ds_c_str(filepath_ds), F_OK)==0)
 		filepath = ds_c_str(filepath_ds);
 	if(!security){
 		path_t* item;
 		LIST_FOREACH(item, &resource_path, entries){
 			struct ds filepath_ds = ds_initializer;
-			ds_cat(filepath_ds, item->path, "/", resource);
+			ds_cat(filepath_ds, item->path, LWQQ_PATH_SEP, resource);
 			if(access(ds_c_str(filepath_ds), F_OK)==0){
 				filepath = ds_c_str(filepath_ds);
 			}

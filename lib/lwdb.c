@@ -214,18 +214,6 @@ const char* lwdb_get_config_dir()
 	snprintf(buf, sizeof(buf), "%s"SEP".config"SEP"lwqq", home);
 #endif
 	return buf;
-#if 0
-	database_path = s_strdup(buf);
-
-
-	if (access(database_path, F_OK)) {
-		/* Create a new config directory if we dont have */
-		mkdir(database_path, 0777);
-	}
-
-	snprintf(buf, sizeof(buf), "%s/lwqq.db", database_path);
-	global_database_name = s_strdup(buf);
-#endif
 }
 
 LWQQ_EXPORT

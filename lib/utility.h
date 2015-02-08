@@ -37,7 +37,14 @@ char* lwqq_util_hashO(const char* uin,const char* ptwebqq,void*);
 char* lwqq_util_hashP(const char* uin,const char* ptwebqq,void*);
 char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused);
 #define lwqq_util_rand(seed,e) (srand(seed),(rand()/9+e/10)%e)
+// add a path into resource
 void lwqq_util_add_path(const char* path);
+/** find a resource in all path
+ * @param resource: a file name should be load
+ * @param security: if true, only read file from a static system path
+ *		to keep security, because if we read file(encrypt.js) from user dir
+ *		any software can override js file, and send password to outside
+ */
 char* lwqq_util_load_res(const char* resource, int security);
 
 #define lwqq_group_pretty_name(g) (g->markname?:g->name)
