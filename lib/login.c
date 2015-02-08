@@ -611,6 +611,12 @@ static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec)
 	char* enc = lwqq_js_enc_pwd(lc->password, lc->vc->uin, lc->vc->str, js);
 	s_free(js_txt);
 	lwqq_js_close(js);
+	if(!enc) {
+		lwqq_log(LOG_ERROR, "Unknown error\n");
+		lc->stat = LWQQ_STATUS_LOGOUT;
+		vp_do_repeat(lc->events->login_complete, NULL);
+		return ;
+	}
 
 	/* Last: do real login */
 	LwqqAsyncEvent* ev = do_login(lc, enc, NULL);
