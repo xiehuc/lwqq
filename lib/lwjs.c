@@ -97,6 +97,7 @@ char* lwqq_js_hash(const char* uin,const char* ptwebqq,lwqq_js_t* js)
 	JS_CallFunctionName(js->context, global, "P", 2, argv, &res);
 
 	res_ = JS_EncodeString(js->context,JSVAL_TO_STRING(res));
+	if(!res_) return 0;
 	char* ret = strdup(res_);
 	JS_free(js->context,res_);
 
@@ -119,7 +120,9 @@ char* lwqq_js_enc_pwd(const char* pwd, const char* salt, const char* vcode, lwqq
 	argv[2] = STRING_TO_JSVAL(vcode_);
 	JS_CallFunctionName(js->context, global, "encryption", 3, argv, &res);
 
+	if(!res.s.payload.i32 && !res.s.payload.u32) return 0;
 	res_ = JS_EncodeString(js->context,JSVAL_TO_STRING(res));
+	if(!res_) return 0;
 	char* ret = strdup(res_);
 	JS_free(js->context,res_);
 

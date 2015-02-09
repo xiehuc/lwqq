@@ -614,6 +614,12 @@ static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec)
 	assert(js_txt_len == strlen(js_txt) && "memory collapse");
 	s_free(js_txt);
 	lwqq_js_close(js);
+	if(!enc) {
+		lwqq_log(LOG_ERROR, "Unknown error\n");
+		lc->stat = LWQQ_STATUS_LOGOUT;
+		vp_do_repeat(lc->events->login_complete, NULL);
+		return ;
+	}
 
 	/* Last: do real login */
 	LwqqAsyncEvent* ev = do_login(lc, enc, NULL);
