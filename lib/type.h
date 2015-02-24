@@ -325,7 +325,7 @@ struct LwqqClient {
 	char *gface_sig;                  /**<use at cfage */
 	char *login_sig;
 	char *error_description;
-	char *new_ptwebqq;              /**< this only used when relogin */
+	//char *new_ptwebqq;              /**< this only used when relogin */
 	struct {
 		char* ptwebqq;
 		char* pt_verifysession;

@@ -1410,8 +1410,8 @@ static int parse_recvmsg_from_json(LwqqRecvMsgList *list, const char *str)
 
 	if(retcode == LWQQ_EC_PTWEBQQ){
 		LwqqClient* lc = list->lc;
-		lwqq_override(lc->new_ptwebqq,lwqq__json_get_value(json,"p"));
-		lwqq_verbose(3,"[new ptwebqq:%s]\n",lc->new_ptwebqq);
+		lwqq_override(lc->session.ptwebqq, lwqq__json_get_value(json,"p"));
+		lwqq_verbose(3,"[new ptwebqq:%s]\n",lc->session.ptwebqq);
 	}
 	if(retcode != LWQQ_EC_OK) goto done;
 
@@ -1572,6 +1572,7 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 {
 	LwqqClient* lc = req->lc;
 	LwqqRecvMsgList* list = lc->msg_list;
+	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)lc->msg_list;
 	LwqqAsyncEvent* ev = NULL;
 	LwqqErrorCode ret = req->err;
 	if(ret == LWQQ_EC_CANCELED) // cancel by user, so no need notify user
@@ -1606,9 +1607,10 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 			return LWQQ_EC_ERROR;
 			break;
 		case LWQQ_EC_PTWEBQQ:
-			//just need do some things when relogin
-			//lwqq_set_cookie(lc->cookies, "ptwebqq", lc->new_ptwebqq);
-			lwqq_http_set_cookie(req, "ptwebqq", lc->new_ptwebqq, 1);
+			// wait 1 second to restart a new connection
+			lwqq_http_set_cookie(req, "ptwebqq", lc->session.ptwebqq, 1);
+			lc->dispatch(_C_(pi, lwqq_msglist_poll, list, list_->flags), 1000); 
+			return LWQQ_EC_ERROR;
 			break;
 		case LWQQ_EC_NOT_JSON_FORMAT:
 			lwqq_client_dispatch(lc,_C_(p,dispatch_poll_lost,lc));
