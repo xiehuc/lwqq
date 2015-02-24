@@ -169,7 +169,7 @@ static int send_f(int argc, char **argv)
         return 0;
     }
     
-    lwqq_msg_send_simple(lc,LWQQ_MS_BUDDY_MSG, argv[1], argv[2]);
+    lwqq_msg_send_text(lc,LWQQ_MS_BUDDY_MSG, argv[1], argv[2]);
     
     return 0;
 }

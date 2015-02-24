@@ -418,7 +418,7 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg);
  * @param message
  * @return same as lwqq_msg_send
  */
-int lwqq_msg_send_simple(LwqqClient* lc,int type,const char* to,const char* message);
+int lwqq_msg_send_text(LwqqClient* lc,int type,const char* to,const char* message);
 /**
  * more easy way to send message
  */

@@ -2159,7 +2159,7 @@ failed:
 }
 
 LWQQ_EXPORT
-int lwqq_msg_send_simple(LwqqClient* lc,int type,const char* to,const char* message)
+int lwqq_msg_send_text(LwqqClient* lc,int type,const char* to,const char* message)
 {
 	if(!lc||!to||!message)
 		return 0;

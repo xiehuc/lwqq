@@ -147,6 +147,7 @@ typedef enum {
 	LWQQ_EC_UPLOAD_OVERSIZE  = -21,
 	LWQQ_EC_UPLOAD_OVERRETRY = -20,
 	//network error code
+	LWQQ_EC_SSL_ERROR        = -12,
 	LWQQ_EC_HTTP_ERROR       = -11,
 	LWQQ_EC_NETWORK_ERROR    = -10,
 	//system error code

@@ -91,6 +91,15 @@ TABLE_BEGIN(proxy_map,long,0)
 	TR(LWQQ_HTTP_PROXY_SOCKS5,   CURLPROXY_SOCKS5)
 TABLE_END()
 
+static
+TABLE_BEGIN(errno_map, LwqqErrorCode, LWQQ_EC_ERROR)
+	TR(CURLE_OK                 , LWQQ_EC_OK          )
+	TR(CURLE_OPERATION_TIMEDOUT , LWQQ_EC_TIMEOUT_OVER)
+	TR(CURLE_ABORTED_BY_CALLBACK, LWQQ_EC_CANCELED    )
+	TR(CURLE_TOO_MANY_REDIRECTS , LWQQ_EC_OK          )
+	TR(CURLE_SSL_CONNECT_ERROR  , LWQQ_EC_SSL_ERROR   )
+TABLE_END()
+
 static GLOBAL global = {0};
 static pthread_cond_t async_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t async_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -436,7 +445,7 @@ LwqqHttpRequest *lwqq_http_request_new(const char *uri)
 	curl_easy_setopt(request->req,CURLOPT_SSL_VERIFYPEER,0);
 	curl_easy_setopt(request->req,CURLOPT_SSL_VERIFYHOST,0);
 	curl_easy_setopt(request->req,CURLOPT_DEBUGFUNCTION,curl_debug_redirect);
-	curl_easy_setopt(request->req, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_1); //force using tls v1.1
+	curl_easy_setopt(request->req, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1); //force using tls v1.1
 	request->do_request = lwqq_http_do_request;
 	request->do_request_async = lwqq_http_do_request_async;
 	request->set_header = lwqq_http_set_header;
@@ -630,20 +639,14 @@ static int set_error_code(LwqqHttpRequest* req,CURLcode err,LwqqErrorCode* ec)
 	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
 	if(err == CURLE_ABORTED_BY_CALLBACK && req_->bits & HTTP_FORCE_CANCEL)
 		req_->retry_ = 0;
-	if(err == CURLE_TOO_MANY_REDIRECTS)
-		req_->retry_ = 0;
-	if(err == CURLE_COULDNT_RESOLVE_HOST)
+	if(err == CURLE_TOO_MANY_REDIRECTS || err == CURLE_COULDNT_RESOLVE_HOST)
 		req_->retry_ = 0;
 	req_->retry_ --;
 	if(req_->tmo_inc > 0)
 		curl_easy_setopt(req->req, CURLOPT_LOW_SPEED_TIME, req_->timeout + req_->tmo_inc*(req->retry-req_->retry_));
-	if(req_->retry_ >= 0){
+	if(req_->retry_ >= 0)
 		return 1;
-	}
-	if(err == CURLE_OPERATION_TIMEDOUT) *ec = LWQQ_EC_TIMEOUT_OVER;
-	else if(err == CURLE_ABORTED_BY_CALLBACK) *ec = LWQQ_EC_CANCELED;
-	else if(err == CURLE_TOO_MANY_REDIRECTS) *ec = LWQQ_EC_OK;
-	else *ec = LWQQ_EC_ERROR;
+	*ec = errno_map(err);
 	return 0;
 }
 static void check_multi_info(GLOBAL *g)
@@ -1213,7 +1216,7 @@ LwqqHttpHandle* lwqq_http_handle_new()
 	CURLSH* share = h_->share;
 	curl_share_setopt(share,CURLSHOPT_SHARE,CURL_LOCK_DATA_DNS);
 	curl_share_setopt(share,CURLSHOPT_SHARE,CURL_LOCK_DATA_CONNECT);
-	curl_share_setopt(share,CURLSHOPT_SHARE,CURL_LOCK_DATA_SSL_SESSION);
+	//curl_share_setopt(share,CURLSHOPT_SHARE,CURL_LOCK_DATA_SSL_SESSION);
 	curl_share_setopt(share,CURLSHOPT_SHARE,CURL_LOCK_DATA_COOKIE);
 	curl_share_setopt(share,CURLSHOPT_LOCKFUNC,share_lock);
 	curl_share_setopt(share,CURLSHOPT_UNLOCKFUNC,share_unlock);
