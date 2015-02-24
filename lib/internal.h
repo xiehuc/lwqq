@@ -12,6 +12,8 @@
 #define LWQQ_EXPORT
 #endif
 
+#define WEBQQ_VERSION "20130916001"
+
 #define WEBQQ_LOGIN_UI_HOST "https://ui.ptlogin2.qq.com"
 #define WEBQQ_CAPTCHA_HOST  "https://ssl.captcha.qq.com"
 #define WEBQQ_LOGIN_HOST    "https://ssl.ptlogin2.qq.com"
@@ -20,7 +22,7 @@
 #define WEBQQ_HOST          "http://web2.qq.com"
 #define WQQ_HOST            "http://w.qq.com"
 
-#define WEBQQ_S_REF_URL     WEBQQ_S_HOST"/proxy.html?v=201104120011&callback=1&id=1"
+#define WEBQQ_S_REF_URL     WEBQQ_S_HOST"/proxy.html?v="WEBQQ_VERSION"&callback=1&id=1"
 #define WEBQQ_LOGIN_REF_URL WEBQQ_LOGIN_HOST"/proxy.html"
 #define WEBQQ_VERSION_URL   WEBQQ_LOGIN_UI_HOST"/cgi-bin/ver"
 #define WEBQQ_VERSION_URL   WEBQQ_LOGIN_UI_HOST"/cgi-bin/ver"
@@ -30,43 +32,15 @@
 			"%%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_stat=%d&t=%lu",\
 			lc->stat,LTIME),buf)
 
-#if 0
-#ifdef ENABLE_SSL
-//ssl switcher
-#define SSL_(ssl,normal) ssl
-#else
-#define SSL_(ssl,normal) normal
-#endif
-
-#define SSL__ 1
-
-#define H_ SSL_("https://","http://")
-//normal ssl switcher
-#define S_(normal) SSL_("ssl.",normal)
-//standard http header+ssl switcher
-#define H_S_ H_ S_("")
-
-#define WEBQQ_PROXY SSL_("cfproxy.html?v=20110331002&callback=1","proxy.html?v=20110331002&callback=1")
-
-#define WEBQQ_LOGIN_UI_HOST H_"ui.ptlogin2.qq.com"
-#define WEBQQ_CHECK_HOST    H_ S_("check.")"ptlogin2.qq.com"
-#define WEBQQ_LOGIN_HOST    H_S_"ptlogin2.qq.com"
-#define WEBQQ_CAPTCHA_HOST  H_S_"captcha.qq.com"
-//#define WEBQQ_D_HOST        H_"d.web2.qq.com"
-#define WEBQQ_D_HOST(url)  "%s"url,H_"d.web2.qq.com"
-#define WEBQQ_S_HOST(url)   "http://s.web2.qq.com"url
-
-#define WEBQQ_D_REF_URL     (SSL__)?\
-	"https://d.web2.qq.com/cfproxy.html?v=20110331002&callback=1":\
-"http://d.web2.qq.com/proxy.html?v=20110331002&callback=1"
-#define WEBQQ_S_REF_URL     WEBQQ_S_HOST("/proxy.html?v=201103311002&callback=1")
-#define WEBQQ_LOGIN_REF_URL WEBQQ_LOGIN_HOST"/proxy.html"
-#define WEBQQ_VERSION_URL   WEBQQ_LOGIN_UI_HOST"/cgi-bin/ver"
-
-#define WEBQQ_LOGIN_LONG_REF_URL(buf) (snprintf(buf,sizeof(buf),\
-			WEBQQ_LOGIN_UI_HOST"/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_stat=%d&t=%lu",lc->stat,LTIME),buf)
-#endif
-
+#define lwqq_http_ssl(lc) (lwqq_get_http_handle(lc)->ssl)
+#define __SSL lwqq_http_ssl(lc)
+#define __H(url) __SSL?"https://"url:"http://"url
+#define WEBQQ_D_REF_URL (__SSL)?\
+	"https://d.web2.qq.com/cfproxy.html?v="WEBQQ_VERSION"&callback=1":\
+	"http://d.web2.qq.com/proxy.html?v="WEBQQ_VERSION"&callback=1"
+#define WEBQQ_D_HOST        __H("d.web2.qq.com")
+// at now, only get_offpic2 use WQQ_D_HOST
+#define WQQ_D_HOST          "http://w.qq.com/d"
 
 #define slist_free_all(list) \
 	while(list!=NULL){ \

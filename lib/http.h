@@ -15,16 +15,6 @@
 #include "type.h"
 #include "async.h"
 
-#define lwqq_http_ssl(lc) (lwqq_get_http_handle(lc)->ssl)
-#define __SSL lwqq_http_ssl(lc)
-#define __H(url) __SSL?"https://"url:"http://"url
-#define WEBQQ_D_REF_URL (__SSL)?\
-	"https://d.web2.qq.com/cfproxy.html?v=20110331002&callback=1":\
-"http://d.web2.qq.com/proxy.html?v=20110331002&callback=1"
-#define WEBQQ_D_HOST        __H("d.web2.qq.com")
-// at now, only get_offpic2 use WQQ_D_HOST
-#define WQQ_D_HOST          "http://w.qq.com/d"
-
 typedef enum {
 	LWQQ_FORM_FILE,// use add_file_content instead
 	LWQQ_FORM_CONTENT

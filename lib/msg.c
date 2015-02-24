@@ -1648,8 +1648,9 @@ static void *start_poll_msg(void *msg_list)
 
 	lc = (LwqqClient *)(list->lc);
 	if (!lc) return NULL;
-	snprintf(msg, sizeof(msg), "r={\"clientid\":\"%s\",\"psessionid\":\"%s\"}",
-			lc->clientid, lc->psessionid);
+	snprintf(msg, sizeof(msg), "r={\"ptwebqq\":\"%s\","
+			"\"clientid\":\"%s\",\"psessionid\":\"%s\",\"key\":\"\""
+			"}", lc->session.ptwebqq, lc->clientid, lc->psessionid);
 	urlencode(msg, 2);
 
 	/* Create a POST request */
@@ -1658,7 +1659,8 @@ static void *start_poll_msg(void *msg_list)
 	req = lwqq_http_create_default_request(lc,url, NULL);
 	list_->req = req;
 	req->set_header(req, "Referer", WEBQQ_D_REF_URL);
-	req->set_header(req, "Content-Transfer-Encoding", "binary");
+	req->set_header(req, "Accept-Encoding", "gzip, deflate");
+	//req->set_header(req, "Content-Transfer-Encoding", "binary");
 	req->set_header(req, "Content-Type", "application/x-www-form-urlencoded");
 	//long poll timeout is 90s.official value
 	lwqq_http_set_option(req, LWQQ_HTTP_CANCELABLE,1L);
