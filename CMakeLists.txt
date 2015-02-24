@@ -94,6 +94,7 @@ endif(WIN32)
 
 include(CheckFunctionExists)
 CHECK_FUNCTION_EXISTS(strtok_r HAVE_STRTOK_R)
+CHECK_FUNCTION_EXISTS(open_memstream HAVE_OPEN_MEMSTREAM)
 
 option(WITH_LIBEV "Use Libev To Provide Async " ${EV_FOUND})
 if(WITH_LIBEV AND NOT EV_FOUND)

@@ -56,7 +56,7 @@ struct _LwqqHttpRequest {
 	char *response;
 
 	/* Response length, NB: the response may not terminate with '\0' */
-	int resp_len;
+	size_t resp_len;
 
 	/**
 	 * Send a request to server, method is GET(0) or POST(1), if we make a

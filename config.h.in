@@ -10,6 +10,9 @@
 #cmakedefine MOZJS_17
 
 #cmakedefine HAVE_STRTOK_R
+// using open_memstream in http.c
+// direct write response to mem file
+#cmakedefine HAVE_OPEN_MEMSTREAM 
 
 #define LWQQ_VERSION "@VERSION@"
 #define RES_DIR "@RES_DIR@"

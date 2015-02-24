@@ -74,7 +74,11 @@ typedef struct LwqqHttpRequest_
 	short retry_;
 	short timeout;                     // timeout orginal
 	short tmo_inc;                     // timeout increment
+#ifdef HAVE_OPEN_MEMSTREAM
+	FILE* mem_buf;
+#else
 	SIMPLEQ_HEAD(,trunk_entry) trunks;
+#endif
 }LwqqHttpRequest_;
 
 typedef struct LwqqHttpHandle_
@@ -140,30 +144,16 @@ int lwqq_gdb_whats_running()
 }
 #endif
 
-static void composite_trunks(LwqqHttpRequest* req)
-{
-	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
-	if(SIMPLEQ_EMPTY(&req_->trunks)) return;
-	size_t size = 0;
-	struct trunk_entry* trunk;
-	SIMPLEQ_FOREACH(trunk,&req_->trunks,entries){
-		size += trunk->size;
-	}
-	req->response = s_malloc0(size+10);
-	req->resp_len = 0;
-	while((trunk = SIMPLEQ_FIRST(&req_->trunks))){
-		SIMPLEQ_REMOVE_HEAD(&req_->trunks,entries);
-		memcpy(req->response+req->resp_len,trunk->trunk,trunk->size);
-		req->resp_len+=trunk->size;
-		s_free(trunk->trunk);
-		s_free(trunk);
-	}
-}
+//clean states between two curl request
 static void http_clean(LwqqHttpRequest* req) 
-	//clean states between two curl request
 {
 	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
+#ifdef HAVE_OPEN_MEMSTREAM
+	if(req_->mem_buf) fclose(req_->mem_buf);
+	req_->mem_buf = NULL;
+#else
 	composite_trunks(req);
+#endif
 	s_free(req->response);
 	req->resp_len = 0;
 	req->http_code = 0;
@@ -311,7 +301,7 @@ int lwqq_http_request_free(LwqqHttpRequest *request)
 	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) request;
 
 	if (request) {
-		composite_trunks(request);
+		http_clean(request);
 		s_free(request->response);
 		s_free(request->location);
 		curl_slist_free_all(request->header);
@@ -349,6 +339,7 @@ static size_t write_header( void *ptr, size_t size, size_t nmemb, void *userdata
 	request->recv_head = curl_slist_append(request->recv_head,(char*)ptr);
 	return size*nmemb;
 }
+#ifndef HAVE_OPEN_MEMSTREAM
 static size_t write_content(const char* ptr,size_t size,size_t nmemb,void* userdata)
 {
 	LwqqHttpRequest* req = (LwqqHttpRequest*) userdata;
@@ -389,6 +380,26 @@ static size_t write_content(const char* ptr,size_t size,size_t nmemb,void* userd
 	req->resp_len+=sz_;
 	return sz_;
 }
+static void composite_trunks(LwqqHttpRequest* req)
+{
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
+	if(SIMPLEQ_EMPTY(&req_->trunks)) return;
+	size_t size = 0;
+	struct trunk_entry* trunk;
+	SIMPLEQ_FOREACH(trunk,&req_->trunks,entries){
+		size += trunk->size;
+	}
+	req->response = s_malloc0(size+10);
+	req->resp_len = 0;
+	while((trunk = SIMPLEQ_FIRST(&req_->trunks))){
+		SIMPLEQ_REMOVE_HEAD(&req_->trunks,entries);
+		memcpy(req->response+req->resp_len,trunk->trunk,trunk->size);
+		req->resp_len+=trunk->size;
+		s_free(trunk->trunk);
+		s_free(trunk);
+	}
+}
+#endif
 static int curl_debug_redirect(CURL* h,curl_infotype t,char* msg,size_t len,void* data)
 {
 	static char buffer[8192*10];
@@ -418,7 +429,6 @@ LwqqHttpRequest *lwqq_http_request_new(const char *uri)
 	request = s_malloc0(sizeof(LwqqHttpRequest_));
 	req_ = (LwqqHttpRequest_*)request;
 	req_->timeout = 15;
-	SIMPLEQ_INIT(&req_->trunks);
 
 	request->req = curl_easy_init();
 	request->retry = LWQQ_RETRY_VALUE;
@@ -432,8 +442,6 @@ LwqqHttpRequest *lwqq_http_request_new(const char *uri)
 	}
 	curl_easy_setopt(request->req,CURLOPT_HEADERFUNCTION,write_header);
 	curl_easy_setopt(request->req,CURLOPT_HEADERDATA,request);
-	curl_easy_setopt(request->req,CURLOPT_WRITEFUNCTION,write_content);
-	curl_easy_setopt(request->req,CURLOPT_WRITEDATA,request);
 	curl_easy_setopt(request->req,CURLOPT_NOSIGNAL,1);
 	curl_easy_setopt(request->req,CURLOPT_FOLLOWLOCATION,1);
 	curl_easy_setopt(request->req,CURLOPT_CONNECTTIMEOUT,20);
@@ -605,28 +613,54 @@ static void uncompress_response(LwqqHttpRequest* req)
 	req->resp_len = total;
 }
 
+// do some setting before a curl process complete
+static void curl_network_begin(LwqqHttpRequest* req)
+{
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
+#ifdef HAVE_OPEN_MEMSTREAM
+	curl_easy_setopt(req->req,CURLOPT_WRITEFUNCTION,NULL);
+	req_->mem_buf = open_memstream(&req->response, &req->resp_len);
+	curl_easy_setopt(req->req, CURLOPT_WRITEDATA, req_->mem_buf);
+#else
+	SIMPLEQ_INIT(&req_->trunks);
+	curl_easy_setopt(req->req,CURLOPT_WRITEFUNCTION,write_content);
+	curl_easy_setopt(req->req,CURLOPT_WRITEDATA,req);
+#endif
+}
+// do some setting after a curl process complete
+static void curl_network_complete(LwqqHttpRequest* req)
+{
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
+	long http_code = 0;
+	curl_easy_getinfo(req->req,CURLINFO_RESPONSE_CODE,&http_code);
+	req->http_code = http_code;
+	
+#ifdef HAVE_OPEN_MEMSTREAM
+	if(req_->mem_buf) fclose(req_->mem_buf);
+	req_->mem_buf = NULL;
+#else
+	composite_trunks(req);
+#endif
+
+	/* NB: *response may null */
+	if (req->response != NULL) {
+		/* Uncompress data here if we have a Content-Encoding header */
+		const char *enc_type = lwqq_http_get_header(req, "Content-Encoding");
+		if (enc_type && strstr(enc_type, "gzip")) {
+			uncompress_response(req);
+		}
+	}
+}
+
 static void async_complete(D_ITEM* conn)
 {
 	LwqqHttpRequest* request = conn->req;
+
+	curl_network_complete(request);
+
 	if(!lwqq_client_valid(request->lc))
 		goto cleanup;
-	composite_trunks(request);
 	int res = 0;
-	long http_code = 0;
-	char** resp = &request->response;
-
-	curl_easy_getinfo(request->req,CURLINFO_RESPONSE_CODE,&http_code);
-	request->http_code = http_code;
-
-	/* NB: *response may null */
-	if (*resp != NULL) {
-		/* Uncompress data here if we have a Content-Encoding header */
-		const char *enc_type = NULL;
-		enc_type = lwqq_http_get_header(request, "Content-Encoding");
-		if (enc_type && strstr(enc_type, "gzip")) {
-			uncompress_response(request);
-		}
-	}
 	// record error when network communication
 	if(conn->req) conn->req->err = conn->event->result;
 	vp_do(conn->cmd,&res);
@@ -868,6 +902,9 @@ static LwqqAsyncEvent* lwqq_http_do_request_async(LwqqHttpRequest *request, int 
 	if(global.multi == NULL){
 		lwqq_http_global_init();
 	}
+
+	curl_network_begin(request);
+
 	D_ITEM* di = s_malloc0(sizeof(*di));
 	curl_easy_setopt(request->req,CURLOPT_PRIVATE,di);
 	di->cmd = command;
@@ -888,7 +925,6 @@ static int lwqq_http_do_request(LwqqHttpRequest *request, int method, char *body
 		return -1;
 	CURLcode ret;
 	http_reset(request);
-	long http_code = 0;
 	// mark this request is synced
 	((LwqqHttpRequest_*)request)->bits |= HTTP_SYNCED;
 retry:
@@ -907,8 +943,12 @@ retry:
 		return -1;
 	}
 
+	curl_network_begin(request);
+
 	ret = curl_easy_perform(request->req);
-	composite_trunks(request);
+
+	curl_network_complete(request);
+
 	if(ret != CURLE_OK){
 		lwqq_log(LOG_ERROR,"do_request fail curlcode:%d\n",ret);
 		LwqqErrorCode ec;
@@ -917,18 +957,6 @@ retry:
 		}
 		request->err = ec;
 		return ec;
-	}
-
-	curl_easy_getinfo(request->req,CURLINFO_RESPONSE_CODE,&http_code);//safely copy to structure
-	request->http_code = http_code;
-
-	if (request->response) {
-		/* Uncompress data here if we have a Content-Encoding header */
-		const char *enc_type = NULL;
-		enc_type = lwqq_http_get_header(request, "Content-Encoding");
-		if (enc_type && strstr(enc_type, "gzip")) {
-			uncompress_response(request);
-		}
 	}
 
 	return 0;
