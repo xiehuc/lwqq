@@ -1607,8 +1607,8 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 			return LWQQ_EC_ERROR;
 			break;
 		case LWQQ_EC_PTWEBQQ:
-			// wait 1 second to restart a new connection
 			lwqq_http_set_cookie(req, "ptwebqq", lc->session.ptwebqq, 1);
+			// wait 1 second to restart a new connection
 			lc->dispatch(_C_(pi, lwqq_msglist_poll, list, list_->flags), 1000); 
 			return LWQQ_EC_ERROR;
 			break;
@@ -1628,12 +1628,21 @@ static void receive_poll_message(LwqqHttpRequest* req,char* post)
 		LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)lc->msg_list;
 		list_->req = NULL;
 		s_free(post);
+		lwqq_puts("quit the msg_thread");
+		try_restart_poll(lc);
 		return;
 	}
 	req->do_request_async(req,1,post,_C_(2p,receive_poll_message,req,post));
 }
 #endif
 
+static void try_restart_poll(LwqqClient* lc)
+{
+	if(lwqq_client_valid(lc) && lwqq_client_logined(lc)){
+		LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*) lc->msg_list;
+		lwqq_msglist_poll(lc->msg_list, list_->flags);
+	}
+}
 
 /**
  * Poll to receive message.
@@ -1677,11 +1686,11 @@ static void *start_poll_msg(void *msg_list)
 	lwqq_puts("quit the msg_thread");
 	if(req) lwqq_http_request_free(req);
 	list_->req = NULL;
-	return NULL;
+	try_restart_poll(lc);
 #else
 	req->do_request_async(req,1,msg,_C_(2p,receive_poll_message,req,s_strdup(msg)));
-	return NULL;
 #endif
+	return NULL;
 }
 
 LWQQ_EXPORT

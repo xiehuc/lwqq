@@ -663,6 +663,7 @@ static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
 LWQQ_EXPORT
 LwqqErrorCode lwqq_logout(LwqqClient* lc, unsigned wait_time)
 {
+	lc->stat = LWQQ_STATUS_LOGOUT;
 	LWQQ_SYNC_BEGIN(lc);
 	LwqqAsyncEvent* ev = lwqq_info_change_status(lc, LWQQ_STATUS_OFFLINE);
 	LWQQ_SYNC_END(lc);
