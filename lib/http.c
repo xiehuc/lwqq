@@ -608,6 +608,8 @@ static void uncompress_response(LwqqHttpRequest* req)
 static void async_complete(D_ITEM* conn)
 {
 	LwqqHttpRequest* request = conn->req;
+	if(!lwqq_client_valid(request->lc))
+		goto cleanup;
 	composite_trunks(request);
 	int res = 0;
 	long http_code = 0;
@@ -631,8 +633,8 @@ static void async_complete(D_ITEM* conn)
 	// copy out error code internal
 	conn->event->result = res;
 	lwqq_async_event_finish(conn->event);
+cleanup:
 	s_free(conn);
-	return ;
 }
 static int set_error_code(LwqqHttpRequest* req,CURLcode err,LwqqErrorCode* ec)
 {
