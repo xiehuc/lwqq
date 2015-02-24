@@ -44,16 +44,17 @@ const char* lwqq_version = LWQQ_VERSION;
 
 #define HASH_ENTRY_SIZE 8
 
-static struct LwqqTypeMap status_type_map[] = {
-	{LWQQ_STATUS_ONLINE  ,"online",   },
-	{LWQQ_STATUS_OFFLINE ,"offline",     },
-	{LWQQ_STATUS_AWAY    ,"away",        },
-	{LWQQ_STATUS_HIDDEN  ,"hidden",      },
-	{LWQQ_STATUS_BUSY    ,"busy",        },
-	{LWQQ_STATUS_CALLME  ,"callme",      },
-	{LWQQ_STATUS_SLIENT  ,"slient",      },
-	{LWQQ_STATUS_LOGOUT  ,NULL,          }
-};
+#define key_eq(a,b) (a==b)
+#define val_eq(a,b) (strcmp(a,b)==0)
+PAIR_BEGIN_LONG(lwqq_status, int, const char*)
+	PAIR(LWQQ_STATUS_ONLINE , "online")
+	PAIR(LWQQ_STATUS_OFFLINE, "offline")
+	PAIR(LWQQ_STATUS_AWAY   , "away")
+	PAIR(LWQQ_STATUS_HIDDEN , "hidden")
+	PAIR(LWQQ_STATUS_BUSY   , "busy")
+	PAIR(LWQQ_STATUS_CALLME , "callme")
+	PAIR(LWQQ_STATUS_SLIENT , "slient")
+PAIR_END(lwqq_status, int, const char*, LWQQ_STATUS_LOGOUT, NULL)
 
 static char* generate_random_id(int length)
 {
@@ -72,13 +73,13 @@ static char* generate_random_id(int length)
 LWQQ_EXPORT
 const char* lwqq_status_to_str(LwqqStatus status)
 {
-	return lwqq_util_mapto_str(status_type_map, status);
+	return lwqq_status_to_val(status);
 }
 
 LWQQ_EXPORT
 LwqqStatus lwqq_status_from_str(const char* str)
 {
-	return lwqq_util_mapto_type(status_type_map, str);
+	return lwqq_status_to_key(str);
 }
 
 typedef struct LwqqClient_

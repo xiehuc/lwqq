@@ -79,16 +79,16 @@ static struct LwqqTypeMap msg_type_map[] = {
 //this table defines unsecape rule in send
 static
 TABLE_BEGIN_LONG(unescape, const char*, const char, "")
-TR('\n', "\\\\n");
-TR('\r', "\\\\n");
-TR('\t', "\\\\t");
-TR('\\', "\\\\\\\\");
-TR(';', "\\u003B");
-TR('&', "\\u0026");
-TR('"', "\\\\\\\"");
-TR('+', "\\u002B");
-TR('%', "\\u0025");
-TR('\'', "\\u0027");
+	TR('\n', "\\\\n");
+	TR('\r', "\\\\n");
+	TR('\t', "\\\\t");
+	TR('\\', "\\\\\\\\");
+	TR(';', "\\u003B");
+	TR('&', "\\u0026");
+	TR('"', "\\\\\\\"");
+	TR('+', "\\u002B");
+	TR('%', "\\u0025");
+	TR('\'', "\\u0027");
 TABLE_END()
 
 static void group_member_has_chged(LwqqClient* lc,LwqqGroup* g)

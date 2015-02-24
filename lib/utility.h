@@ -19,16 +19,51 @@ typedef struct LwqqConfirmTable {
 	char* input;            //< write
 	LwqqCommand cmd;
 }LwqqConfirmTable;
+void lwqq_ct_free(LwqqConfirmTable* table);
 
 typedef struct LwqqTypeMap{
 	int type;
 	const char* str;
 }LwqqTypeMap;
-
-void lwqq_ct_free(LwqqConfirmTable* table);
-
 int lwqq_util_mapto_type(const struct LwqqTypeMap* maps,const char* key);
 const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type);
+
+#define PAIR_BEGIN_LONG(name, key_ty, val_ty)                                  \
+   struct LwqqPair##name {                                                     \
+      key_ty key;                                                              \
+      val_ty val;                                                              \
+   };                                                                          \
+   static struct LwqqPair##name lwqq_pair_##name[] = {
+
+#define PAIR(key, val) {key, val},
+
+#define PAIR_END(name, key_ty, val_ty, key_def, val_def)                       \
+   }                                                                           \
+   ;                                                                           \
+   val_ty name##_to_val(key_ty key)                                            \
+   {                                                                           \
+      struct LwqqPair##name* maps_end = lwqq_pair_##name                       \
+                                        + sizeof(lwqq_pair_##name)             \
+                                          / sizeof(struct LwqqPair##name),     \
+                             *maps = lwqq_pair_##name;                         \
+      for (; maps < maps_end; maps++) {                                        \
+         if (key_eq(maps->key, key))                                           \
+            return maps->val;                                                  \
+      }                                                                        \
+      return val_def;                                                          \
+   }                                                                           \
+   key_ty name##_to_key(val_ty val)                                            \
+   {                                                                           \
+      struct LwqqPair##name* maps_end = lwqq_pair_##name                       \
+                                        + sizeof(lwqq_pair_##name)             \
+                                          / sizeof(struct LwqqPair##name),     \
+                             *maps = lwqq_pair_##name;                         \
+      for (; maps < maps_end; maps++) {                                        \
+         if (val_eq(maps->val, val))                                           \
+            return maps->key;                                                  \
+      }                                                                        \
+      return key_def;                                                          \
+   }
 
 LwqqErrorCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir);
 
@@ -57,19 +92,23 @@ char* lwqq_util_load_res(const char* resource, int security);
 #define LWQQ_PATH_SEP "/"
 #endif
 
-#define TABLE_BEGIN_LONG(name,rettp,paratp,init) \
-	rettp name(paratp k){\
-		rettp ret_ = init;\
-		switch(k){
+#define TABLE_BEGIN_LONG(name, rettp, paratp, init) \
+   rettp name(paratp k)                             \
+   {                                                \
+      rettp ret_ = init;                            \
+      switch (k) {
 
-#define TABLE_BEGIN(name,type,init) TABLE_BEGIN_LONG(name,type,long,init)
+#define TABLE_BEGIN(name, type, init) TABLE_BEGIN_LONG(name, type, long, init)
 
-#define TR(k,v)\
-			case k:ret_ = v;break;
-#define TABLE_END()\
-		}\
-					 return ret_;\
-	}
+#define TR(k, v) \
+   case k:       \
+      ret_ = v;  \
+      break;
+
+#define TABLE_END() \
+		}             \
+   return ret_;     \
+   }
 
 /* dynamic string manipulation nano-library */
 #ifndef ds_init
