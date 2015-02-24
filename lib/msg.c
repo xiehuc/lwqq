@@ -1572,7 +1572,6 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 {
 	LwqqClient* lc = req->lc;
 	LwqqRecvMsgList* list = lc->msg_list;
-	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)lc->msg_list;
 	LwqqAsyncEvent* ev = NULL;
 	LwqqErrorCode ret = req->err;
 	if(ret == LWQQ_EC_CANCELED) // cancel by user, so no need notify user
@@ -1608,8 +1607,7 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 			break;
 		case LWQQ_EC_PTWEBQQ:
 			lwqq_http_set_cookie(req, "ptwebqq", lc->session.ptwebqq, 1);
-			// wait 1 second to restart a new connection
-			lc->dispatch(_C_(pi, lwqq_msglist_poll, list, list_->flags), 1000); 
+			// it would auto restart a new poll
 			return LWQQ_EC_ERROR;
 			break;
 		case LWQQ_EC_NOT_JSON_FORMAT:
@@ -1638,10 +1636,10 @@ static void receive_poll_message(LwqqHttpRequest* req,char* post)
 
 static void try_restart_poll(LwqqClient* lc)
 {
-	if(lwqq_client_valid(lc) && lwqq_client_logined(lc)){
-		LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*) lc->msg_list;
+	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*) lc->msg_list;
+	list_->running = 0;
+	if(lwqq_client_valid(lc) && lwqq_client_logined(lc))
 		lwqq_msglist_poll(lc->msg_list, list_->flags);
-	}
 }
 
 /**
@@ -1696,8 +1694,9 @@ static void *start_poll_msg(void *msg_list)
 LWQQ_EXPORT
 void lwqq_msglist_poll(LwqqRecvMsgList *list,LwqqPollOption flags)
 {
-	static pthread_attr_t attr;
 	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)list;
+	if(list_->running) return; // avoid repeat poll
+	static pthread_attr_t attr;
 	list_->flags = flags;
 	list_->running = 1;
 	pthread_attr_init(&attr);
@@ -2146,7 +2145,7 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 	req->set_header(req, "Referer", WEBQQ_D_REF_URL);
 	//req->set_header(req, "Content-Transfer-Encoding", "binary");
 	//req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
-	LWQQ_DEBUG(lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L));
+	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, LWQQ_VERBOSE_LEVEL>=5);
 
 	if(!list_->running){
 		//message list stoped accidently
