@@ -2240,6 +2240,7 @@ const char* lwqq_msg_offfile_get_url(LwqqMsgOffFile* msg)
 	s_free(file_name);
 	return url;
 }
+#if 0
 static int file_download_finish(LwqqHttpRequest* req,void* data)
 {
 	FILE* f = data;
@@ -2313,6 +2314,7 @@ LwqqAsyncEvent* lwqq_msg_accept_file(LwqqClient* lc,LwqqMsgFileMessage* msg,cons
 	msg->req = req;
 	return ev;
 }
+#endif
 
 LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_msg_refuse_file(LwqqClient* lc,LwqqMsgFileMessage* file)

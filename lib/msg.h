@@ -482,6 +482,7 @@ LwqqAsyncEvent* lwqq_msg_upload_file(LwqqClient* lc,LwqqMsgOffFile* file,
 		LWQQ_PROGRESS progress,void* prog_data);
 ///================================================================================///
 
+#if 0
 //----------------------------LWQQ MSG DOWNLOAD API-------------------------------///
 /** use this when you recvd a file message .
  * @param file : first use lwqq_msg_new(LWQQ_MT_FILE_MESSAGE) to create a empty message.
@@ -496,6 +497,7 @@ LwqqAsyncEvent* lwqq_msg_accept_file(LwqqClient* lc,LwqqMsgFileMessage* file,con
  */
 LwqqAsyncEvent* lwqq_msg_refuse_file(LwqqClient* lc,LwqqMsgFileMessage* file);
 ///===============================================================================///
+#endif
 
 LwqqAsyncEvent* lwqq_msg_input_notify(LwqqClient* lc,const char* serv_id);
 LwqqAsyncEvent* lwqq_msg_shake_window(LwqqClient* lc,const char* serv_id);
