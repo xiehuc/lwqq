@@ -32,6 +32,7 @@
 #include "utility.h"
 #include "internal.h"
 #include "lwjs.h"
+#include "info.h"
 
 /* URL for webqq login */
 #define APPID "1003903"
@@ -660,6 +661,15 @@ static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
  * @param err Error code
  */
 LWQQ_EXPORT
+LwqqErrorCode lwqq_logout(LwqqClient* lc, unsigned wait_time)
+{
+	LWQQ_SYNC_BEGIN(lc);
+	LwqqAsyncEvent* ev = lwqq_info_change_status(lc, LWQQ_STATUS_OFFLINE);
+	LWQQ_SYNC_END(lc);
+	return ev->result;
+}
+#if 0
+LWQQ_EXPORT
 LwqqErrorCode lwqq_logout(LwqqClient *client, unsigned wait_time)
 {
 	LwqqClient* lc = client;
@@ -730,6 +740,7 @@ done:
 	client->stat = LWQQ_STATUS_LOGOUT;
 	return err;
 }
+#endif
 
 static int process_login2(LwqqHttpRequest* req)
 {
