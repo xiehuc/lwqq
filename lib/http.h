@@ -52,7 +52,7 @@ struct _LwqqHttpRequest {
 	LwqqErrorCode err;
 
 	/* Server response, used when do async request */
-	char *location;
+	//char *location;
 	char *response;
 
 	/* Response length, NB: the response may not terminate with '\0' */

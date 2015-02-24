@@ -144,6 +144,67 @@ int lwqq_gdb_whats_running()
 }
 #endif
 
+#ifndef HAVE_OPEN_MEMSTREAM
+static size_t write_content(const char* ptr,size_t size,size_t nmemb,void* userdata)
+{
+	LwqqHttpRequest* req = (LwqqHttpRequest*) userdata;
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
+	long http_code = 0;
+	size_t sz_ = size*nmemb;
+	curl_easy_getinfo(req->req,CURLINFO_RESPONSE_CODE,&http_code);
+	//this is a redirection. ignore it.
+	if(http_code == 301||http_code == 302){
+		return sz_;
+	}
+	char* position = NULL;
+	double length = 0.0;
+	curl_easy_getinfo(req->req,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&length);
+	if(req->response==NULL&&SIMPLEQ_EMPTY(&req_->trunks) ){
+		if(length!=-1.0&&length!=0.0){
+			req->response = s_malloc0((unsigned long)(length)+10);
+			position = req->response;
+		}
+		req->resp_len = 0;
+	}
+	if(req->response){
+		position = req->response+req->resp_len;
+		if(req->resp_len+sz_>(unsigned long)length){
+			req_->bits |= HTTP_UNEXPECTED_RECV;
+			//assert(0);
+			lwqq_puts("[http unexpected]\n");
+			return 0;
+		}
+	}else{
+		struct trunk_entry* trunk = s_malloc0(sizeof(*trunk));
+		trunk->size = sz_;
+		trunk->trunk = s_malloc0(sz_);
+		position = trunk->trunk;
+		SIMPLEQ_INSERT_TAIL(&req_->trunks,trunk,entries);
+	}
+	memcpy(position,ptr,sz_);
+	req->resp_len+=sz_;
+	return sz_;
+}
+static void composite_trunks(LwqqHttpRequest* req)
+{
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
+	if(SIMPLEQ_EMPTY(&req_->trunks)) return;
+	size_t size = 0;
+	struct trunk_entry* trunk;
+	SIMPLEQ_FOREACH(trunk,&req_->trunks,entries){
+		size += trunk->size;
+	}
+	req->response = s_malloc0(size+10);
+	req->resp_len = 0;
+	while((trunk = SIMPLEQ_FIRST(&req_->trunks))){
+		SIMPLEQ_REMOVE_HEAD(&req_->trunks,entries);
+		memcpy(req->response+req->resp_len,trunk->trunk,trunk->size);
+		req->resp_len+=trunk->size;
+		s_free(trunk->trunk);
+		s_free(trunk);
+	}
+}
+#endif
 //clean states between two curl request
 static void http_clean(LwqqHttpRequest* req) 
 {
@@ -303,7 +364,6 @@ int lwqq_http_request_free(LwqqHttpRequest *request)
 	if (request) {
 		http_clean(request);
 		s_free(request->response);
-		s_free(request->location);
 		curl_slist_free_all(request->header);
 		curl_slist_free_all(request->recv_head);
 		curl_formfree(request->form_start);
@@ -318,8 +378,9 @@ int lwqq_http_request_free(LwqqHttpRequest *request)
 
 static size_t write_header( void *ptr, size_t size, size_t nmemb, void *userdata)
 {
-	char* str = (char*)ptr;
 	LwqqHttpRequest* request = (LwqqHttpRequest*) userdata;
+#if 0
+	char* str = (char*)ptr;
 
 	long http_code = 0;
 	curl_easy_getinfo(request->req,CURLINFO_RESPONSE_CODE,&http_code);
@@ -336,70 +397,10 @@ static size_t write_header( void *ptr, size_t size, size_t nmemb, void *userdata
 		}
 		return size*nmemb;
 	}
+#endif
 	request->recv_head = curl_slist_append(request->recv_head,(char*)ptr);
 	return size*nmemb;
 }
-#ifndef HAVE_OPEN_MEMSTREAM
-static size_t write_content(const char* ptr,size_t size,size_t nmemb,void* userdata)
-{
-	LwqqHttpRequest* req = (LwqqHttpRequest*) userdata;
-	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
-	long http_code = 0;
-	size_t sz_ = size*nmemb;
-	curl_easy_getinfo(req->req,CURLINFO_RESPONSE_CODE,&http_code);
-	//this is a redirection. ignore it.
-	if(http_code == 301||http_code == 302){
-		return sz_;
-	}
-	char* position = NULL;
-	double length = 0.0;
-	curl_easy_getinfo(req->req,CURLINFO_CONTENT_LENGTH_DOWNLOAD,&length);
-	if(req->response==NULL&&SIMPLEQ_EMPTY(&req_->trunks) ){
-		if(length!=-1.0&&length!=0.0){
-			req->response = s_malloc0((unsigned long)(length)+10);
-			position = req->response;
-		}
-		req->resp_len = 0;
-	}
-	if(req->response){
-		position = req->response+req->resp_len;
-		if(req->resp_len+sz_>(unsigned long)length){
-			req_->bits |= HTTP_UNEXPECTED_RECV;
-			//assert(0);
-			lwqq_puts("[http unexpected]\n");
-			return 0;
-		}
-	}else{
-		struct trunk_entry* trunk = s_malloc0(sizeof(*trunk));
-		trunk->size = sz_;
-		trunk->trunk = s_malloc0(sz_);
-		position = trunk->trunk;
-		SIMPLEQ_INSERT_TAIL(&req_->trunks,trunk,entries);
-	}
-	memcpy(position,ptr,sz_);
-	req->resp_len+=sz_;
-	return sz_;
-}
-static void composite_trunks(LwqqHttpRequest* req)
-{
-	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
-	if(SIMPLEQ_EMPTY(&req_->trunks)) return;
-	size_t size = 0;
-	struct trunk_entry* trunk;
-	SIMPLEQ_FOREACH(trunk,&req_->trunks,entries){
-		size += trunk->size;
-	}
-	req->response = s_malloc0(size+10);
-	req->resp_len = 0;
-	while((trunk = SIMPLEQ_FIRST(&req_->trunks))){
-		SIMPLEQ_REMOVE_HEAD(&req_->trunks,entries);
-		memcpy(req->response+req->resp_len,trunk->trunk,trunk->size);
-		req->resp_len+=trunk->size;
-		s_free(trunk->trunk);
-		s_free(trunk);
-	}
-}
-#endif
 static int curl_debug_redirect(CURL* h,curl_infotype t,char* msg,size_t len,void* data)
 {
 	static char buffer[8192*10];
@@ -630,12 +631,12 @@ static void curl_network_begin(LwqqHttpRequest* req)
 // do some setting after a curl process complete
 static void curl_network_complete(LwqqHttpRequest* req)
 {
-	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
 	long http_code = 0;
 	curl_easy_getinfo(req->req,CURLINFO_RESPONSE_CODE,&http_code);
 	req->http_code = http_code;
 	
 #ifdef HAVE_OPEN_MEMSTREAM
+	LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
 	if(req_->mem_buf) fclose(req_->mem_buf);
 	req_->mem_buf = NULL;
 #else
