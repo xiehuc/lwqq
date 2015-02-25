@@ -30,8 +30,6 @@
 		C0A1FA21190E48E200C050B6 /* lwjs.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9FA190E48E200C050B6 /* lwjs.c */; };
 		C0A1FA22190E48E200C050B6 /* lwjs.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9FB190E48E200C050B6 /* lwjs.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA23190E48E200C050B6 /* lwqq.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9FC190E48E200C050B6 /* lwqq.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C0A1FA24190E48E200C050B6 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9FD190E48E200C050B6 /* md5.c */; };
-		C0A1FA25190E48E200C050B6 /* md5.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1F9FE190E48E200C050B6 /* md5.h */; };
 		C0A1FA26190E48E200C050B6 /* msg.c in Sources */ = {isa = PBXBuildFile; fileRef = C0A1F9FF190E48E200C050B6 /* msg.c */; };
 		C0A1FA27190E48E200C050B6 /* msg.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA00190E48E200C050B6 /* msg.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA28190E48E200C050B6 /* queue.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA01190E48E200C050B6 /* queue.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -49,6 +47,7 @@
 		C0A1FA34190E48E200C050B6 /* vplist.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA0D190E48E200C050B6 /* vplist.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA38190E499F00C050B6 /* lwqq-config.h in Headers */ = {isa = PBXBuildFile; fileRef = C0A1FA36190E499F00C050B6 /* lwqq-config.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C0A1FA3F190E4FC900C050B6 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0A1FA3E190E4FC900C050B6 /* libz.dylib */; };
+		C0D8E32D1A9D684B00E28F86 /* libmozjs185.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C0D8E32C1A9D684B00E28F86 /* libmozjs185.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,8 +76,6 @@
 		C0A1F9FA190E48E200C050B6 /* lwjs.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = lwjs.c; path = ../../lib/lwjs.c; sourceTree = "<group>"; };
 		C0A1F9FB190E48E200C050B6 /* lwjs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwjs.h; path = ../../lib/lwjs.h; sourceTree = "<group>"; };
 		C0A1F9FC190E48E200C050B6 /* lwqq.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lwqq.h; path = ../../lib/lwqq.h; sourceTree = "<group>"; };
-		C0A1F9FD190E48E200C050B6 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md5.c; path = ../../lib/md5.c; sourceTree = "<group>"; };
-		C0A1F9FE190E48E200C050B6 /* md5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = md5.h; path = ../../lib/md5.h; sourceTree = "<group>"; };
 		C0A1F9FF190E48E200C050B6 /* msg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = msg.c; path = ../../lib/msg.c; sourceTree = "<group>"; };
 		C0A1FA00190E48E200C050B6 /* msg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = msg.h; path = ../../lib/msg.h; sourceTree = "<group>"; };
 		C0A1FA01190E48E200C050B6 /* queue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = queue.h; path = ../../lib/queue.h; sourceTree = "<group>"; };
@@ -96,6 +93,7 @@
 		C0A1FA0D190E48E200C050B6 /* vplist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vplist.h; path = ../../lib/vplist.h; sourceTree = "<group>"; };
 		C0A1FA36190E499F00C050B6 /* lwqq-config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "lwqq-config.h"; path = "../build/lwqq-config.h"; sourceTree = "<group>"; };
 		C0A1FA3E190E4FC900C050B6 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		C0D8E32C1A9D684B00E28F86 /* libmozjs185.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmozjs185.dylib; path = ../../../../../usr/local/lib/libmozjs185.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +101,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D8E32D1A9D684B00E28F86 /* libmozjs185.dylib in Frameworks */,
 				C0A1FA3F190E4FC900C050B6 /* libz.dylib in Frameworks */,
 				C0A1F9E6190E48B000C050B6 /* libsqlite3.dylib in Frameworks */,
 				C0A1F9E4190E48A300C050B6 /* libcurl.dylib in Frameworks */,
@@ -133,6 +132,7 @@
 		C0A1F9B7190E46B400C050B6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C0D8E32C1A9D684B00E28F86 /* libmozjs185.dylib */,
 				C0A1FA3E190E4FC900C050B6 /* libz.dylib */,
 				C0A1F9E5190E48B000C050B6 /* libsqlite3.dylib */,
 				C0A1F9E3190E48A300C050B6 /* libcurl.dylib */,
@@ -163,8 +163,6 @@
 				C0A1F9FA190E48E200C050B6 /* lwjs.c */,
 				C0A1F9FB190E48E200C050B6 /* lwjs.h */,
 				C0A1F9FC190E48E200C050B6 /* lwqq.h */,
-				C0A1F9FD190E48E200C050B6 /* md5.c */,
-				C0A1F9FE190E48E200C050B6 /* md5.h */,
 				C0A1F9FF190E48E200C050B6 /* msg.c */,
 				C0A1FA00190E48E200C050B6 /* msg.h */,
 				C0A1FA01190E48E200C050B6 /* queue.h */,
@@ -221,7 +219,6 @@
 				C0A1FA18190E48E200C050B6 /* internal.h in Headers */,
 				C0A1FA1A190E48E200C050B6 /* json.h in Headers */,
 				C0A1FA30190E48E200C050B6 /* url.h in Headers */,
-				C0A1FA25190E48E200C050B6 /* md5.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,7 +286,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0A1FA33190E48E200C050B6 /* vplist.c in Sources */,
-				C0A1FA24190E48E200C050B6 /* md5.c in Sources */,
 				C0A1FA1F190E48E200C050B6 /* lwdb.c in Sources */,
 				C0A1FA15190E48E200C050B6 /* info.c in Sources */,
 				C0A1FA1B190E48E200C050B6 /* logger.c in Sources */,

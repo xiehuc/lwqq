@@ -10,29 +10,29 @@
 	<string>lwqq</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>D31457DF-E64B-48B9-B1F4-C66020ABDBCE</key>
-		<string>ssh://github.com/xiehuc/lwqq.git</string>
+		<key>4CD68B703B86C0CF1603A06AB330E1E741E28439</key>
+		<string>github.com:xiehuc/lwqq.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>xcode/lwqq/lwqq.xcodeproj/project.xcworkspace</string>
+	<string>xcode/lwqq.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>D31457DF-E64B-48B9-B1F4-C66020ABDBCE</key>
-		<string>../../../..</string>
+		<key>4CD68B703B86C0CF1603A06AB330E1E741E28439</key>
+		<string>../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>ssh://github.com/xiehuc/lwqq.git</string>
+	<string>github.com:xiehuc/lwqq.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>D31457DF-E64B-48B9-B1F4-C66020ABDBCE</string>
+	<string>4CD68B703B86C0CF1603A06AB330E1E741E28439</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>D31457DF-E64B-48B9-B1F4-C66020ABDBCE</string>
+			<string>4CD68B703B86C0CF1603A06AB330E1E741E28439</string>
 			<key>IDESourceControlWCCName</key>
 			<string>lwqq</string>
 		</dict>
