@@ -21,13 +21,46 @@ typedef struct LwqqConfirmTable {
 }LwqqConfirmTable;
 void lwqq_ct_free(LwqqConfirmTable* table);
 
-typedef struct LwqqTypeMap{
-	int type;
-	const char* str;
-}LwqqTypeMap;
-int lwqq_util_mapto_type(const struct LwqqTypeMap* maps,const char* key);
-const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type);
+LwqqErrorCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir);
 
+char* lwqq_util_hashN(const char* uin,const char* ptwebqq,void*);
+char* lwqq_util_hashO(const char* uin,const char* ptwebqq,void*);
+char* lwqq_util_hashP(const char* uin,const char* ptwebqq,void*);
+char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused);
+#define lwqq_util_rand(seed,e) (srand(seed),(rand()/9+e/10)%e)
+// add a path into resource
+void lwqq_util_add_path(const char* path);
+/** find a resource in all path
+ * @param resource: a file name should be load
+ * @param security: if true, only read file from a static system path
+ *		to keep security, because if we read file(encrypt.js) from user dir
+ *		any software can override js file, and send password to outside
+ */
+char* lwqq_util_load_res(const char* resource, int security);
+
+#define lwqq_group_pretty_name(g) (g->markname?:g->name)
+#define lwqq_buddy_pretty_name(b) (b->markname?:b->nick)
+#define lwqq_override(to,from_alloc) {char* tmp_ = from_alloc;if(tmp_){s_free(to);to=tmp_;}}
+
+#ifdef WIN32
+#define LWQQ_PATH_SEP "\\"
+#else
+#define LWQQ_PATH_SEP "/"
+#endif
+
+// a pair provide 2 way map method, cost O(n)
+// @example:
+//		#define key_eq(a,b) (strcmp(a,b)==0)
+//		#define val_eq(a,b) key_eq(a,b)
+//    PAIR_BEGIN_LONG(test, char*, char*)
+//			PAIR("apple", "苹果")
+//			PAIR("orange", "橘子")
+//		PAIR_END(test, char*, char*, "", "")
+//
+//	you can find keys by using
+//		test_to_key("苹果") //"apple"
+//	you can find vals by using
+//		test_to_val("orange") //"橘子"
 #define PAIR_BEGIN_LONG(name, key_ty, val_ty)                                  \
    struct LwqqPair##name {                                                     \
       key_ty key;                                                              \
@@ -65,33 +98,14 @@ const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type);
       return key_def;                                                          \
    }
 
-LwqqErrorCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const char* dir);
-
-char* lwqq_util_hashN(const char* uin,const char* ptwebqq,void*);
-char* lwqq_util_hashO(const char* uin,const char* ptwebqq,void*);
-char* lwqq_util_hashP(const char* uin,const char* ptwebqq,void*);
-char* lwqq_util_hashQ(const char* uin,const char* ptwebqq,void* _unused);
-#define lwqq_util_rand(seed,e) (srand(seed),(rand()/9+e/10)%e)
-// add a path into resource
-void lwqq_util_add_path(const char* path);
-/** find a resource in all path
- * @param resource: a file name should be load
- * @param security: if true, only read file from a static system path
- *		to keep security, because if we read file(encrypt.js) from user dir
- *		any software can override js file, and send password to outside
- */
-char* lwqq_util_load_res(const char* resource, int security);
-
-#define lwqq_group_pretty_name(g) (g->markname?:g->name)
-#define lwqq_buddy_pretty_name(b) (b->markname?:b->nick)
-#define lwqq_override(to,from_alloc) {char* tmp_ = from_alloc;if(tmp_){s_free(to);to=tmp_;}}
-
-#ifdef WIN32
-#define LWQQ_PATH_SEP "\\"
-#else
-#define LWQQ_PATH_SEP "/"
-#endif
-
+// a table provides fast key to val map method, cost O(1)
+// @example: 
+//		TABLE_BEGIN(to_str, const char*, "")
+//			TR(APPLE, "apple")
+//			TR(ORANGE, "orange")
+//		TABLE_END()
+//	you can find vals by using
+//		to_str(APPLE) //"apple"
 #define TABLE_BEGIN_LONG(name, rettp, paratp, init) \
    rettp name(paratp k)                             \
    {                                                \

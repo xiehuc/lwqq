@@ -56,26 +56,27 @@ typedef struct LwqqRecvMsgList_ {
 #define RET_DELAYINS_MSG 1
 #define RET_UNKNOW_MSG -1
 
-static struct LwqqTypeMap msg_type_map[] = {
-	{LWQQ_MS_BUDDY_MSG,          "message",                 },
-	{LWQQ_MS_GROUP_MSG,          "group_message",           },
-	{LWQQ_MS_DISCU_MSG,          "discu_message",           },
-	{LWQQ_MS_SESS_MSG,           "sess_message",            },
-	{LWQQ_MS_GROUP_WEB_MSG,      "group_web_message",       },
-	{LWQQ_MT_STATUS_CHANGE,      "buddies_status_change",   },
-	{LWQQ_MT_KICK_MESSAGE,       "kick_message",            },
-	{LWQQ_MT_SYSTEM,             "system_message",          },
-	{LWQQ_MT_BLIST_CHANGE,       "buddylist_change",        },
-	{LWQQ_MT_SYS_G_MSG,          "sys_g_msg",               },
-	{LWQQ_MT_OFFFILE,            "push_offfile",            },
-	{LWQQ_MT_FILETRANS,          "filesrv_transfer",        },
-	{LWQQ_MT_FILE_MSG,           "file_message",            },
-	{LWQQ_MT_NOTIFY_OFFFILE,     "notify_offfile",          },
-	{LWQQ_MT_INPUT_NOTIFY,       "input_notify",            },
-	{LWQQ_MT_SHAKE_MESSAGE,      "shake_message",           },
-	{LWQQ_MT_UNKNOWN,            "unknow",                  },
-	{LWQQ_MT_UNKNOWN,            NULL,                      }
-};
+#define key_eq(a,b) (a==b)
+#define val_eq(a,b) (strcmp(a,b)==0)
+PAIR_BEGIN_LONG(msg_type, int, const char*)
+	PAIR(LWQQ_MS_BUDDY_MSG     , "message"              )
+	PAIR(LWQQ_MS_GROUP_MSG     , "group_message"        )
+	PAIR(LWQQ_MS_DISCU_MSG     , "discu_message"        )
+	PAIR(LWQQ_MS_SESS_MSG      , "sess_message"         )
+	PAIR(LWQQ_MS_GROUP_WEB_MSG , "group_web_message"    )
+	PAIR(LWQQ_MT_STATUS_CHANGE , "buddies_status_change")
+	PAIR(LWQQ_MT_KICK_MESSAGE  , "kick_message"         )
+	PAIR(LWQQ_MT_SYSTEM        , "system_message"       )
+	PAIR(LWQQ_MT_BLIST_CHANGE  , "buddylist_change"     )
+	PAIR(LWQQ_MT_SYS_G_MSG     , "sys_g_msg"            )
+	PAIR(LWQQ_MT_OFFFILE       , "push_offfile"         )
+	PAIR(LWQQ_MT_FILETRANS     , "filesrv_transfer"     )
+	PAIR(LWQQ_MT_FILE_MSG      , "file_message"         )
+	PAIR(LWQQ_MT_NOTIFY_OFFFILE, "notify_offfile"       )
+	PAIR(LWQQ_MT_INPUT_NOTIFY  , "input_notify"         )
+	PAIR(LWQQ_MT_SHAKE_MESSAGE , "shake_message"        )
+PAIR_END(msg_type, int, const char*, LWQQ_MT_UNKNOWN, NULL)
+
 //this table defines unsecape rule in send
 static
 TABLE_BEGIN_LONG(unescape, const char*, const char, "")
@@ -821,7 +822,7 @@ static LwqqMsgType parse_recvmsg_type(json_t *json)
 	if (!msg_type) {
 		return type;
 	}
-	return lwqq_util_mapto_type(msg_type_map, msg_type);
+	return msg_type_to_key(msg_type);
 }
 
 /**

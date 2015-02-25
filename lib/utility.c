@@ -50,26 +50,6 @@ LwqqErrorCode lwqq_util_save_img(void* ptr,size_t len,const char* path,const cha
 	return LWQQ_EC_OK;
 }
 
-int lwqq_util_mapto_type(const struct LwqqTypeMap* maps,const char* key)
-{
-	while(maps->str != NULL){
-		if(key&&!strncmp(maps->str,key,strlen(maps->str))) return maps->type;
-		else if(key == NULL && maps->str == NULL) return maps->type;
-		maps++;
-	}
-	return maps->type;
-}
-
-const char* lwqq_util_mapto_str(const struct LwqqTypeMap* maps,int type)
-{
-	while(maps->str != NULL){
-		if(maps->type == type) return maps->str;
-		maps++;
-	}
-	return NULL;
-}
-
-
 LWQQ_EXPORT
 void lwqq_util_add_path(const char* path)
 {
