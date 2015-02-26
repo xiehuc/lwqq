@@ -1250,7 +1250,7 @@ static LwqqAsyncEvent* request_content_offpic(LwqqClient* lc,const char* f_uin,L
 	lwqq_http_set_cookie(req, "p_uin", lwqq_http_get_cookie(req_cookie, "p_uin"), 0);
 	lwqq_http_request_free(req_cookie);
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_debug(req, 4);
 
 	return req->do_request_async(req, lwqq__hasnot_post(),_C_(2p_i,set_content_picture_data,req,c));
 done:
@@ -1276,7 +1276,7 @@ static LwqqAsyncEvent* request_content_cface(LwqqClient* lc,const char* group_co
 	}
 	req->set_header(req, "Referer", "http://web2.qq.com/webqq.html");
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_debug(req, 4);
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(2p_i,set_content_picture_data,req,c));
 done:
 	lwqq_http_request_free(req);
@@ -1295,7 +1295,7 @@ static LwqqAsyncEvent* request_content_cface2(LwqqClient* lc,int msg_id,const ch
 	req = lwqq_http_create_default_request(lc,url, err);
 	req->set_header(req, "Referer", "http://web2.qq.com/webqq.html");
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_debug(req, 4);
 	return req->do_request_async(req,lwqq__hasnot_post(),_C_(2p_i,set_content_picture_data,req,c));
 }
 static void lwqq_msg_request_picture(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyncEvset** ptr)
@@ -1840,7 +1840,7 @@ static LwqqAsyncEvent* lwqq_msg_upload_offline_pic(
 	req->set_header(req,"Referer","http://web2.qq.com/");
 	req->set_header(req,"Cache-Control","max-age=0");
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_debug(req, 4)
 
 	req->add_form(req,LWQQ_FORM_CONTENT,"callback","parent.EQQ.Model.ChatMsg.callbackSendPic");
 	req->add_form(req,LWQQ_FORM_CONTENT,"locallangid","2052");
@@ -1987,7 +1987,7 @@ static LwqqAsyncEvent* lwqq_msg_upload_cface(
 	req->set_header(req,"Origin","http://web2.qq.com");
 	req->set_header(req,"Referer","http://web2.qq.com/webqq.html");
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_debug(req, 4);
 
 	req->add_form(req,LWQQ_FORM_CONTENT,"vfwebqq",lc->vfwebqq);
 	//this is special for group msg.it can upload over 250K
@@ -2146,7 +2146,7 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 	req->set_header(req, "Referer", WEBQQ_D_REF_URL);
 	//req->set_header(req, "Content-Transfer-Encoding", "binary");
 	//req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, LWQQ_VERBOSE_LEVEL>=5);
+	lwqq_http_debug(req, 5);
 
 	if(!list_->running){
 		//message list stoped accidently
@@ -2353,7 +2353,7 @@ LwqqAsyncEvent* lwqq_msg_upload_offline_file(LwqqClient* lc,LwqqMsgOffFile* file
 	if(flags & DONT_EXPECTED_100_CONTINUE)
 		req->set_header(req,"Expect","");
 
-	lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE,LWQQ_VERBOSE_LEVEL>=4);
+	lwqq_http_debug(req, 4);
 
 	req->add_form(req,LWQQ_FORM_CONTENT,"callback","parent.EQQ.Model.ChatMsg.callbackSendOffFile");
 	req->add_form(req,LWQQ_FORM_CONTENT,"locallangid","2052");

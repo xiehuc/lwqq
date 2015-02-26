@@ -178,6 +178,13 @@ void lwqq_http_set_cookie(LwqqHttpRequest *request, const char *name,const char*
  * invoke callback with failcode = LWQQ_EC_CANCELED
  */
 void lwqq_http_cancel(LwqqHttpRequest* req);
+/**
+ * a standard on http when verbose level >= lv
+ * then print out verbose information
+ */
+#define lwqq_http_debug(req, lv)                                               \
+   LWQQ_DEBUG(if (LWQQ_VERBOSE_LV >= lv)                                       \
+              lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L);)
 
 #endif  /* LWQQ_HTTP_H */
 

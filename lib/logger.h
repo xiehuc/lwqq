@@ -50,7 +50,6 @@ const char* lwqq_log_time();
  * 4        Timeout Verbose
  * 5        Extra Verbose
  */
-//#define lwqq_verbose(l,str,...) if(l<=LWQQ_VERBOSE_LEVEL) fprintf(stderr,str,__VA_ARGS__)
 void lwqq_verbose(int l,const char* str,...);
 #define lwqq_puts(str) lwqq_verbose(1,"%s\n",str)
 
@@ -58,8 +57,13 @@ void lwqq_log_set_level(int level);
 int lwqq_log_get_level();
 
 void lwqq_log_redirect(LwqqLogRedirectFunc func);
-#define LWQQ_VERBOSE_LEVEL lwqq_log_get_level()
-#define LWQQ_DEBUG(expr) if(LWQQ_VERBOSE_LEVEL > 4){ expr;}
+#define LWQQ_VERBOSE_LV lwqq_log_get_level()
+
+#ifdef NDEBUG
+#define LWQQ_DEBUG(expr)
+#else
+#define LWQQ_DEBUG(expr) expr;
+#endif
 
 
 #endif  /* LWQQ_LOGGER_H */

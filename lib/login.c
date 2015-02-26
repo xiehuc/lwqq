@@ -464,7 +464,7 @@ static LwqqAsyncEvent* set_online_status(LwqqClient *lc,const char *status)
 	char url[512] ={0};
 	snprintf(url,sizeof(url),"%s/channel/login2",WEBQQ_D_HOST);
 	req = lwqq_http_create_default_request(lc,url, NULL);
-	LWQQ_DEBUG(lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L));
+	lwqq_http_debug(req, 5);
 
 	lwqq_override(lc->session.ptwebqq, lwqq_http_get_cookie(req, "ptwebqq"));
 	snprintf(msg, sizeof(msg), "r={\"status\":\"%s\",\"ptwebqq\":\"%s\","
