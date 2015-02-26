@@ -11,6 +11,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 add_definitions(-Wall)
 option(WITHOUT_ASYNC "Fully Disable Async Ability, Only Sync mode" Off)
 set(QUICK_QUIT False CACHE BOOL "Hide Option: Detatch thread to quickly quit")
+option(USE_MSG_THREAD "Use a single thread to run msg poll" Off)
 
 find_package(Sphinx)
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")

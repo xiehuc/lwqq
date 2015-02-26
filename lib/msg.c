@@ -29,6 +29,7 @@
 #include "info.h"
 
 #define LWQQ_MT_BITS (~((-1) << 8))
+// if no async, we can only run a synced single thread
 #ifdef WITHOUT_ASYNC
 #undef USE_MSG_THREAD
 #define USE_MSG_THREAD 1
@@ -1618,7 +1619,16 @@ static int process_poll_message_cb(LwqqHttpRequest* req)
 	}
 	return LWQQ_EC_OK;
 }
-#if ! USE_MSG_THREAD
+
+static void try_restart_poll(LwqqClient* lc)
+{
+	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*) lc->msg_list;
+	list_->running = 0;
+	if(lwqq_client_valid(lc) && lwqq_client_logined(lc))
+		lwqq_msglist_poll(lc->msg_list, list_->flags);
+}
+
+#ifndef USE_MSG_THREAD
 static void receive_poll_message(LwqqHttpRequest* req,char* post)
 {
 	if(process_poll_message_cb(req)==LWQQ_EC_ERROR){
@@ -1635,13 +1645,6 @@ static void receive_poll_message(LwqqHttpRequest* req,char* post)
 }
 #endif
 
-static void try_restart_poll(LwqqClient* lc)
-{
-	LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*) lc->msg_list;
-	list_->running = 0;
-	if(lwqq_client_valid(lc) && lwqq_client_logined(lc))
-		lwqq_msglist_poll(lc->msg_list, list_->flags);
-}
 
 /**
  * Poll to receive message.
@@ -1677,7 +1680,7 @@ static void *start_poll_msg(void *msg_list)
 	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, POLL_MSG_TIMEOUT);
 	req->retry = RETRY_BEFORE_RELINK;
 
-#if USE_MSG_THREAD
+#ifdef USE_MSG_THREAD
 	while(1) {
 		req->do_request(req, 1, msg);
 		if(process_poll_message_cb(req)==LWQQ_EC_ERROR) break;
@@ -1701,7 +1704,7 @@ void lwqq_msglist_poll(LwqqRecvMsgList *list,LwqqPollOption flags)
 	list_->flags = flags;
 	list_->running = 1;
 	pthread_attr_init(&attr);
-#if USE_MSG_THREAD
+#ifdef USE_MSG_THREAD
 #if DETACH_THREAD
 	static int init = 0;
 	if(!init){
@@ -1722,7 +1725,7 @@ void lwqq_msglist_close(LwqqRecvMsgList* list)
 	LwqqRecvMsgList_* list_= (LwqqRecvMsgList_*)list;
 	if(list_->running == 0) return;
 	lwqq_http_cancel(list_->req);
-#if USE_MSG_THREAD && !DETACH_THREAD
+#if defined(USE_MSG_THREAD) && !DETACH_THREAD
 	pthread_join(list_->tid,NULL);
 #endif
 	list_->running = 0;

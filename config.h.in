@@ -17,8 +17,10 @@
 #define LWQQ_VERSION "@VERSION@"
 #define RES_DIR "@RES_DIR@"
 
-//use a single thread to poll message
-#define USE_MSG_THREAD 1
+// use a single thread to poll message
+// default: disabled
+// note default value is good enough, it run poll in libev, asynced, 
+#cmakedefine USE_MSG_THREAD
 
 //detach thread without join it
 #define DETACH_THREAD @QUICK_QUIT@
