@@ -129,7 +129,7 @@ typedef struct D_ITEM{
 /* For async request */
 
 
-#if USE_DEBUG
+#ifndef NDEBUG
 int lwqq_gdb_whats_running()
 {
 	D_ITEM* item;

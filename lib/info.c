@@ -42,7 +42,7 @@ struct LwqqDiscuMemChange {
 	struct str_list_* group_members;
 	struct str_list_* relate_groups;
 };
-#if USE_DEBUG
+#ifndef NDEBUG
 int lwqq_gdb_list_group_member(LwqqGroup* g)
 {
 	LwqqSimpleBuddy* sb;

@@ -25,15 +25,12 @@
 //detach thread without join it
 #define DETACH_THREAD @QUICK_QUIT@
 
-//enable additional debug function
-#define USE_DEBUG @USE_DEBUG@
-
 //write discu into database
 #define DISCU_READ_DB 1
 
 // when continuly poll_msg_lost happend {?} times, send relink
 // default : 5
-#define RETRY_BEFORE_RELINK 3
+#define RETRY_BEFORE_RELINK 4
 
 // set poll_msg timeout {?} seconds
 // default : 90
