@@ -116,7 +116,8 @@ if(WITH_LIBEV AND WITH_LIBUV)
 	message(FATAL_ERROR "Libuv and Libev shouldn't used together; Turn off one")
 endif()
 
-option(WITH_MOZJS "Use Mozjs To Provide hash.js support" ${MOZJS_FOUND})
+#option(WITH_MOZJS "Use Mozjs To Provide hash.js support" ${MOZJS_FOUND})
+set(WITH_MOZJS On) # Force Require MOZJS
 if(WITH_MOZJS AND NOT MOZJS_FOUND)
 	message(FATAL_ERROR "Reuired mozjs185 or mozjs-17.0 package not found")
 endif()
