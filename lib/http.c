@@ -1034,11 +1034,14 @@ static void safe_remove_link(LwqqClient* lc)
 	LWQQ_EXPORT
 void lwqq_http_global_free(LwqqCleanUp cleanup)
 {
+	struct timespec wait_time;
 	if(global.multi){
 		if(!TAILQ_EMPTY(&global.conn_link)){
 			lwqq_async_dispatch(_C_(p,safe_remove_link,NULL));
 			pthread_mutex_lock(&async_lock);
-			pthread_cond_wait(&async_cond,&async_lock);
+			wait_time.tv_sec = 60;
+			wait_time.tv_nsec = 0;
+			pthread_cond_timedwait(&async_cond,&async_lock,&wait_time);
 			pthread_mutex_unlock(&async_lock);
 		}
 
@@ -1071,6 +1074,7 @@ void lwqq_http_global_free(LwqqCleanUp cleanup)
 LWQQ_EXPORT
 void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 {
+	struct timespec wait_time = {0};
 	if(lc && global.multi){
 		/**must dispatch safe_remove_link first
 		 * then vp_do(item->cmd) because vp_do might release memory
@@ -1078,8 +1082,10 @@ void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 		if(!TAILQ_EMPTY(&global.conn_link)){
 			lwqq_async_dispatch(_C_(p,safe_remove_link,lc));
 			pthread_mutex_lock(&async_lock);
+			wait_time.tv_sec = 60;
+			wait_time.tv_nsec = 0;
 			//must use cond wait because timedcond might not trigger dispatch
-			pthread_cond_wait(&async_cond,&async_lock);
+			pthread_cond_timedwait(&async_cond, &async_lock, &wait_time);
 			pthread_mutex_unlock(&async_lock);
 		}
 
