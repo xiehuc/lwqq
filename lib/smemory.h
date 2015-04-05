@@ -12,10 +12,6 @@
 #ifndef SMEMORY_H
 #define SMEMORY_H
 
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 void *s_malloc(size_t size);
 void *s_malloc0(size_t size);
 void *s_calloc(size_t nmemb, size_t lsize);

@@ -10,7 +10,6 @@
 
 #ifndef LWQQ_LOGGER_H
 #define LWQQ_LOGGER_H
-#include <string.h>
 
 #define _FILE_NAME_ (strrchr(__FILE__,'/')?strrchr(__FILE__,'/')+1:__FILE__)
 

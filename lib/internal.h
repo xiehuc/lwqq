@@ -1,9 +1,6 @@
 #ifndef LWQQ_INTERNAL_H_H
 #define LWQQ_INTERNAL_H_H
-#include "type.h"
-#include "json.h"
 #include "lwqq-config.h"
-#include "async.h"
 
 #ifdef WIN32
 #include "lwqq_export.h"
@@ -46,6 +43,12 @@
 #define WEBQQ_D_HOST __H("d.web2.qq.com")
 // at now, only get_offpic2 use WQQ_D_HOST
 #define WQQ_D_HOST "http://w.qq.com/d"
+
+typedef struct json_value json_t;
+typedef struct LwqqAsyncEvent LwqqAsyncEvent;
+typedef struct LwqqClient LwqqClient;
+typedef struct LwqqVerifyCode LwqqVerifyCode;
+typedef struct LwqqHttpRequest LwqqHttpRequest;
 
 struct str_list_ {
    char* str;

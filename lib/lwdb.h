@@ -13,8 +13,9 @@
 #define LWDB_H
 
 #include "type.h"
-#include "async.h"
 #include "swsqlite.h"
+
+typedef struct LwqqExtension LwqqExtension;
 
 /** return default database store dir */
 const char* lwdb_get_config_dir();

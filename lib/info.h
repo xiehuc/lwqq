@@ -94,9 +94,12 @@ LwqqErrorCode lwqq_info_save_avatar(LwqqBuddy* b,LwqqGroup* g,const char* path);
  * @return qqnumber on sucessful, NB: caller is responsible for freeing
  * the memory returned by this function
  */
-#define lwqq_info_get_friend_qqnumber(lc,buddy) (lwqq_info_get_qqnumber(lc,buddy->uin,&buddy->qqnumber))
-#define lwqq_info_get_group_qqnumber(lc,group) (lwqq_info_get_qqnumber(lc,group->code,&group->account))
-#define lwqq_info_get_member_qqnumber(lc,simple_buddy) (lwqq_info_get_qqnumber(lc,simple_buddy->uin,&simple_buddy->qq))
+#define lwqq_info_get_friend_qqnumber(lc, buddy)                               \
+   (lwqq_info_get_qqnumber(lc, buddy->uin, &buddy->qqnumber))
+#define lwqq_info_get_group_qqnumber(lc, group)                                \
+   (lwqq_info_get_qqnumber(lc, group->code, &group->account))
+#define lwqq_info_get_member_qqnumber(lc, simple_buddy)                        \
+   (lwqq_info_get_qqnumber(lc, simple_buddy->uin, &simple_buddy->qq))
 
 LwqqAsyncEvent* lwqq_info_get_qqnumber(LwqqClient* lc,const char* uin_gcode,char **value);
 
@@ -107,7 +110,8 @@ LwqqAsyncEvent* lwqq_info_get_qqnumber(LwqqClient* lc,const char* uin_gcode,char
  */
 LwqqAsyncEvent* lwqq_info_get_group_detail_info(LwqqClient *lc, LwqqGroup *group,
 		LwqqErrorCode *err);
-#define lwqq_info_get_discu_detail_info(lc,group) (lwqq_info_get_group_detail_info(lc,group,NULL));
+#define lwqq_info_get_discu_detail_info(lc, group)                             \
+   (lwqq_info_get_group_detail_info(lc, group, NULL));
 
 /** 
  * Get online buddies

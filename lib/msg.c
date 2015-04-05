@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <assert.h>
 
 #include "type.h"
 #include "smemory.h"
@@ -2438,7 +2439,7 @@ done:
 }
 #define rand(n) (rand()%9000+1000)
 LwqqAsyncEvent* lwqq_msg_upload_file(LwqqClient* lc,LwqqMsgOffFile* file,
-		LWQQ_PROGRESS progress,void* prog_data)
+		LwqqProgressFunc progress,void* prog_data)
 {
 	char url[512];
 	snprintf(url,sizeof(url),"http://file1.web.qq.com/v2/%s/%s/%ld/%s/%s/1/f/1/0/0?psessionid=%s",

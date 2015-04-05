@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
+#include <assert.h>
 
 #include "login.h"
 #include "logger.h"

@@ -1176,8 +1176,9 @@ static int lwqq_http_progress_trans(void* d,double dt,double dn,double ut,double
 	return req->progress_func?req->progress_func(req->prog_data,now,total):0;
 }
 
-	LWQQ_EXPORT
-void lwqq_http_on_progress(LwqqHttpRequest* req,LWQQ_PROGRESS progress,void* prog_data)
+LWQQ_EXPORT
+void lwqq_http_on_progress(LwqqHttpRequest* req, LwqqProgressFunc progress,
+                           void* prog_data)
 {
 	if(!req) return;
 	curl_easy_setopt(req->req,CURLOPT_PROGRESSFUNCTION,lwqq_http_progress_trans);

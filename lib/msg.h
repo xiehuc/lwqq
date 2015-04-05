@@ -11,49 +11,46 @@
 #ifndef LWQQ_MSG_H
 #define LWQQ_MSG_H
 
-#include <pthread.h>
-#include "queue.h"
-#include "type.h"
-#include "async.h"
+typedef struct LwqqAsyncEvent LwqqAsyncEvent;
 
 /* msg type bits:right->left
  *  1 |  1  | 32 | many
  * SEQ|EMPTY|TYPE|SUBTYPE
  */
 typedef enum LwqqMsgType {
-	LWQQ_MF_SEQ = 1<<1,
-	LWQQ_MT_MESSAGE = 1<<3|LWQQ_MF_SEQ,
-	LWQQ_MS_BUDDY_MSG = LWQQ_MT_MESSAGE|(1<<8),
-	LWQQ_MS_GROUP_MSG = LWQQ_MT_MESSAGE|(2<<8),
-	LWQQ_MS_DISCU_MSG = LWQQ_MT_MESSAGE|(3<<8),
-	LWQQ_MS_SESS_MSG = LWQQ_MT_MESSAGE|(4<<8), //group whisper message
-	LWQQ_MS_GROUP_WEB_MSG = LWQQ_MT_MESSAGE|(5<<8),
+	LWQQ_MF_SEQ             = 1<<1,
+	LWQQ_MT_MESSAGE         = 1<<3|LWQQ_MF_SEQ,
+	LWQQ_MS_BUDDY_MSG       = LWQQ_MT_MESSAGE|(1<<8),
+	LWQQ_MS_GROUP_MSG       = LWQQ_MT_MESSAGE|(2<<8),
+	LWQQ_MS_DISCU_MSG       = LWQQ_MT_MESSAGE|(3<<8),
+	LWQQ_MS_SESS_MSG        = LWQQ_MT_MESSAGE|(4<<8), //group whisper message
+	LWQQ_MS_GROUP_WEB_MSG   = LWQQ_MT_MESSAGE|(5<<8),
 
-	LWQQ_MT_STATUS_CHANGE = 2<<3,
-	LWQQ_MT_KICK_MESSAGE = 3<<3,
-	LWQQ_MT_SYSTEM = LWQQ_MF_SEQ|(4<<3),
+	LWQQ_MT_STATUS_CHANGE   = 2<<3,
+	LWQQ_MT_KICK_MESSAGE    = 3<<3,
+	LWQQ_MT_SYSTEM          = LWQQ_MF_SEQ|(4<<3),
 #if 0
-	LWQQ_MS_ADD_BUDDY = LWQQ_MT_SYSTEM|(1<<8),
-	LWQQ_MS_VERIFY_PASS = LWQQ_MT_SYSTEM|(2<<8),
+	LWQQ_MS_ADD_BUDDY       = LWQQ_MT_SYSTEM|(1<<8),
+	LWQQ_MS_VERIFY_PASS     = LWQQ_MT_SYSTEM|(2<<8),
 	LWQQ_MS_VERIFY_PASS_ADD = LWQQ_MT_SYSTEM|(3<<8),
-	LWQQ_MS_VERIFY_REQUIRE = LWQQ_MT_SYSTEM|(4<<8),
+	LWQQ_MS_VERIFY_REQUIRE  = LWQQ_MT_SYSTEM|(4<<8),
 #endif
 
-	LWQQ_MT_BLIST_CHANGE = 5<<3,
-	LWQQ_MT_SYS_G_MSG = LWQQ_MF_SEQ|(6<<3),
+	LWQQ_MT_BLIST_CHANGE    = 5<<3,
+	LWQQ_MT_SYS_G_MSG       = LWQQ_MF_SEQ|(6<<3),
 #if 0
-	LWQQ_MS_G_CREATE = LWQQ_MT_SYS_G_MSG|(1<<8),
-	LWQQ_MS_G_JOIN = LWQQ_MT_SYS_G_MSG|(2<<8),
-	LWQQ_MS_G_LEAVE = LWQQ_MT_SYS_G_MSG|(3<<8),
-	LWQQ_MS_G_REQUIRE = LWQQ_MT_SYS_G_MSG|(4<<8),
+	LWQQ_MS_G_CREATE        = LWQQ_MT_SYS_G_MSG|(1<<8),
+	LWQQ_MS_G_JOIN          = LWQQ_MT_SYS_G_MSG|(2<<8),
+	LWQQ_MS_G_LEAVE         = LWQQ_MT_SYS_G_MSG|(3<<8),
+	LWQQ_MS_G_REQUIRE       = LWQQ_MT_SYS_G_MSG|(4<<8),
 #endif
 
-	LWQQ_MT_OFFFILE = LWQQ_MF_SEQ|(7<<3),
-	LWQQ_MT_FILETRANS = LWQQ_MF_SEQ|(8<<3),
-	LWQQ_MT_FILE_MSG = LWQQ_MF_SEQ|(9<<3),
-	LWQQ_MT_NOTIFY_OFFFILE = LWQQ_MF_SEQ|(10<<3),
-	LWQQ_MT_INPUT_NOTIFY = 11<<3,
-	LWQQ_MT_SHAKE_MESSAGE = LWQQ_MF_SEQ|(12<<3),
+	LWQQ_MT_OFFFILE         = LWQQ_MF_SEQ|(7<<3),
+	LWQQ_MT_FILETRANS       = LWQQ_MF_SEQ|(8<<3),
+	LWQQ_MT_FILE_MSG        = LWQQ_MF_SEQ|(9<<3),
+	LWQQ_MT_NOTIFY_OFFFILE  = LWQQ_MF_SEQ|(10<<3),
+	LWQQ_MT_INPUT_NOTIFY    = 11<<3,
+	LWQQ_MT_SHAKE_MESSAGE   = LWQQ_MF_SEQ|(12<<3),
 	LWQQ_MT_UNKNOWN,
 } LwqqMsgType;
 
@@ -67,9 +64,9 @@ typedef enum {
 
 /* LwqqRecvMsg API */
 typedef enum {
-	POLL_AUTO_DOWN_GROUP_PIC = 1<<0,
-	POLL_AUTO_DOWN_BUDDY_PIC = 1<<1,
-	POLL_AUTO_DOWN_DISCU_PIC = 1<<2,
+	POLL_AUTO_DOWN_GROUP_PIC   = 1<<0,
+	POLL_AUTO_DOWN_BUDDY_PIC   = 1<<1,
+	POLL_AUTO_DOWN_DISCU_PIC   = 1<<2,
 	POLL_REMOVE_DUPLICATED_MSG = 1<<3,
 }LwqqPollOption;
 
@@ -126,9 +123,9 @@ typedef struct LwqqMsgContent {
 typedef TAILQ_HEAD(LwqqMsgContentHead, LwqqMsgContent) LwqqMsgContentHead;
 
 typedef enum {
-	LWQQ_FONT_BOLD=1<<2,
-	LWQQ_FONT_ITALIC=1<<1,
-	LWQQ_FONT_UNDERLINE=1<<0,
+	LWQQ_FONT_BOLD      = 1<<2,
+	LWQQ_FONT_ITALIC    = 1<<1,
+	LWQQ_FONT_UNDERLINE = 1<<0,
 }LwqqFontStyle;
 
 #define lwqq_bit_set(var,bit,value) (var=(value)?var|bit:var&~bit)
@@ -255,23 +252,25 @@ typedef struct LwqqMsgOffFile{
 	char port[8];
 	size_t size;
 	char* name;
-	char* path;///< only used when upload
+	char* path;                     //< only used when upload
 	time_t expire_time;
 	time_t time;
 	LwqqHttpRequest* req;
 }LwqqMsgOffFile;
+
 typedef struct FileTransItem{
 	char* file_name;
 	enum {
-		TRANS_OK=0,
-		TRANS_ERROR=50,
-		TRANS_TIMEOUT=51,
-		REFUSED_BY_CLIENT=53,
+		TRANS_OK          = 0,
+		TRANS_ERROR       = 50,
+		TRANS_TIMEOUT     = 51,
+		REFUSED_BY_CLIENT = 53,
 	}file_status;
 	//int file_status;
 	int pro_id;
 	LIST_ENTRY(FileTransItem) entries;
 }FileTransItem;
+
 typedef struct LwqqMsgFileTrans{
 	LwqqMsgSeq super;
 	int file_count;
@@ -301,8 +300,8 @@ typedef struct LwqqMsgFileMessage{
 		}recv;
 		struct {
 			enum{
-				CANCEL_BY_USER=1,
-				CANCEL_BY_OVERTIME=3
+				CANCEL_BY_USER     = 1,
+				CANCEL_BY_OVERTIME = 3
 			} cancel_type;
 		}refuse;
 	};
@@ -479,7 +478,7 @@ LwqqAsyncEvent* lwqq_msg_upload_offline_file(LwqqClient* lc,LwqqMsgOffFile* file
 LwqqAsyncEvent* lwqq_msg_send_offfile(LwqqClient* lc,LwqqMsgOffFile* file);
 //not finished yet
 LwqqAsyncEvent* lwqq_msg_upload_file(LwqqClient* lc,LwqqMsgOffFile* file,
-		LWQQ_PROGRESS progress,void* prog_data);
+		LwqqProgressFunc progress,void* prog_data);
 ///================================================================================///
 
 #if 0

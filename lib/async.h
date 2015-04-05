@@ -10,8 +10,6 @@
 #ifndef LWQQ_ASYNC_H
 #define LWQQ_ASYNC_H
 #include "type.h"
-//#include "msg.h"
-#include <assert.h>
 
 /**======================EVSET API=====================================**/
 /** 

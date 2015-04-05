@@ -11,9 +11,9 @@
 #ifndef LWQQ_HTTP_H
 #define LWQQ_HTTP_H
 
-#include <stdio.h>
 #include "type.h"
-#include "async.h"
+
+typedef struct LwqqAsyncEvent LwqqAsyncEvent;
 
 typedef enum {
 	LWQQ_FORM_FILE,// use add_file_content instead
@@ -35,7 +35,7 @@ typedef enum {
  * But for other app, it may work bad.
  *
  */
-struct _LwqqHttpRequest {
+typedef struct LwqqHttpRequest {
 	void *req;
 	void *lc;
 	void *header;// read and write.
@@ -83,10 +83,10 @@ struct _LwqqHttpRequest {
 	//add http form file type
 	void (*add_file_content)(LwqqHttpRequest* request,const char* name,const char* filename,const void* data,size_t size,const char* extension);
 	//progressing function callback
-	int (*progress_func)(void* data,size_t now,size_t total);
+	LwqqProgressFunc progress_func;
 	void* prog_data;
 	time_t last_prog;
-} ;
+} LwqqHttpRequest;
 
 typedef struct LwqqHttpHandle{
 	struct {
@@ -109,16 +109,16 @@ typedef struct LwqqHttpHandle{
 
 LwqqHttpHandle* lwqq_http_handle_new();
 void lwqq_http_handle_free(LwqqHttpHandle* http);
-#define lwqq_http_proxy_set(_handle,_type,_host,_port,_username,_password)\
-	do{\
-		LwqqHttpHandle* h = (LwqqHttpHandle*) (_handle);\
-		h->proxy.type = _type;\
-		h->proxy.host = s_strdup(_host);\
-		h->proxy.port = _port;\
-		h->proxy.username = s_strdup(_username);\
-		h->proxy.password = s_strdup(_password);\
-	}while(0);
-
+#define lwqq_http_proxy_set(_handle, _type, _host, _port, _username,           \
+                            _password)                                         \
+   do {                                                                        \
+      LwqqHttpHandle* h = (LwqqHttpHandle*)(_handle);                          \
+      h->proxy.type = _type;                                                   \
+      h->proxy.host = s_strdup(_host);                                         \
+      h->proxy.port = _port;                                                   \
+      h->proxy.username = s_strdup(_username);                                 \
+      h->proxy.password = s_strdup(_password);                                 \
+   } while (0);
 
 void lwqq_http_proxy_apply(LwqqHttpHandle* handle,LwqqHttpRequest* req);
 
@@ -158,7 +158,8 @@ void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup);
 /** set the other option of request, like curl_easy_setopt */
 void lwqq_http_set_option(LwqqHttpRequest* req,LwqqHttpOption opt,...);
 /** regist http progressing callback */
-void lwqq_http_on_progress(LwqqHttpRequest* req,LWQQ_PROGRESS progress,void* prog_data);
+void lwqq_http_on_progress(LwqqHttpRequest* req, LwqqProgressFunc progress,
+                           void* prog_data);
 const char* lwqq_http_get_url(LwqqHttpRequest* req);
 int lwqq_http_is_synced(LwqqHttpRequest* req);
 /** get cookie which key==name, 

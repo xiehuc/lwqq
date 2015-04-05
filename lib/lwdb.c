@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "utility.h"
 #include "smemory.h"
@@ -28,6 +29,7 @@
 #include "swsqlite.h"
 #include "lwdb.h"
 #include "internal.h"
+#include "async.h"
 
 #ifdef WIN32
 #include <shlobj.h>

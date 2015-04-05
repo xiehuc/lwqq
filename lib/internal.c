@@ -3,7 +3,10 @@
 #include "logger.h"
 #include "async.h"
 #include "smemory.h"
+#include "json.h"
+
 #include <string.h>
+#include <assert.h>
 
 
 static int request_captcha_back(LwqqHttpRequest* req,LwqqVerifyCode* code)

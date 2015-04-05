@@ -1,5 +1,5 @@
-#include <stdarg.h>
-#include <stdlib.h>
+#ifndef VPLIST_H_H
+#define VPLIST_H_H
 /**
  * # variable param list
  *
@@ -10,6 +10,7 @@
  * author : xiehuc@gmail.com
  */
 
+#include <stdlib.h>
 
 typedef struct {void* st;void* cur; size_t sz;}vp_list;
 typedef void (*VP_CALLBACK)(void);
@@ -58,4 +59,5 @@ void vp_func_p_i  ( VP_CALLBACK,vp_list*,void*);
 void vp_func_2p_i ( VP_CALLBACK,vp_list*,void*);
 void vp_func_3p_i ( VP_CALLBACK,vp_list*,void*);
 
+#endif
 // vim: ts=3 sw=3 sts=3 noet

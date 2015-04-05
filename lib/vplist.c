@@ -1,5 +1,7 @@
 #include "vplist.h"
 #include <string.h>
+#include <stdarg.h>
+
 #ifdef WIN32
 #include "lwqq_export.h"
 #else
