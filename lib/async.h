@@ -52,6 +52,7 @@ typedef struct LwqqAsyncEvset{
  */
 LwqqAsyncEvset* lwqq_async_evset_new();
 void lwqq_async_evset_free(LwqqAsyncEvset* set);
+
 /** 
  * create a new event. 
  * @param req : the bind http request with event
