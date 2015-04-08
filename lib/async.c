@@ -142,7 +142,7 @@ void _lwqq_async_evset_free(LwqqAsyncEvset* set)
 }
 
 LWQQ_EXPORT
-void lwqq_async_evset_free(LwqqAsyncEvset* set)
+void lwqq_async_evset_unref(LwqqAsyncEvset* set)
 {
         int flag = 0;
 	if(!set) return;
@@ -150,7 +150,6 @@ void lwqq_async_evset_free(LwqqAsyncEvset* set)
         pthread_mutex_lock(&evset_->lock);
         if (--evset_->ref_count==0) flag = 1;
         pthread_mutex_unlock(&evset_->lock);
-
 	if(flag){
                 vp_do(evset_->cmd,NULL);
                 if(evset_->cond_waiting)

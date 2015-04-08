@@ -1311,7 +1311,7 @@ static void lwqq_msg_request_picture(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyn
 			if(set == NULL) set = lwqq_async_evset_new();
 			event = request_content_offpic(lc,msg->super.from,c);
 			lwqq_async_evset_add_event(set,event);
-                        lwqq_async_evset_free(set);
+                        lwqq_async_evset_unref(set);
 		}else if(c->type == LWQQ_CONTENT_CFACE){
 			if(msg->super.super.type == LWQQ_MS_BUDDY_MSG)
 				event = request_content_cface2(lc,msg->super.msg_id,msg->super.from,c);
@@ -1322,7 +1322,7 @@ static void lwqq_msg_request_picture(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyn
 			}
 			if(set == NULL && event!=NULL) set = lwqq_async_evset_new();
 			lwqq_async_evset_add_event(set,event);
-                        lwqq_async_evset_free(set);
+                        lwqq_async_evset_unref(set);
 		}
 	}
 	*ptr = set;
@@ -1347,7 +1347,7 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 			event = lwqq_info_get_friend_qqnumber(lc,buddy);
 			lwqq_async_evset_add_event(set, event);
 			lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
-                        lwqq_async_evset_free(set);
+                        lwqq_async_evset_unref(set);
 			msg->buddy.from = buddy;
 		}else{
 			msg->buddy.from = buddy;
@@ -1369,7 +1369,7 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 			event = lwqq_info_get_group_detail_info(lc, g, NULL);
 			lwqq_async_evset_add_event(set, event);
 			lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
-                        lwqq_async_evset_free(set);
+                        lwqq_async_evset_unref(set);
 			msg->group.from = g;
 		}else{
 			msg->group.from = g;
@@ -2100,13 +2100,13 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 		event = lwqq_async_event_new(NULL);
 		//add a delay to make server have a slip to sendout customface
 		lwqq_async_add_evset_listener(evset, _C_(4p,msg_send_delay, lc,msg,event,5000L));
-                lwqq_async_evset_free(evset);
+                lwqq_async_evset_unref(evset);
 
 		//if we need upload first. we break this send msg 
 		//and use event chain to resume later.
 		return event;
 	}
-        lwqq_async_evset_free(evset);
+        lwqq_async_evset_unref(evset);
 
 	//we do send msg
 	ds_cat(body, "r={");
