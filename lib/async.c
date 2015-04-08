@@ -145,7 +145,6 @@ LWQQ_EXPORT
 void lwqq_async_evset_free(LwqqAsyncEvset* set)
 {
         int flag = 0;
-
 	if(!set) return;
 	LwqqAsyncEvset_* evset_ = (LwqqAsyncEvset_*) set;
         pthread_mutex_lock(&evset_->lock);
@@ -164,8 +163,7 @@ void lwqq_async_evset_free(LwqqAsyncEvset* set)
 
 void lwqq_async_event_finish(LwqqAsyncEvent* event)
 {
-        int flag = 1;
-
+        int flag = 0;
 	LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
 	vp_do(internal->cmd,NULL);
 	LwqqAsyncEvset_* evset_ = (LwqqAsyncEvset_*)internal->host_lock;
