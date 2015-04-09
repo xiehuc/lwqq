@@ -1312,6 +1312,7 @@ static void lwqq_msg_request_picture(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyn
 			if(set == NULL) set = lwqq_async_evset_new();
 			event = request_content_offpic(lc,msg->super.from,c);
 			lwqq_async_evset_add_event(set,event);
+                        lwqq_async_evset_unref(set);
 		}else if(c->type == LWQQ_CONTENT_CFACE){
 			if(msg->super.super.type == LWQQ_MS_BUDDY_MSG)
 				event = request_content_cface2(lc,msg->super.msg_id,msg->super.from,c);
@@ -1322,6 +1323,7 @@ static void lwqq_msg_request_picture(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyn
 			}
 			if(set == NULL && event!=NULL) set = lwqq_async_evset_new();
 			lwqq_async_evset_add_event(set,event);
+                        lwqq_async_evset_unref(set);
 		}
 	}
 	*ptr = set;
@@ -1346,6 +1348,7 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 			event = lwqq_info_get_friend_qqnumber(lc,buddy);
 			lwqq_async_evset_add_event(set, event);
 			lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
+                        lwqq_async_evset_unref(set);
 			msg->buddy.from = buddy;
 		}else{
 			msg->buddy.from = buddy;
@@ -1367,6 +1370,7 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 			event = lwqq_info_get_group_detail_info(lc, g, NULL);
 			lwqq_async_evset_add_event(set, event);
 			lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
+                        lwqq_async_evset_unref(set);
 			msg->group.from = g;
 		}else{
 			msg->group.from = g;
@@ -2079,7 +2083,7 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 			event = NULL;
 			if(c->type == LWQQ_CONTENT_CFACE && c->data.cface.data > 0){
 				event = lwqq_msg_upload_cface(lc,c,mmsg->super.super.type,
-						mmsg->super.to);
+                                                              mmsg->super.to);
 				//only group message need gface sig
 				if(msg->super.super.type != LWQQ_MS_BUDDY_MSG&&!lc->gface_sig) 
 					lwqq_async_evset_add_event(evset,query_gface_sig(lc));
@@ -2097,10 +2101,13 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 		event = lwqq_async_event_new(NULL);
 		//add a delay to make server have a slip to sendout customface
 		lwqq_async_add_evset_listener(evset, _C_(4p,msg_send_delay, lc,msg,event,5000L));
+                lwqq_async_evset_unref(evset);
+
 		//if we need upload first. we break this send msg 
 		//and use event chain to resume later.
 		return event;
 	}
+        lwqq_async_evset_unref(evset);
 
 	//we do send msg
 	ds_cat(body, "r={");
@@ -2113,18 +2120,18 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 		format_append(data,"\"group_uin\":%s,",mmsg->super.to);
 		if(has_cface){
 			format_append(data,"\"group_code\":%s,\"key\":\"%s\",\"sig\":\"%s\",",
-					mmsg->group.group_code,lc->gface_key,lc->gface_sig);
+                                      mmsg->group.group_code,lc->gface_key,lc->gface_sig);
 		}
 		apistr = "send_qun_msg2";
 	}else if(msg->super.super.type == LWQQ_MS_SESS_MSG){
 		format_append(data,"\"to\":%s,\"group_sig\":\"%s\",\"service_type\":%d,",
-				mmsg->super.to,mmsg->sess.group_sig,mmsg->sess.service_type);
+                              mmsg->super.to,mmsg->sess.group_sig,mmsg->sess.service_type);
 		apistr = "send_sess_msg2";
 	}else if(msg->super.super.type == LWQQ_MS_DISCU_MSG){
 		format_append(data,"\"did\":\"%s\",",mmsg->discu.did);
 		if(has_cface){
 			format_append(data,"\"key\":\"%s\",\"sig\":\"%s\",",
-					lc->gface_key,lc->gface_sig);
+                                      lc->gface_key,lc->gface_sig);
 		}
 		apistr = "send_discu_msg2";
 	}else{
@@ -2135,10 +2142,10 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 	ds_cat(body, data);
 	ds_cat(body, "\"content\":", ds_c_str(content), ",");
 	snprintf(data, sizeof(data),
-			"\"msg_id\":%ld,"
-			"\"clientid\":\"%s\","
-			"\"psessionid\":\"%s\"}",
-			++list_->msg_id,lc->clientid,lc->psessionid);
+                 "\"msg_id\":%ld,"
+                 "\"clientid\":\"%s\","
+                 "\"psessionid\":\"%s\"}",
+                 ++list_->msg_id,lc->clientid,lc->psessionid);
 	//format_append(data,"&clientid=%s&psessionid=%s",lc->clientid,lc->psessionid);
 	ds_cat(body, data);
 

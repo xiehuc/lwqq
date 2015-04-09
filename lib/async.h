@@ -49,7 +49,8 @@ typedef struct LwqqAsyncEvset{
  * if it add zero event, and not trigger any thing. it would be a garbage and need freed by you.
  */
 LwqqAsyncEvset* lwqq_async_evset_new();
-void lwqq_async_evset_free(LwqqAsyncEvset* set);
+void lwqq_async_evset_unref(LwqqAsyncEvset* set);
+
 /** 
  * create a new event. 
  * @param req : the bind http request with event
