@@ -1348,7 +1348,7 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 			event = lwqq_info_get_friend_qqnumber(lc,buddy);
 			lwqq_async_evset_add_event(set, event);
 			lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
-                        lwqq_async_evset_unref(set);
+			lwqq_async_evset_unref(set);
 			msg->buddy.from = buddy;
 		}else{
 			msg->buddy.from = buddy;
@@ -1370,7 +1370,7 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc,LwqqMsgMessage* msg,LwqqA
 			event = lwqq_info_get_group_detail_info(lc, g, NULL);
 			lwqq_async_evset_add_event(set, event);
 			lwqq_async_add_evset_listener(set, _C_(3p,add_passerby,lc,buddy,g));
-                        lwqq_async_evset_unref(set);
+			lwqq_async_evset_unref(set);
 			msg->group.from = g;
 		}else{
 			msg->group.from = g;
@@ -1458,6 +1458,7 @@ static int parse_recvmsg_from_json(LwqqRecvMsgList *list, const char *str)
 				}
 				if(set){
 					lwqq_async_add_evset_listener(set, _C_(2p,insert_msg_delay_by_request_content,list,msg));
+					lwqq_async_evset_unref(set);
 					ret = RET_DELAYINS_MSG;
 				}
 				break;
@@ -2101,7 +2102,7 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 		event = lwqq_async_event_new(NULL);
 		//add a delay to make server have a slip to sendout customface
 		lwqq_async_add_evset_listener(evset, _C_(4p,msg_send_delay, lc,msg,event,5000L));
-                lwqq_async_evset_unref(evset);
+		lwqq_async_evset_unref(evset);
 
 		//if we need upload first. we break this send msg 
 		//and use event chain to resume later.
