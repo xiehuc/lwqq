@@ -44,11 +44,14 @@ typedef struct LwqqAsyncEvset{
 	int err_count;
 }LwqqAsyncEvset;
 /** 
- * create a new evset. 
- * if it successfully trigger callback function, it would be freed by library.
- * if it add zero event, and not trigger any thing. it would be a garbage and need freed by you.
+ * create a new evset with reference count 1. 
+ * use lwqq_async_evset_unref to notice release it.
  */
 LwqqAsyncEvset* lwqq_async_evset_new();
+/**
+ * give up your own reference count, so it would be freed when reference count
+ * down to zero.
+ */
 void lwqq_async_evset_unref(LwqqAsyncEvset* set);
 
 /** 
@@ -90,6 +93,10 @@ void lwqq_async_add_event_listener(LwqqAsyncEvent* event,LwqqCommand cmd);
  *                if evset reference count is zero, evset would automaticly freed
  *                because it never trigger. and cmd would immediately executed.
  *                if not freed now , no chance to free anymore
+ *                (* update 15-04-09 *) 
+ *                this may not often happen, since add new unref api, you keep
+ *                your self reference count, so it can't be zero easily. you
+ *                need call evset_unref to release it.
  * @param cmd   : if evset reference count decreased to zero, cmd would trigger
  */
 void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd);
