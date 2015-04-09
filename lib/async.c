@@ -162,30 +162,21 @@ void lwqq_async_evset_unref(LwqqAsyncEvset* set)
 
 void lwqq_async_event_finish(LwqqAsyncEvent* event)
 {
-	int flag = 0;
 	LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
 	vp_do(internal->cmd,NULL);
 	LwqqAsyncEvset_* evset_ = (LwqqAsyncEvset_*)internal->host_lock;
 	if(evset_ !=NULL){
-		pthread_mutex_lock(&evset_->lock);
-		if (--evset_->ref_count==0) flag = 1;
 		//this store evset err count.
-		if(event->result != LWQQ_EC_OK)
+		if(event->result != LWQQ_EC_OK){
+			pthread_mutex_lock(&evset_->lock);
 			evset_->parent.err_count ++;
-		pthread_mutex_unlock(&evset_->lock);
-		if(flag){
-			vp_do(evset_->cmd,NULL);
-			if(evset_->cond_waiting)
-				pthread_cond_signal(&evset_->cond);
-			else{
-				_lwqq_async_evset_free(internal->host_lock);
-				s_free(event);
-				return;
-			}
+			pthread_mutex_unlock(&evset_->lock);
 		}
+		lwqq_async_evset_unref(internal->host_lock);
 	}
 	s_free(event);
 }
+#if 0
 void lwqq_async_evset_wait(LwqqAsyncEvset* set)
 {
 	if(!set) return;
@@ -198,6 +189,7 @@ void lwqq_async_evset_wait(LwqqAsyncEvset* set)
 	}
 	_lwqq_async_evset_free(set);
 }
+#endif
 
 LWQQ_EXPORT
 void lwqq_async_evset_add_event(LwqqAsyncEvset* host,LwqqAsyncEvent *handle)
@@ -263,10 +255,12 @@ void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset,LwqqCommand cmd)
 		set_->cmd = cmd;
 	else
 		vp_link(&set_->cmd,&cmd);
+#if 0
 	if(set_->ref_count == 0){
 		_lwqq_async_evset_free(evset);
 		vp_do(cmd, NULL);
 	}
+#endif
 }
 
 LWQQ_EXPORT
