@@ -1312,7 +1312,6 @@ static void lwqq_msg_request_picture(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyn
 			if(set == NULL) set = lwqq_async_evset_new();
 			event = request_content_offpic(lc,msg->super.from,c);
 			lwqq_async_evset_add_event(set,event);
-                        lwqq_async_evset_unref(set);
 		}else if(c->type == LWQQ_CONTENT_CFACE){
 			if(msg->super.super.type == LWQQ_MS_BUDDY_MSG)
 				event = request_content_cface2(lc,msg->super.msg_id,msg->super.from,c);
@@ -1323,7 +1322,6 @@ static void lwqq_msg_request_picture(LwqqClient* lc,LwqqMsgMessage* msg,LwqqAsyn
 			}
 			if(set == NULL && event!=NULL) set = lwqq_async_evset_new();
 			lwqq_async_evset_add_event(set,event);
-                        lwqq_async_evset_unref(set);
 		}
 	}
 	*ptr = set;
@@ -2082,17 +2080,21 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 	if(mmsg->upload_retry>=0){
 		TAILQ_FOREACH(c,&mmsg->content,entries){
 			event = NULL;
+			int should_query_gface = 0;
 			if(c->type == LWQQ_CONTENT_CFACE && c->data.cface.data > 0){
 				event = lwqq_msg_upload_cface(lc,c,mmsg->super.super.type,
                                                               mmsg->super.to);
 				//only group message need gface sig
 				if(msg->super.super.type != LWQQ_MS_BUDDY_MSG&&!lc->gface_sig) 
-					lwqq_async_evset_add_event(evset,query_gface_sig(lc));
+					should_query_gface = 1;
 			} else if(c->type == LWQQ_CONTENT_OFFPIC && c->data.img.data > 0)
 				event = lwqq_msg_upload_offline_pic(lc,c,mmsg->super.to);
+
 			if(event){
 				if(evset==NULL)evset = lwqq_async_evset_new();
 				lwqq_async_evset_add_event(evset,event);
+				if(should_query_gface)
+					lwqq_async_evset_add_event(evset,query_gface_sig(lc));
 				will_upload = 1;
 			}
 		}
@@ -2108,7 +2110,6 @@ LwqqAsyncEvent* lwqq_msg_send(LwqqClient *lc, LwqqMsgMessage *msg)
 		//and use event chain to resume later.
 		return event;
 	}
-        lwqq_async_evset_unref(evset);
 
 	//we do send msg
 	ds_cat(body, "r={");
