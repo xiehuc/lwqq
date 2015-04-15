@@ -117,7 +117,6 @@ LwqqClient *lwqq_client_new(const char *username, const char *password)
 	lc->magic = LWQQ_MAGIC;
 	lc->username = s_strdup(username);
 	lc->password = s_strdup(password);
-	lc->error_description = s_malloc0(512);
 	lc->myself = lwqq_buddy_new();
 	if (!lc->myself) {
 		goto failed;

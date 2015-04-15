@@ -65,7 +65,7 @@ static int get_login_sig_back(LwqqHttpRequest* req)
 	if(!req->response){err = LWQQ_EC_ERROR;goto done;}
 	char* beg = strstr(req->response,"var g_login_sig=");
 	char login_sig[64];
-	sscanf(beg,"var g_login_sig=encodeURIComponent(\"%[^\"]\")",login_sig);
+	sscanf(beg,"var g_login_sig=encodeURIComponent(\"%63[^\"]\")",login_sig);
 	lwqq_override(lc->login_sig, s_strdup(login_sig));
 done:
 	lwqq_http_request_free(req);
@@ -111,7 +111,7 @@ static int check_need_verify_back(LwqqHttpRequest* req)
 	int need_vf;
 	char param2[256];
 	char param3[256];
-	sscanf(req->response,"ptui_checkVC('%d','%[^']','%[^']');",&need_vf,param2,param3);
+	sscanf(req->response,"ptui_checkVC('%d','%255[^']','%255[^']');",&need_vf,param2,param3);
 	lc->vc = s_malloc0(sizeof(*lc->vc));
 	lc->vc->uin = s_strdup(param3);
 	lc->vc->str = s_strdup(param2);
@@ -248,6 +248,7 @@ static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)
 	LwqqClient* lc = req->lc;
 	int err = LWQQ_EC_OK;
 	const char* response;
+	char error_desc[512];
 	//const char redirect_url[512];
 	if (req->http_code != 200) {
 		err = LWQQ_EC_HTTP_ERROR;
@@ -256,7 +257,10 @@ static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)
 	if (strstr(req->response,"aq.qq.com")!=NULL){
 		err = LWQQ_EC_LOGIN_ABNORMAL;
 		const char* beg = strstr(req->response,"http://aq.qq.com");
-		if(beg) sscanf(beg,"%[^']",lc->error_description); // beg may be null
+		if(beg){
+			sscanf(beg,"%511[^']",error_desc); // beg may be null
+			lwqq_override(lc->error_description, s_strdup(error_desc));
+		}
 		goto done;
 	}
 	if(req->response == NULL){
@@ -279,7 +283,7 @@ static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)
 	char user[64];
 	//void url is '' which makes sscanf failed
 	//%*c is for eat a blank before 'user'
-	sscanf(response,"ptuiCB('%d','%d','%[^,],'%d','%[^']',%*c'%[^']');",
+	sscanf(response,"ptuiCB('%d','%d','%511[^,],'%d','%511[^']',%*c'%63[^']');",
 			&status,&param2,url,&param4,msg,user);
 	url[strlen(url)-1]=0;
 	switch (status) {
@@ -341,7 +345,7 @@ static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)
 			goto done;
 		case LWQQ_EC_LOGIN_NEED_BARCODE:
 			lwqq_log(LOG_ERROR, "%s\n",msg);
-			lc->error_description = s_strdup(msg);
+			lwqq_override(lc->error_description,s_strdup(msg));
 			err = LWQQ_EC_LOGIN_NEED_BARCODE;
 			goto done;
 

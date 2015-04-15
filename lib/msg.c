@@ -1943,7 +1943,7 @@ static int upload_cface_back(LwqqHttpRequest *req,LwqqMsgContent* c,const char* 
 		err = 1;
 		goto done;
 	}
-	sscanf(ptr,"({'ret':%d,'msg':'%[^\']'",&ret,msg);
+	sscanf(ptr,"({'ret':%d,'msg':'%255[^\']'",&ret,msg);
 	if(ret == 2){
 		err = LWQQ_EC_UPLOAD_OVERSIZE;
 		goto done;
