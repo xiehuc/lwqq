@@ -83,49 +83,46 @@ static LwqqAsyncEvent* get_login_sig(LwqqClient* lc)
 }
 static int check_need_verify_back(LwqqHttpRequest* req)
 {
-	int err = LWQQ_EC_OK;
-	LwqqClient* lc = req->lc;
-	if(req->err != LWQQ_EC_OK){
-		err = LWQQ_EC_NETWORK_ERROR;
-		lc->args->login_ec = err;
-		vp_do_repeat(lc->events->login_complete, NULL);
-		goto done;
-	}
-	lwqq__jump_if_http_fail(req, err);
-
+   int err = LWQQ_EC_OK;
+   LwqqClient* lc = req->lc;
+   if (req->err != LWQQ_EC_OK) {
+      err = LWQQ_EC_NETWORK_ERROR;
+      lc->args->login_ec = err;
+      vp_do_repeat(lc->events->login_complete, NULL);
+      goto done;
+   }
+   lwqq__jump_if_http_fail(req, err);
 	/**
-	 * 
-	 * The http message body has two format:
-	 *
-	 * ptui_checkVC('1','9ed32e3f644d968809e8cbeaaf2cce42de62dfee12c14b74','\x00\x00\x00\x00\x04\x7e\x73\xb2');
-	 * ptui_checkVC('0','!IJG', '\x00\x00\x00\x00\x54\xb3\x3c\x53');
-	 * The former means we need verify code image and the second
-	 * parameter is vc_type.
-	 * The later means we don't need the verify code image. The second
-	 * parameter is the verify code. The vc_type is in the header
-	 * "Set-Cookie".
+	 * ptui_checkVC('0','!ZDP','\x96\x00\xb9\xd6\xcf\x87\xae\xf4','34bfca26ba2613a99cfc2d62116d8217cda391c14a07f38523eeb7be2542f1d14b3ab7f93c0deeb782dfc5e723bc055952acf969ebf7d1c4','1');
+
+	 ptui_checkVC('1','bk9gaJlbRSmYU-nOXKxvPaAxjzPHr99tjldA-NhvvyRe2YxlAt94yA**','\x00\x00\x00\x00\x95\x1a\x82\x5c','','0');
 	 */
-	int need_vf;
-	char param2[256];
-	char param3[256];
-	sscanf(req->response,"ptui_checkVC('%d','%255[^']','%255[^']');",&need_vf,param2,param3);
-	lc->vc = s_malloc0(sizeof(*lc->vc));
-	lc->vc->uin = s_strdup(param3);
-	lc->vc->str = s_strdup(param2);
-	lc->vc->lc  = lc;
 
-	if (need_vf == 0) {
-		/* We need get the ptvfsession from the header "Set-Cookie" */
-		lwqq_override(lc->session.pt_verifysession, lwqq_http_get_cookie(req, "ptvfsession"));
-		lwqq_log(LOG_NOTICE, "Verify code: %s\n", lc->vc->str);
-	} else if (need_vf == 1) {
-		err = LWQQ_EC_LOGIN_NEED_VC;
-		lwqq_log(LOG_NOTICE, "We need verify code image: %s\n", lc->vc->str);
-	}
+   int need_vf;
+   char vc[256] = {0};
+   char salt[256] = {0};
+   char vf[256] = {0};
+	lc->session.randSalt = '0';
+   sscanf(req->response,
+          "ptui_checkVC('%d','%255[^']','%255[^']','%255[^']','%c');", &need_vf,
+          vc, salt, vf, &lc->session.randSalt);
+   lc->vc = s_malloc0(sizeof(*lc->vc));
+   lc->vc->uin = s_strdup(salt);
+   lc->vc->str = s_strdup(vc);
+   lc->vc->lc = lc;
 
+   if (need_vf == 0) {
+      /* We need get the ptvfsession from the header "Set-Cookie" */
+      lwqq_log(LOG_NOTICE, "Verify code: %s\n", vc);
+   } else if (need_vf == 1) {
+      err = LWQQ_EC_LOGIN_NEED_VC;
+      lwqq_log(LOG_NOTICE, "We need verify code image: %s\n", vc);
+   }
+
+   lwqq_override(lc->session.pt_verifysession, s_strdup(vf));
 done:
-	lwqq_http_request_free(req);
-	return err;
+   lwqq_http_request_free(req);
+   return err;
 }
 
 static LwqqAsyncEvent* check_need_verify(LwqqClient *lc)
@@ -172,17 +169,20 @@ done:
 
 static LwqqAsyncEvent* get_verify_image(LwqqClient *lc)
 {
-	LwqqHttpRequest *req = NULL;  
-	char url[512];
-	char chkuin[64];
-	LwqqErrorCode err;
+   LwqqHttpRequest* req = NULL;
+   char url[512];
+	char buf[256];
+   LwqqErrorCode err;
 
-	snprintf(url, sizeof(url), WEBQQ_CAPTCHA_HOST"/getimage?aid="WQQ_APPID"&uin=%s", lc->username);
-	req = lwqq_http_create_default_request(lc,url, &err);
+   snprintf(url, sizeof(url),
+            WEBQQ_CAPTCHA_HOST "/getimage?aid=" WQQ_APPID "&uin=%s&cap_cd=%s",
+            lc->username, lc->vc->str);
+   req = lwqq_http_create_default_request(lc, url, &err);
+	req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(buf));
+	lwqq_http_debug(req, 5);
 
-	snprintf(chkuin, sizeof(chkuin), "chkuin=%s", lc->username);
-	req->set_header(req, "Cookie", chkuin);
-	return req->do_request_async(req, lwqq__hasnot_post(),_C_(2p_i,request_captcha_back,req,lc->vc));
+   return req->do_request_async(req, lwqq__hasnot_post(),
+                                _C_(2p_i, request_captcha_back, req, lc->vc));
 }
 
 
@@ -193,53 +193,55 @@ static LwqqAsyncEvent* get_verify_image(LwqqClient *lc)
  * @param md5 The md5 calculated from calculate_password_md5() 
  * @param err 
  */
-static LwqqAsyncEvent* do_login(LwqqClient *lc, const char *md5, LwqqErrorCode *err)
+static LwqqAsyncEvent* do_login(LwqqClient* lc, const char* md5,
+                                LwqqErrorCode* err)
 {
-	char url[1024];
-	char refer[1024];
-	LwqqHttpRequest *req;
+   char url[1024];
+   char refer[1024];
+   LwqqHttpRequest* req;
 
-	snprintf(url, sizeof(url), WEBQQ_LOGIN_HOST"/login?"
-			"u=%s"
-			"&p=%s"
-			"&verifycode=%s"
-			"&webqq_type=%d"
-			"&remember_uin=1"
-			"&aid="WQQ_APPID
-			"&login2qq=1"
-			"&u1=http%%3A%%2F%%2Fw.qq.com%%2Fproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10"
-			"&h=1"
-			"&ptredirect=0"
-			"&ptlang=2052"
-			"&daid=164"
-			"&from_ui=1"
-			"&pttype=1"
-			"&dumy="
-			"&fp=loginerroralert"
-			"&action=0-0-5111"
-			//"&action=2-10-5837"
-			"&mibao_css=m_webqq"
-			"&t=1"
-			"&g=1"
-			"&js_type=0"
-			"&js_ver="JS_VER
-			"&login_sig="
-			"&pt_uistyle=5"
-			"&pt_randsalt=1"
-			"&pt_vcode_v1=0"
-			"&pt_verifysession_v1=%s",
-			lc->username, md5, lc->vc->str,lc->stat,lc->session.pt_verifysession?:"");
+   snprintf(url, sizeof(url),
+            WEBQQ_LOGIN_HOST "/login?"
+                             "u=%s"
+                             "&p=%s"
+                             "&verifycode=%s"
+                             "&webqq_type=%d"
+                             "&remember_uin=1"
+                             "&aid=" WQQ_APPID "&login2qq=1"
+                             "&u1=http%%3A%%2F%%2Fw.qq.com%%2Fproxy.html%%"
+                             "3Flogin2qq%%3D1%%26webqq_type%%3D10"
+                             "&h=1"
+                             "&ptredirect=0"
+                             "&ptlang=2052"
+                             "&daid=164"
+                             "&from_ui=1"
+                             "&pttype=1"
+                             "&dumy="
+                             "&fp=loginerroralert"
+                             //"&action=0-0-5111"
+                             "&mibao_css=m_webqq"
+                             "&t=1"
+                             "&g=1"
+                             "&js_type=0"
+                             "&js_ver=" JS_VER "&login_sig="
+                             "&pt_uistyle=5"
+                             "&pt_randsalt=%c"
+                             "&pt_vcode_v1=0"
+                             "&pt_verifysession_v1=%s",
+            lc->username, md5, lc->vc->str, lc->stat, lc->session.randSalt,
+            lc->session.pt_verifysession ?: "");
 
-	req = lwqq_http_create_default_request(lc,url, err);
-	/* Setup http header */
-	req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(refer));
-	lwqq_http_debug(req, 5);
+   req = lwqq_http_create_default_request(lc, url, err);
+   /* Setup http header */
+   req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(refer));
+   lwqq_http_debug(req, 5);
 
-	LwqqAsyncEvent* ret = lwqq_async_event_new(NULL);
-	/* Send request */
-	LwqqAsyncEvent* ev = req->do_request_async(req, lwqq__hasnot_post(),_C_(2p_i,do_login_back,req,ret));
-	lwqq_async_add_event_chain(ev,ret);
-	return ret;
+   LwqqAsyncEvent* ret = lwqq_async_event_new(NULL);
+   /* Send request */
+   LwqqAsyncEvent* ev = req->do_request_async(
+       req, lwqq__hasnot_post(), _C_(2p_i, do_login_back, req, ret));
+   lwqq_async_add_event_chain(ev, ret);
+   return ret;
 }
 
 static int do_login_back(LwqqHttpRequest* req,LwqqAsyncEvent* event)

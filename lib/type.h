@@ -311,6 +311,7 @@ struct LwqqClient {
 	struct {
 		char* ptwebqq;
 		char* pt_verifysession;
+		char randSalt;
 	}session;
 
 	LwqqBuddy *myself;          /** < Myself */
