@@ -66,6 +66,18 @@ void lwqq_util_add_path(const char* path)
 }
 
 LWQQ_EXPORT
+char* lwqq_util_res_file(const char* resource)
+{
+   char* filepath = NULL;
+   struct ds filepath_ds = ds_initializer;
+   ds_cat(filepath_ds, LIST_FIRST(&resource_path)->path, LWQQ_PATH_SEP,
+          resource);
+	filepath = ds_c_str(filepath_ds);
+	ds_free(filepath_ds);
+	return filepath;
+}
+
+LWQQ_EXPORT
 char* lwqq_util_load_res(const char* resource, int security)
 {
 	char* filepath = NULL;

@@ -188,7 +188,7 @@ void lwqq_http_cancel(LwqqHttpRequest* req);
    LWQQ_DEBUG(if (LWQQ_VERBOSE_LV >= lv)                                       \
               lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L);)
 
-LwqqExtension* lwqq_make_cookie_extension(LwqqClient* lc);
+LwqqExtension* lwqq_make_cookie_extension(LwqqClient* lc, const char* filename);
 
 #endif  /* LWQQ_HTTP_H */
 

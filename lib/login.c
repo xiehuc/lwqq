@@ -54,32 +54,19 @@ static void login_stage_4(LwqqClient* lc,LwqqErrorCode* ec);
 static void login_stage_5(LwqqAsyncEvent* ev,LwqqErrorCode* ec);
 static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec);
 
-static int get_login_sig_back(LwqqHttpRequest* req)
-{
-	LwqqErrorCode err = LWQQ_EC_OK;
-	LwqqClient* lc = req->lc;
-	lwqq__jump_if_http_fail(req, err);
-	if(!req->response){err = LWQQ_EC_ERROR;goto done;}
-	char* beg = strstr(req->response,"var g_login_sig=");
-	char login_sig[64];
-	sscanf(beg,"var g_login_sig=encodeURIComponent(\"%63[^\"]\")",login_sig);
-	//lwqq_override(lc->login_sig, s_strdup(login_sig));
-done:
-	lwqq_http_request_free(req);
-	return err;
-}
-
 static LwqqAsyncEvent* get_login_sig(LwqqClient* lc)
 {
-	char url[512];
-	snprintf(url,sizeof(url),WEBQQ_LOGIN_UI_HOST"/cgi-bin/login"
-			"?daid=164&target=self&style=5&mibao_css=m_webqq&appid="WQQ_APPID
-			"&enable_qlogin=0&no_verifyimg=1&s_url=http%%3A%%2F%%2Fw.qq.com%%2Fproxy.html?f_url=loginerroralert&strong_login=1&login_state=10"
-			);
-	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
-	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT,5);
-	lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT_INCRE,5);
-	return req->do_request_async(req,lwqq__hasnot_post(),_C_(p_i,get_login_sig_back,req));
+   char url[512];
+   snprintf(url, sizeof(url), WEBQQ_LOGIN_UI_HOST
+            "/cgi-bin/login"
+            "?daid=164&target=self&style=5&mibao_css=m_webqq&appid=" WQQ_APPID
+            "&enable_qlogin=0&no_verifyimg=1&s_url=http%%3A%%2F%%2Fw.qq.com%%"
+            "2Fproxy.html?f_url=loginerroralert&strong_login=1&login_state=10");
+   LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
+   lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 5);
+   lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT_INCRE, 5);
+   return req->do_request_async(req, lwqq__hasnot_post(),
+                                _C_(p, lwqq_http_request_free, req));
 }
 static int check_need_verify_back(LwqqHttpRequest* req)
 {

@@ -37,6 +37,8 @@ void lwqq_util_add_path(const char* path);
  *		any software can override js file, and send password to outside
  */
 char* lwqq_util_load_res(const char* resource, int security);
+/** return a valid resource filename in path */
+char* lwqq_util_res_file(const char* resource);
 
 #define lwqq_group_pretty_name(g) (g->markname?:g->name)
 #define lwqq_buddy_pretty_name(b) (b->markname?:b->nick)

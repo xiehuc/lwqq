@@ -146,9 +146,6 @@ LwqqClient *lwqq_client_new(const char *username, const char *password)
 	lc_->http = lwqq_http_handle_new();
 	lc_->hash_beg = lc_->hash_idx = lc_->hash_entry;
 
-	LwqqExtension* cookie_ext = lwqq_make_cookie_extension(lc);
-	cookie_ext->init(lc, cookie_ext);
-
 	return lc;
 
 failed:
