@@ -10,6 +10,9 @@
 #endif
 
 #define WEBQQ_VERSION "20130916001"
+#define WEBQQ_APPID "1003903"
+#define WQQ_APPID "501004106"
+#define JS_VER "10120"
 
 #define WEBQQ_LOGIN_UI_HOST "https://ui.ptlogin2.qq.com"
 #define WEBQQ_CAPTCHA_HOST  "https://ssl.captcha.qq.com"
@@ -29,6 +32,16 @@
              "&appid=1003903&enable_qlogin=0&no_verifyimg=1&s_url=http%%3A%%"  \
              "2F%%2Fweb2.qq.com"                                               \
              "%%2Floginproxy.html&f_url=loginerroralert&strong_login=1&login_" \
+             "stat=%d&t=%lu",                                                  \
+             lc->stat, LTIME),                                                 \
+    buf)
+#define WQQ_LOGIN_LONG_REF_URL(buf)                                            \
+   (snprintf(buf, sizeof(buf), WEBQQ_LOGIN_UI_HOST                             \
+             "/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq"   \
+             "&appid=" WQQ_APPID                                               \
+             "&enable_qlogin=0&no_verifyimg=1&s_url=http%%3A%%"                \
+             "2F%%2Fw.qq.com"                                                  \
+             "%%2Fproxy.html&f_url=loginerroralert&strong_login=1&login_"      \
              "stat=%d&t=%lu",                                                  \
              lc->stat, LTIME),                                                 \
     buf)

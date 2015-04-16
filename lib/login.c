@@ -35,9 +35,6 @@
 #include "lwjs.h"
 #include "info.h"
 
-/* URL for webqq login */
-#define APPID "1003903"
-
 #define replace(str, f, t)           \
    do {                              \
       char* chr = str;               \
@@ -76,7 +73,7 @@ static LwqqAsyncEvent* get_login_sig(LwqqClient* lc)
 {
 	char url[512];
 	snprintf(url,sizeof(url),WEBQQ_LOGIN_UI_HOST"/cgi-bin/login"
-			"?daid=164&target=self&style=5&mibao_css=m_webqq&appid=1003903"
+			"?daid=164&target=self&style=5&mibao_css=m_webqq&appid="WQQ_APPID
 			"&enable_qlogin=0&s_url=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html"
 			);
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
@@ -131,7 +128,7 @@ done:
 	return err;
 }
 
-static LwqqAsyncEvent* check_need_verify(LwqqClient *lc,const char* appid)
+static LwqqAsyncEvent* check_need_verify(LwqqClient *lc)
 {
 	LwqqHttpRequest *req;
 	char url[512];
@@ -139,14 +136,13 @@ static LwqqAsyncEvent* check_need_verify(LwqqClient *lc,const char* appid)
 
 	srand48(time(NULL));
 	double random = drand48();
-	snprintf(url, sizeof(url), WEBQQ_CHECK_HOST"/check?uin=%s&appid=%s&"
-			"js_ver=10113&js_type=0&%s%s&pt_tea=1&u1=http%%3A%%2F%%2Fweb.qq.com%%2Floginproxy.html&r=%.16lf",
-			lc->username, appid,
-			lc->login_sig?"login_sig=":"",
-			lc->login_sig?:"",
+	snprintf(url, sizeof(url), WEBQQ_CHECK_HOST"/check?pt_tea=1&uin=%s&appid="WQQ_APPID"&"
+			"js_ver="JS_VER"&js_type=0&login_sig=%s&pt_tea=1&u1=http%%3A%%2F%%2Fw.qq.com%%2Fproxy.html&r=%.16lf",
+			lc->username, 
+			"",
 			random);
 	req = lwqq_http_create_default_request(lc,url,NULL);
-	req->set_header(req,"Referer",WEBQQ_LOGIN_LONG_REF_URL(buf));
+	req->set_header(req,"Referer",WQQ_LOGIN_LONG_REF_URL(buf));
 
 	return req->do_request_async(req, lwqq__hasnot_post(),_C_(p_i,check_need_verify_back,req));
 }
@@ -180,7 +176,7 @@ static LwqqAsyncEvent* get_verify_image(LwqqClient *lc)
 	char chkuin[64];
 	LwqqErrorCode err;
 
-	snprintf(url, sizeof(url), WEBQQ_CAPTCHA_HOST"/getimage?aid=%s&uin=%s", APPID, lc->username);
+	snprintf(url, sizeof(url), WEBQQ_CAPTCHA_HOST"/getimage?aid="WQQ_APPID"&uin=%s", lc->username);
 	req = lwqq_http_create_default_request(lc,url, &err);
 
 	snprintf(chkuin, sizeof(chkuin), "chkuin=%s", lc->username);
@@ -208,9 +204,9 @@ static LwqqAsyncEvent* do_login(LwqqClient *lc, const char *md5, LwqqErrorCode *
 			"&verifycode=%s"
 			"&webqq_type=%d"
 			"&remember_uin=1"
-			"&aid=1003903"
+			"&aid="WQQ_APPID
 			"&login2qq=1"
-			"&u1=http%%3A%%2F%%2Fweb2.qq.com%%2Floginproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10"
+			"&u1=http%%3A%%2F%%2Fw.qq.com%%2Fproxy.html%%3Flogin2qq%%3D1%%26webqq_type%%3D10"
 			"&h=1"
 			"&ptredirect=0"
 			"&ptlang=2052"
@@ -224,17 +220,17 @@ static LwqqAsyncEvent* do_login(LwqqClient *lc, const char *md5, LwqqErrorCode *
 			"&t=1"
 			"&g=1"
 			"&js_type=0"
-			"&js_ver=10113"
+			"&js_ver="JS_VER
 			"&login_sig=%s"
 			"&pt_uistyle=5"
-			"&pt_randsalt=0"
+			"&pt_randsalt=1"
 			"&pt_vcode_v1=0"
 			"&pt_verifysession_v1=%s",
-			lc->username, md5, lc->vc->str,lc->stat,lc->login_sig,lc->session.pt_verifysession?:"");
+			lc->username, md5, lc->vc->str,lc->stat,lc->login_sig?:"",lc->session.pt_verifysession?:"");
 
 	req = lwqq_http_create_default_request(lc,url, err);
 	/* Setup http header */
-	req->set_header(req, "Referer", WEBQQ_LOGIN_LONG_REF_URL(refer));
+	req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(refer));
 
 	LwqqAsyncEvent* ret = lwqq_async_event_new(NULL);
 	/* Send request */
@@ -541,8 +537,8 @@ void lwqq_login(LwqqClient *client, LwqqStatus status,LwqqErrorCode *err)
 	/* optional: get webqq version */
 	//get_version(client, err);
 	if(!client->vc){
-		LwqqAsyncEvent* ev = get_login_sig(client);
-		lwqq_async_add_event_listener(ev, _C_(2p,login_stage_2,client,err));
+		//LwqqAsyncEvent* ev = get_login_sig(client);
+		lwqq_async_add_event_listener(NULL, _C_(2p,login_stage_2,client,err));
 	}else{
 		login_stage_4(client,err);
 	}
@@ -562,7 +558,7 @@ static void login_stage_2(LwqqClient* lc,LwqqErrorCode* err)
 	 * 
 	 */
 	if (!lc->vc) {
-		LwqqAsyncEvent* ev = check_need_verify(lc,APPID);
+		LwqqAsyncEvent* ev = check_need_verify(lc);
 		lwqq_async_add_event_listener(ev,_C_(2p,login_stage_3,ev,err));
 		return;
 	}

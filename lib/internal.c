@@ -36,7 +36,7 @@ LwqqAsyncEvent* lwqq__request_captcha(LwqqClient* lc,LwqqVerifyCode* c)
 	srand48(time(NULL));
 	double random = drand48();
 	snprintf(url,sizeof(url),"%s/getimage?"
-			"aid=1003901&%.16lf",
+			"aid="WQQ_APPID"&%.16lf",
 			"http://captcha.qq.com",random);
 	lwqq_puts(url);
 	LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
