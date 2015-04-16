@@ -92,6 +92,7 @@ struct CookieExt{
 	LwqqExtension super;
 	const LwqqCommand* login_b;
 	const LwqqCommand* login_c;
+   const LwqqCommand* clean;
 	char* cookie_file;
 };
 
@@ -1341,9 +1342,13 @@ static void write_cookie(LwqqClient* lc, struct CookieExt* ext)
 
 static void cookie_init(LwqqClient* lc, LwqqExtension* ext)
 {
-	struct CookieExt* ext_ = (struct CookieExt*)ext;
-	ext_->login_b = lwqq_add_event(lc->events->start_login, _C_(2p, read_cookie, lc, ext_));
-	ext_->login_c = lwqq_add_event(lc->events->login_complete, _C_(2p, write_cookie, lc, ext_));
+   struct CookieExt* ext_ = (struct CookieExt*)ext;
+   ext_->login_b = lwqq_add_event(lc->events->start_login,
+                                  _C_(2p, read_cookie, lc, ext_));
+   ext_->login_c = lwqq_add_event(lc->events->login_complete,
+                                  _C_(2p, write_cookie, lc, ext_));
+   ext_->clean = lwqq_add_event(lc->events->ext_clean,
+                                _C_(2p, lwqq_free_extension, lc, ext_));
 }
 
 static void cookie_remove(LwqqClient* lc, LwqqExtension* ext)
@@ -1351,6 +1356,7 @@ static void cookie_remove(LwqqClient* lc, LwqqExtension* ext)
 	struct CookieExt* ext_ = (struct CookieExt*)ext;
 	vp_unlink(&lc->events->start_login, ext_->login_b);
 	vp_unlink(&lc->events->login_complete, ext_->login_c);
+   vp_unlink(&lc->events->ext_clean, ext_->clean);
 	s_free(ext_->cookie_file);
 }
 
