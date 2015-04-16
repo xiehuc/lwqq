@@ -1,3 +1,10 @@
+version 0.4.3: (2015-04-17)
+	*  修正evset条件竞争
+	*  修正sscanf溢出
+	+  添加缓存cookie的API
+	*  修正登录问题
+
+
 version 0.4.2: (2015-02-26)
 	+  在本地数据库屏蔽群组
 	+  使用 encryption.js 来计算登录时密码加密
