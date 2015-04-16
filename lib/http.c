@@ -1315,4 +1315,59 @@ int lwqq_http_is_synced(LwqqHttpRequest* req)
 	return req_ ? (req_->bits & HTTP_SYNCED) : 0;
 }
 
+struct CookieExt{
+	LwqqExtension super;
+	const LwqqCommand* login_b;
+	const LwqqCommand* login_c;
+};
+
+static void read_cookie(LwqqClient* lc)
+{
+	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, WQQ_HOST, 0);
+	curl_easy_setopt(req->req, CURLOPT_COOKIEFILE, "/tmp/lwqq_cookie");
+	req->do_request(req,0,"");
+	lwqq_http_request_free(req);
+}
+
+static void write_cookie(LwqqClient* lc)
+{
+	LwqqHttpRequest* req = lwqq_http_create_default_request(lc, WQQ_HOST, 0);
+	curl_easy_setopt(req->req, CURLOPT_COOKIEJAR, "/tmp/lwqq_cookie");
+	lwqq_http_request_free(req);
+	/*struct curl_slist* list, *p;
+	curl_easy_getinfo(req->req, CURLINFO_COOKIELIST, &list);
+	p = list;
+	FILE* f = fopen("/tmp/lwqq_cookie");
+	while(p){
+		fprintf(f, "%s\n", p->data);
+		p = p->next;
+	}
+	fclose(f);
+	curl_slist_free_all(list);
+	lwqq_http_request_free(req);
+	*/
+}
+
+static void cookie_init(LwqqClient* lc, LwqqExtension* ext)
+{
+	struct CookieExt* ext_ = (struct CookieExt*)ext;
+	ext_->login_b = lwqq_add_event(lc->events->start_login, _C_(p, read_cookie, lc));
+	ext_->login_c = lwqq_add_event(lc->events->login_complete, _C_(p, write_cookie, lc));
+}
+
+static void cookie_remove(LwqqClient* lc, LwqqExtension* ext)
+{
+	struct CookieExt* ext_ = (struct CookieExt*)ext;
+	vp_unlink(&lc->events->start_login, ext_->login_b);
+	vp_unlink(&lc->events->login_complete, ext_->login_c);
+}
+
+LwqqExtension* lwqq_make_cookie_extension(LwqqClient* lc)
+{
+	struct CookieExt* ext = s_malloc0(sizeof(*ext));
+	ext->super.init = cookie_init;
+	ext->super.remove = cookie_remove;
+	return ext;
+}
+
 // vim: ts=3 sw=3 sts=3 noet

@@ -14,6 +14,7 @@
 #include "type.h"
 
 typedef struct LwqqAsyncEvent LwqqAsyncEvent;
+typedef struct LwqqExtension  LwqqExtension;
 
 typedef enum {
 	LWQQ_FORM_FILE,// use add_file_content instead
@@ -186,6 +187,8 @@ void lwqq_http_cancel(LwqqHttpRequest* req);
 #define lwqq_http_debug(req, lv)                                               \
    LWQQ_DEBUG(if (LWQQ_VERBOSE_LV >= lv)                                       \
               lwqq_http_set_option(req, LWQQ_HTTP_VERBOSE, 1L);)
+
+LwqqExtension* lwqq_make_cookie_extension(LwqqClient* lc);
 
 #endif  /* LWQQ_HTTP_H */
 
