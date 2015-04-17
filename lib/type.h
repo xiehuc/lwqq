@@ -294,7 +294,6 @@ Discu: (with lwdb) the only one and stable key reference
 
 typedef struct LwqqVerifyCode {
    char* str; // input
-   char* uin;
    //{image
    char* data;
    size_t size;
