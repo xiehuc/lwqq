@@ -404,6 +404,8 @@ typedef struct LwqqEvents {
     *  modify : group <- changed group
     */
    LwqqCommand group_chg;
+   /** a safe event last chance do http request ( must be synced) */
+   LwqqCommand start_logout;
 } LwqqEvents;
 
 LwqqEvents* lwqq_client_get_events(LwqqClient* lc);
