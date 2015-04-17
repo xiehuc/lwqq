@@ -154,10 +154,12 @@ static LwqqAsyncEvent* get_verify_image(LwqqClient* lc, struct LoginStage* s)
    char url[512];
    char buf[256];
    LwqqErrorCode err;
+   srand48(time(NULL));
+   double random = drand48();
 
    snprintf(url, sizeof(url),
-            WEBQQ_CAPTCHA_HOST "/getimage?aid=" WQQ_APPID "&uin=%s&cap_cd=%s",
-            lc->username, s->vcode);
+            WEBQQ_CAPTCHA_HOST "/getimage?aid=" WQQ_APPID "&uin=%s&%.16f&cap_cd=%s",
+            lc->username, random, s->vcode);
    req = lwqq_http_create_default_request(lc, url, &err);
    req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(buf));
    lwqq_http_debug(req, 5);
@@ -486,8 +488,9 @@ LwqqAsyncEvent* lwqq_login(LwqqClient* lc, LwqqStatus status)
 LWQQ_EXPORT
 LwqqErrorCode lwqq_logout(LwqqClient* lc, unsigned wait_time)
 {
-   lc->stat = LWQQ_STATUS_LOGOUT;
    vp_do_repeat(lc->events->start_logout, NULL);
+   if(lc->stat == LWQQ_STATUS_LOGOUT) return LWQQ_EC_OK;
+   lc->stat = LWQQ_STATUS_LOGOUT;
    LWQQ_SYNC_BEGIN(lc);
    LwqqAsyncEvent* ev = lwqq_info_change_status(lc, LWQQ_STATUS_OFFLINE);
    LWQQ_SYNC_END(lc);
@@ -674,6 +677,7 @@ static void do_login_stage(LwqqClient* lc, struct LoginStage* s)
    return;
 onfail:
 done:
+   if(err) lc->stat = LWQQ_STATUS_LOGOUT;
    lc->args->login_ec = err;
    vp_do_repeat(lc->events->login_complete, NULL);
    s->trigger->result = err;
