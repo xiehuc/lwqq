@@ -21,7 +21,7 @@ typedef struct LwqqAsyncEvent LwqqAsyncEvent;
  * @param client Lwqq Client
  * @param err Error code
  */
-void lwqq_login(LwqqClient* client, LwqqStatus status, LwqqErrorCode* err);
+LwqqAsyncEvent* lwqq_login(LwqqClient* lc, LwqqStatus status);
 
 LwqqAsyncEvent* lwqq_relink(LwqqClient* lc);
 
@@ -32,7 +32,5 @@ LwqqAsyncEvent* lwqq_relink(LwqqClient* lc);
  * @param wait_time block wait to quit until wait_time
  */
 LwqqErrorCode lwqq_logout(LwqqClient* client, unsigned wait_time);
-
-LwqqAsyncEvent* lwqq_get_version(LwqqClient* lc, LwqqErrorCode* err);
 #endif /* LWQQ_LOGIN_H */
 

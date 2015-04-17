@@ -179,10 +179,10 @@ static char* get_prompt(void)
 
 static LwqqErrorCode cli_login()
 {
-   LwqqErrorCode err;
+   LwqqErrorCode err = LWQQ_EC_OK;
 
    LWQQ_SYNC_BEGIN(lc);
-   lwqq_login(lc, LWQQ_STATUS_ONLINE, &err);
+   lwqq_login(lc, LWQQ_STATUS_ONLINE);
 
    if (err != LWQQ_EC_OK) {
       goto failed;

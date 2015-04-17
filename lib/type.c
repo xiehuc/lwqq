@@ -201,9 +201,7 @@ void lwqq_client_free(LwqqClient* client)
    /* Free LwqqVerifyCode instance */
    s_free(client->username);
    s_free(client->password);
-   s_free(client->version);
    s_free(client->error_description);
-   lwqq_vc_free(client->vc);
    s_free(client->clientid);
    s_free(client->seskey);
    s_free(client->cip);

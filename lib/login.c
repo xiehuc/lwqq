@@ -42,17 +42,23 @@
          *chr = t;                                                             \
    } while (0)
 
-static LwqqAsyncEvent* set_online_status(LwqqClient* lc, const char* status);
-static int get_version_back(LwqqHttpRequest* req);
-static int do_login_back(LwqqHttpRequest* req, LwqqAsyncEvent*);
-static int set_online_status_back(LwqqHttpRequest* req);
-static void login_stage_2(LwqqClient* lc, LwqqErrorCode* err);
-static void login_stage_3(LwqqAsyncEvent* ev, LwqqErrorCode* ec);
-static void login_stage_4(LwqqClient* lc, LwqqErrorCode* ec);
-static void login_stage_5(LwqqAsyncEvent* ev, LwqqErrorCode* ec);
-static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec);
+struct LoginStage{
+  unsigned stage;
+  LwqqErrorCode err;
+  LwqqAsyncEvent* trigger;
+  LwqqAsyncEvent* ev;
+  char* vcode;
+  char* salt;
+  char* check_sig_url;
+  char randSalt;
+};
 
-static LwqqAsyncEvent* get_login_sig(LwqqClient* lc)
+typedef LwqqAsyncEvent* (*LoginFunc)(LwqqClient*, struct LoginStage*);
+
+static void do_login_stage(LwqqClient* lc, struct LoginStage* s);
+
+/** stage 1 **/
+static LwqqAsyncEvent* get_login_sig(LwqqClient* lc, struct LoginStage* s)
 {
    char url[512];
    snprintf(url, sizeof(url), WEBQQ_LOGIN_UI_HOST
@@ -63,55 +69,15 @@ static LwqqAsyncEvent* get_login_sig(LwqqClient* lc)
    LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
    lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 5);
    lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT_INCRE, 5);
+
+   ++s->stage; // this is always success
+
    return req->do_request_async(req, lwqq__hasnot_post(),
                                 _C_(p, lwqq_http_request_free, req));
 }
-static int check_need_verify_back(LwqqHttpRequest* req)
-{
-   int err = LWQQ_EC_OK;
-   LwqqClient* lc = req->lc;
-   if (req->err != LWQQ_EC_OK) {
-      err = LWQQ_EC_NETWORK_ERROR;
-      lc->args->login_ec = err;
-      vp_do_repeat(lc->events->login_complete, NULL);
-      goto done;
-   }
-   lwqq__jump_if_http_fail(req, err);
-   /**
-    *
-    ptui_checkVC('0','!ZDP','\x96\x00\xb9\xd6\xcf\x87\xae\xf4','34bfca26ba2613a99cfc2d62116d8217cda391c14a07f38523eeb7be2542f1d14b3ab7f93c0deeb782dfc5e723bc055952acf969ebf7d1c4','1');
-
-    ptui_checkVC('1','bk9gaJlbRSmYU-nOXKxvPaAxjzPHr99tjldA-NhvvyRe2YxlAt94yA**','\x00\x00\x00\x00\x95\x1a\x82\x5c','','0');
-    */
-
-   int need_vf;
-   char vc[256] = { 0 };
-   char salt[256] = { 0 };
-   char vf[256] = { 0 };
-   lc->session.randSalt = '0';
-   sscanf(req->response,
-          "ptui_checkVC('%d','%255[^']','%255[^']','%255[^']','%c');", &need_vf,
-          vc, salt, vf, &lc->session.randSalt);
-   lc->vc = s_malloc0(sizeof(*lc->vc));
-   lc->vc->uin = s_strdup(salt);
-   lc->vc->str = s_strdup(vc);
-   lc->vc->lc = lc;
-
-   if (need_vf == 0) {
-      /* We need get the ptvfsession from the header "Set-Cookie" */
-      lwqq_log(LOG_NOTICE, "Verify code: %s\n", vc);
-   } else if (need_vf == 1) {
-      err = LWQQ_EC_LOGIN_NEED_VC;
-      lwqq_log(LOG_NOTICE, "We need verify code image: %s\n", vc);
-   }
-
-   lwqq_override(lc->session.pt_verifysession, s_strdup(vf));
-done:
-   lwqq_http_request_free(req);
-   return err;
-}
-
-static LwqqAsyncEvent* check_need_verify(LwqqClient* lc)
+static int check_need_verify_cb(LwqqHttpRequest* req, struct LoginStage* s);
+/** stage 2 **/
+static LwqqAsyncEvent* check_need_verify(LwqqClient* lc, struct LoginStage* s)
 {
    LwqqHttpRequest* req;
    char url[512];
@@ -129,32 +95,60 @@ static LwqqAsyncEvent* check_need_verify(LwqqClient* lc)
    lwqq_http_debug(req, 5);
 
    return req->do_request_async(req, lwqq__hasnot_post(),
-                                _C_(p_i, check_need_verify_back, req));
+                                _C_(2p_i, check_need_verify_cb, req, s));
 }
 
-static int request_captcha_back(LwqqHttpRequest* req, LwqqVerifyCode* code)
+static int check_need_verify_cb(LwqqHttpRequest* req, struct LoginStage* s)
 {
-   int err = 0;
-   if (req->http_code != 200) {
-      err = -1;
+   int err = LWQQ_EC_OK;
+   LwqqClient* lc = req->lc;
+   if (req->err != LWQQ_EC_OK) {
+      err = LWQQ_EC_NETWORK_ERROR;
       goto done;
    }
-   LwqqClient* lc = req->lc;
-   code->data = req->response;
-   code->size = req->resp_len;
-   req->response = NULL;
-   lc->args->vf_image = code;
+   lwqq__jump_if_http_fail(req, err);
+   /**
+    *
+    ptui_checkVC('0','!ZDP','\x96\x00\xb9\xd6\xcf\x87\xae\xf4','34bfca26ba2613a99cfc2d62116d8217cda391c14a07f38523eeb7be2542f1d14b3ab7f93c0deeb782dfc5e723bc055952acf969ebf7d1c4','1');
 
-   lwqq_override(lc->session.pt_verifysession,
-                 lwqq_http_get_cookie(req, "verifysession"));
+    ptui_checkVC('1','bk9gaJlbRSmYU-nOXKxvPaAxjzPHr99tjldA-NhvvyRe2YxlAt94yA**','\x00\x00\x00\x00\x95\x1a\x82\x5c','','0');
+    */
 
-   vp_do_repeat(lc->events->need_verify, NULL);
+   int need_vf;
+   char vc[256] = { 0 };
+   char salt[256] = { 0 };
+   char vf[256] = { 0 };
+   s->randSalt = '0';
+   sscanf(req->response,
+          "ptui_checkVC('%d','%255[^']','%255[^']','%255[^']','%c');", &need_vf,
+          vc, salt, vf, &s->randSalt);
+   s->vcode = s_strdup(vc);
+   s->salt = s_strdup(salt);
+   /*lc->vc = s_malloc0(sizeof(*lc->vc));
+   lc->vc->uin = s_strdup(salt);
+   lc->vc->str = s_strdup(vc);
+   lc->vc->lc = lc;*/
+
+   if (need_vf == 0) {
+      s->stage += 2; // ignore get_verify_image
+      /* We need get the ptvfsession from the header "Set-Cookie" */
+      lwqq_log(LOG_NOTICE, "Verify code: %s\n", vc);
+   } else if (need_vf == 1) {
+      s->stage ++;
+      lwqq_log(LOG_NOTICE, "We need verify code image: %s\n", vc);
+   } else {
+      assert(0 && "unexpected result");
+   }
+
+   lwqq_override(lc->session.pt_verifysession, s_strdup(vf));
 done:
    lwqq_http_request_free(req);
    return err;
 }
 
-static LwqqAsyncEvent* get_verify_image(LwqqClient* lc)
+static int get_verify_image_cb(LwqqHttpRequest* req, struct LoginStage* s);
+/** stage 3 **/
+static LwqqAsyncEvent* get_verify_image(LwqqClient* lc, struct LoginStage* s)
 {
    LwqqHttpRequest* req = NULL;
    char url[512];
@@ -163,25 +157,52 @@ static LwqqAsyncEvent* get_verify_image(LwqqClient* lc)
 
    snprintf(url, sizeof(url),
             WEBQQ_CAPTCHA_HOST "/getimage?aid=" WQQ_APPID "&uin=%s&cap_cd=%s",
-            lc->username, lc->vc->str);
+            lc->username, s->vcode);
    req = lwqq_http_create_default_request(lc, url, &err);
    req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(buf));
    lwqq_http_debug(req, 5);
 
    return req->do_request_async(req, lwqq__hasnot_post(),
-                                _C_(2p_i, request_captcha_back, req, lc->vc));
+                                _C_(2p_i, get_verify_image_cb, req, s));
+}
+static int get_verify_image_cb(LwqqHttpRequest* req, struct LoginStage* s)
+{
+   int err = 0;
+   lwqq__jump_if_http_fail(req, err);
+   LwqqClient* lc = req->lc;
+
+   lwqq_override(lc->session.pt_verifysession,
+                 lwqq_http_get_cookie(req, "verifysession"));
+   
+   LwqqVerifyCode* code = s_malloc0(sizeof(*code));
+   code->data = req->response;
+   code->size = req->resp_len;
+   req->response = NULL;
+   code->cmd = _C_(2p, do_login_stage, lc, s);
+   code->lc = lc;
+
+   s->stage ++;
+   lc->args->vf_image = code;
+   vp_do_repeat(lc->events->need_verify, NULL);
+   err = LWQQ_EC_LOGIN_NEED_VC;
+done:
+   lwqq_http_request_free(req);
+   return err;
 }
 
-/**
- * Do really login
- *
- * @param lc
- * @param md5 The md5 calculated from calculate_password_md5()
- * @param err
- */
-static LwqqAsyncEvent* do_login(LwqqClient* lc, const char* md5,
-                                LwqqErrorCode* err)
+static int do_login_cb(LwqqHttpRequest* req, struct LoginStage* s);
+/** stage 4 **/
+static LwqqAsyncEvent* do_login(LwqqClient* lc, struct LoginStage* s)
 {
+   // caculate password
+   char* js_txt = lwqq_util_load_res("encrypt.js", 1);
+   lwqq_js_t* js = lwqq_js_init();
+   lwqq_js_load_buffer(js, js_txt);
+   replace(s->salt, '\\', '-');
+   char* enc = lwqq_js_enc_pwd(lc->password, s->salt, s->vcode, js);
+   s_free(js_txt);
+   lwqq_js_close(js);
+
    char url[1024];
    char refer[1024];
    LwqqHttpRequest* req;
@@ -214,23 +235,23 @@ static LwqqAsyncEvent* do_login(LwqqClient* lc, const char* md5,
                              "&pt_randsalt=%c"
                              "&pt_vcode_v1=0"
                              "&pt_verifysession_v1=%s",
-            lc->username, md5, lc->vc->str, lc->stat, lc->session.randSalt,
-            lc->session.pt_verifysession ?: "");
+            lc->username, enc,
+            lc->args->vf_image ? lc->args->vf_image->str : s->vcode, lc->stat,
+            s->randSalt, lc->session.pt_verifysession ?: "");
+   s_free(enc);
+   lwqq_vc_free(lc->args->vf_image);
+   lc->args->vf_image = NULL;
 
-   req = lwqq_http_create_default_request(lc, url, err);
+   req = lwqq_http_create_default_request(lc, url, NULL);
    /* Setup http header */
    req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(refer));
    lwqq_http_debug(req, 5);
 
-   LwqqAsyncEvent* ret = lwqq_async_event_new(NULL);
-   /* Send request */
-   LwqqAsyncEvent* ev = req->do_request_async(
-       req, lwqq__hasnot_post(), _C_(2p_i, do_login_back, req, ret));
-   lwqq_async_add_event_chain(ev, ret);
-   return ret;
+   return req->do_request_async(req, lwqq__hasnot_post(),
+                                _C_(2p_i, do_login_cb, req, s));
 }
 
-static int do_login_back(LwqqHttpRequest* req, LwqqAsyncEvent* event)
+static int do_login_cb(LwqqHttpRequest* req, struct LoginStage* s)
 {
    LwqqClient* lc = req->lc;
    int err = LWQQ_EC_OK;
@@ -258,6 +279,7 @@ static int do_login_back(LwqqHttpRequest* req, LwqqAsyncEvent* event)
 
    response = req->response;
    lwqq_verbose(3, "%s\n", response);
+   //ptuiCB('71','0','','0','您的帐号由于异常禁止登录，请联系客服。(2009081021)', 'QQNUMBER');
    char* p = strstr(response, "\'");
    if (!p) {
       err = LWQQ_EC_ERROR;
@@ -274,146 +296,83 @@ static int do_login_back(LwqqHttpRequest* req, LwqqAsyncEvent* event)
           &status, &param2, url, &param4, msg, user);
    url[strlen(url) - 1] = 0;
    switch (status) {
-   case 0: {
+   case 0:
       err = LWQQ_EC_OK;
-      // goint to check_sig
-      LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
-      LwqqAsyncEvent* ev = req->do_request_async(
-          req, lwqq__hasnot_post(), _C_(p_i, lwqq__process_empty, req));
-      lwqq_async_add_event_chain(ev, event);
-   } break;
+      // going to check_sig
+      s->check_sig_url = s_strdup(url);
+      s->stage++;
+      break;
    case 1:
       lwqq_log(LOG_WARNING, "Server busy! Please try again\n");
-      lc->last_err = "Server busy! Please try again";
       err = LWQQ_EC_ERROR;
-      goto done;
+      break;
 
    case 2:
       lwqq_log(LOG_ERROR, "Out of date QQ number\n");
-      lc->last_err = "Out of date QQ number";
       err = LWQQ_EC_ERROR;
-      goto done;
+      break;
 
    case 3:
       lwqq_log(LOG_ERROR, "Wrong password\n");
       err = LWQQ_EC_WRONG_PASS;
-      lc->last_err = "Wrong username or password";
-      goto done;
+      break;
 
    case 4:
       lwqq_log(LOG_ERROR, "Wrong verify code\n");
       err = LWQQ_EC_WRONG_VERIFY;
-      lc->last_err = "Wrong verify code";
-      goto done;
+      break;
 
    case 5:
       lwqq_log(LOG_ERROR, "Verify failed\n");
-      lc->last_err = "Verify failed";
       err = LWQQ_EC_FAILD_VERIFY;
-      goto done;
+      break;
 
    case 6:
-   case 71: // ptuiCB('71','0','','0','您的帐号由于异常禁止登录，请联系客服。(2009081021)',
-            // 'QQNUMBER');
+   case 71:
       lwqq_log(LOG_WARNING, "You may need to try login again\n");
-      lc->last_err = "You may need to try login again";
       err = LWQQ_EC_ERROR;
-      goto done;
+      break;
 
    case 7:
       lwqq_log(LOG_ERROR, "Wrong input\n");
-      lc->last_err = "Wrong input";
       err = LWQQ_EC_ERROR;
-      goto done;
+      break;
 
    case 8:
       lwqq_log(LOG_ERROR, "Too many logins on this IP. Please try again\n");
-      lc->last_err = "Too many logins on this IP.Please try again";
       err = LWQQ_EC_ERROR;
-      goto done;
+      break;
+
    case LWQQ_EC_LOGIN_NEED_BARCODE:
       lwqq_log(LOG_ERROR, "%s\n", msg);
-      lwqq_override(lc->error_description, s_strdup(msg));
       err = LWQQ_EC_LOGIN_NEED_BARCODE;
-      goto done;
+      break;
 
    default:
       err = LWQQ_EC_ERROR;
-      lc->last_err = "Unknow error";
       lwqq_log(LOG_ERROR, "Unknow error");
-      goto done;
+      break;
    }
 
 done:
+   if(err)
+      lwqq_override(lc->error_description, s_strdup(msg));
    lwqq_http_request_free(req);
    return err;
 }
 
-/**
- * Get WebQQ version from tencent server
- * The response is like "ptuiV(201205211530)", what we do is get "201205211530"
- * from the response and set it to lc->version.
- *
- * @param lc
- * @param err *err will be set LWQQ_EC_OK if everything is ok, else
- *        *err will be set LWQQ_EC_ERROR.
- */
-
-LWQQ_EXPORT
-LwqqAsyncEvent* lwqq_get_version(LwqqClient* lc, LwqqErrorCode* err)
+/** stage 5 **/
+static LwqqAsyncEvent* check_sig(LwqqClient* lc, struct LoginStage* s)
 {
-   LwqqHttpRequest* req;
-
-   const char* url = WEBQQ_VERSION_URL;
-   req = lwqq_http_create_default_request(lc, url, err);
-   lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 5L);
-
-   /* Send request */
-   lwqq_log(LOG_DEBUG, "Get webqq version from %s\n", WEBQQ_VERSION_URL);
-   return req->do_request_async(req, lwqq__hasnot_post(),
-                                _C_(p_i, get_version_back, req));
+   char* url = s->check_sig_url;
+   LwqqHttpRequest* req
+       = lwqq_http_create_default_request(lc, url, NULL);
+   s->stage ++; // this is always success
+   return req->do_request_async(
+       req, lwqq__hasnot_post(), _C_(p_i, lwqq__process_empty, req));
 }
-static int get_version_back(LwqqHttpRequest* req)
-{
-   int err = LWQQ_EC_OK;
-   char* response = NULL;
-   LwqqClient* lc = req->lc;
-   if (!lwqq_client_valid(lc)) {
-      err = LWQQ_EC_ERROR;
-      goto done;
-   }
-   if (req->http_code != 200) {
-      err = LWQQ_EC_NETWORK_ERROR;
-      goto done;
-   }
-   response = req->response;
-   if (response == NULL) {
-      err = LWQQ_EC_NETWORK_ERROR;
-      goto done;
-   }
-   if (strstr(response, "ptuiV")) {
-      char* s, *t;
-      char* v;
-      s = strchr(response, '(');
-      t = strchr(response, ')');
-      if (!s || !t) {
-         err = LWQQ_EC_ERROR;
-         goto done;
-      }
-      s++;
-      v = malloc(t - s + 1);
-      memset(v, 0, t - s + 1);
-      strncpy(v, s, t - s);
-      s_free(lc->version);
-      lc->version = s_strdup(v);
-      err = LWQQ_EC_OK;
-      s_free(v);
-   }
 
-done:
-   lwqq_http_request_free(req);
-   return err;
-}
+
 
 static char* generate_clientid()
 {
@@ -432,27 +391,16 @@ static char* generate_clientid()
    return s_strdup(buf);
 }
 
-/**
- * Set online status, this is the last step of login
- *
- * @param err
- * @param lc
- */
-static LwqqAsyncEvent* set_online_status(LwqqClient* lc, const char* status)
+static int set_online_status_cb(LwqqHttpRequest* req, struct LoginStage* s);
+/** staget 6 Set online status, this is the last step of login **/
+static LwqqAsyncEvent* set_online_status(LwqqClient* lc, struct LoginStage* s) 
 {
    char msg[1024] = { 0 };
    char* post = msg;
    LwqqHttpRequest* req = NULL;
+   const char* status = lwqq_status_to_str(lc->stat);
 
-   if (!status) {
-      return NULL;
-   }
-
-   lc->clientid = generate_clientid();
-   if (!lc->clientid) {
-      lwqq_log(LOG_ERROR, "Generate clientid error\n");
-      return NULL;
-   }
+   lwqq_override(lc->clientid, generate_clientid());
 
    /* Create a POST request */
    char url[512] = { 0 };
@@ -473,10 +421,10 @@ static LwqqAsyncEvent* set_online_status(LwqqClient* lc, const char* status)
    req->set_header(req, "Referer", WEBQQ_D_REF_URL);
    req->set_header(req, "Content-type", "application/x-www-form-urlencoded");
    return req->do_request_async(req, lwqq__has_post(),
-                                _C_(p_i, set_online_status_back, req));
+                                _C_(2p_i, set_online_status_cb, req, s));
 }
 
-static int set_online_status_back(LwqqHttpRequest* req)
+static int set_online_status_cb(LwqqHttpRequest* req, struct LoginStage* s)
 {
    int err = 0;
    LwqqClient* lc = req->lc;
@@ -496,6 +444,7 @@ static int set_online_status_back(LwqqHttpRequest* req)
       lwqq_override(lc->vfwebqq, lwqq__json_get_value(result, "vfwebqq"));
       lc->stat
           = lwqq_status_from_str(json_parse_simple_value(result, "status"));
+      s->stage ++;
    }
 done:
    lwqq__log_if_error(err, req);
@@ -503,162 +452,29 @@ done:
    return err;
 }
 
-/**
- * WebQQ login function
- * Step:
- * 1. Get webqq version
- * 2. Get verify code
- * 3. Calculate password's md5
- * 4. Do real login
- * 5. check whether logining successfully
- *
- * @param client Lwqq Client
- * @param err Error code
- */
 LWQQ_EXPORT
-void lwqq_login(LwqqClient* client, LwqqStatus status, LwqqErrorCode* err)
+LwqqAsyncEvent* lwqq_login(LwqqClient* lc, LwqqStatus status)
 {
-   if (!client) {
+   if (!lc) {
       lwqq_log(LOG_ERROR, "Invalid pointer\n");
-      return;
+      return NULL;
    }
    if (status == LWQQ_STATUS_LOGOUT || status == LWQQ_STATUS_OFFLINE) {
       lwqq_log(LOG_WARNING, "Invalid online status\n");
-      return;
+      return NULL;
    }
 
-   client->stat = status;
+   lc->stat = status;
 
-   client->args->login_ec = LWQQ_EC_NO_RESULT;
-   vp_do_repeat(client->events->start_login, NULL);
-   /* optional: get webqq version */
-   // get_version(client, err);
-   if (!client->vc) {
-      LwqqAsyncEvent* ev = get_login_sig(client);
-      lwqq_async_add_event_listener(ev, _C_(2p, login_stage_2, client, err));
-   } else {
-      login_stage_4(client, err);
-   }
-}
+   lc->args->login_ec = LWQQ_EC_NO_RESULT;
+   vp_do_repeat(lc->events->start_login, NULL);
 
-static void login_stage_2(LwqqClient* lc, LwqqErrorCode* err)
-{
-   if (!lwqq_client_valid(lc))
-      err&&(*err = LWQQ_EC_ERROR);
-
-   /**
-    * Second, we get the verify code from server.
-    * If server provide us a image and let us enter code shown
-    * in image number, in this situation, we just return LWQQ_EC_LOGIN_NEED_VC
-    * simply, so user should call lwqq_login() again after he set correct
-    * code to vc->str;
-    * Else, if we can get the code directly, do login immediately.
-    *
-    */
-   if (!lc->vc) {
-      LwqqAsyncEvent* ev = check_need_verify(lc);
-      lwqq_async_add_event_listener(ev, _C_(2p, login_stage_3, ev, err));
-      return;
-   }
-
-   login_stage_4(lc, err);
-}
-
-static void login_stage_3(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
-{
-   int err = ev->result;
-   if (ec)
-      *ec = err;
-   LwqqClient* lc = ev->lc;
-   if (!lwqq_client_valid(lc))
-      return;
-   switch (err) {
-   case LWQQ_EC_LOGIN_NEED_VC:
-      lwqq_log(LOG_WARNING, "Need to enter verify code\n");
-      lc->vc->cmd = _C_(2p, login_stage_4, lc, ec);
-      get_verify_image(lc);
-      return;
-
-   case LWQQ_EC_NETWORK_ERROR:
-      lwqq_log(LOG_ERROR, "Network error\n");
-      lc->stat = LWQQ_STATUS_LOGOUT;
-      lc->args->login_ec = err;
-      vp_do_repeat(lc->events->login_complete, NULL);
-      return;
-
-   case LWQQ_EC_OK:
-      lwqq_log(LOG_DEBUG, "Get verify code OK\n");
-      break;
-
-   default:
-      lwqq_log(LOG_ERROR, "Unknown error\n");
-      lc->stat = LWQQ_STATUS_LOGOUT;
-      lc->args->login_ec = err;
-      vp_do_repeat(lc->events->login_complete, NULL);
-      return;
-   }
-
-   login_stage_4(lc, ec);
-}
-
-static void login_stage_4(LwqqClient* lc, LwqqErrorCode* ec)
-{
-   if (!lwqq_client_valid(lc))
-      return;
-   if (!lc->vc)
-      return;
-
-   char* js_txt = lwqq_util_load_res("encrypt.js", 1);
-   size_t js_txt_len = strlen(js_txt);
-   lwqq_js_t* js = lwqq_js_init();
-   lwqq_js_load_buffer(js, js_txt);
-   replace(lc->vc->uin, '\\', '-');
-   char* enc = lwqq_js_enc_pwd(lc->password, lc->vc->uin, lc->vc->str, js);
-   // detect memory bug, could delete when stable
-   assert(js_txt_len == strlen(js_txt) && "memory collapse");
-   s_free(js_txt);
-   lwqq_js_close(js);
-
-   /* Last: do real login */
-   LwqqAsyncEvent* ev = do_login(lc, enc, NULL);
-   s_free(enc);
-   lwqq_async_add_event_listener(ev, _C_(2p, login_stage_5, ev, ec));
-}
-static void login_stage_5(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
-{
-   int err = ev->result;
-   if (ec)
-      (*ec = err);
-   LwqqClient* lc = ev->lc;
-   if (!lwqq_client_valid(lc))
-      return;
-   /* Free old value */
-
-   if (err != LWQQ_EC_OK) {
-      lc->stat = LWQQ_STATUS_LOGOUT;
-      lc->args->login_ec = err;
-      vp_do_repeat(lc->events->login_complete, NULL);
-      return;
-   }
-   LwqqAsyncEvent* event = set_online_status(lc, lwqq_status_to_str(lc->stat));
-   lwqq_async_add_event_listener(event, _C_(2p, login_stage_6, event, ec));
-}
-
-static void login_stage_6(LwqqAsyncEvent* ev, LwqqErrorCode* ec)
-{
-   int err = ev->result;
-   if (ec)
-      (*ec = err);
-   LwqqClient* lc = ev->lc;
-   if (!lwqq_client_valid(lc))
-      return;
-
-   lwqq_vc_free(lc->vc);
-   lc->vc = NULL;
-   if (err)
-      lc->stat = LWQQ_STATUS_LOGOUT;
-   lc->args->login_ec = err;
-   vp_do_repeat(lc->events->login_complete, NULL);
+   struct LoginStage* s = s_malloc0(sizeof(*s));
+   s->trigger = lwqq_async_event_new(NULL);
+   s->trigger->lc = lc;
+   s->stage = 0;
+   do_login_stage(lc, s);
+   return s->trigger;
 }
 
 /**
@@ -671,6 +487,7 @@ LWQQ_EXPORT
 LwqqErrorCode lwqq_logout(LwqqClient* lc, unsigned wait_time)
 {
    lc->stat = LWQQ_STATUS_LOGOUT;
+   vp_do_repeat(lc->events->start_logout, NULL);
    LWQQ_SYNC_BEGIN(lc);
    LwqqAsyncEvent* ev = lwqq_info_change_status(lc, LWQQ_STATUS_OFFLINE);
    LWQQ_SYNC_END(lc);
@@ -822,3 +639,47 @@ LwqqAsyncEvent* lwqq_relink(LwqqClient* lc)
                                 _C_(p_i, process_login2, req));
 }
 
+static LoginFunc login_seq[] = {
+  get_login_sig,
+  check_need_verify,
+  get_verify_image,
+  do_login,
+  check_sig,
+  set_online_status,
+  NULL
+};
+
+static void do_login_stage(LwqqClient* lc, struct LoginStage* s)
+{
+   LwqqErrorCode err = LWQQ_EC_OK;
+   if (!lwqq_client_valid(lc))
+      err = LWQQ_EC_ERROR;
+   if (s->ev && s->ev->result != LWQQ_EC_OK){
+      err = s->ev->result;
+      if (err == LWQQ_EC_LOGIN_NEED_VC){
+         // don't release resource, because, when user input vcode, we need
+         // continue login progress
+         s->ev = NULL;
+         return;
+      }
+      goto onfail;
+   }
+   if(login_seq[s->stage] == NULL){
+      err = LWQQ_EC_OK;
+      goto done;
+   }
+
+   s->ev = login_seq[s->stage](lc, s);
+   lwqq_async_add_event_listener(s->ev, _C_(2p, do_login_stage, lc, s));
+   return;
+onfail:
+done:
+   lc->args->login_ec = err;
+   vp_do_repeat(lc->events->login_complete, NULL);
+   s->trigger->result = err;
+   lwqq_async_event_finish(s->trigger);
+   s_free(s->vcode);
+   s_free(s->salt);
+   s_free(s->check_sig_url);
+   s_free(s);
+}

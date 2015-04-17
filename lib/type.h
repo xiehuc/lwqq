@@ -135,6 +135,8 @@ typedef enum {
    // db error
    LWQQ_EC_DB_EXEC_FAILED = -50,
    // login error
+   LWQQ_EC_WAIT_VERIFY = -43, // a special error abort login
+                              // stage because wait user input vcode
    LWQQ_EC_FAILD_VERIFY = -42, // verify failed by other reason
    LWQQ_EC_WRONG_VERIFY = -41, // verify code is wrong, default
    LWQQ_EC_WRONG_PASS = -40,
@@ -308,7 +310,6 @@ typedef enum { LWQQ_NO, LWQQ_YES, LWQQ_EXTRA_ANSWER, LWQQ_IGNORE } LwqqAnswer;
 struct LwqqClient {
    char* username; /** < Username */
    char* password; /** < Password */
-   char* version; /** < WebQQ version */
    char* clientid;
    char* seskey;
    char* cip;
@@ -316,7 +317,6 @@ struct LwqqClient {
    char* port;
    char* vfwebqq;
    char* psessionid;
-   const char* last_err;
    char* gface_key; /** < use at cface */
    char* gface_sig; /** < use at cfage */
    char* login_sig;
@@ -325,11 +325,10 @@ struct LwqqClient {
    struct {
       char* ptwebqq;
       char* pt_verifysession;
-      char randSalt;
    } session;
 
    LwqqBuddy* myself; /** < Myself */
-   LwqqVerifyCode* vc; /** < Verify Code */
+   //LwqqVerifyCode* vc; /** < Verify Code */
    struct LwqqEvents* events;
    struct LwqqArguments* args;
    struct LwqqRecvMsgList* msg_list;
@@ -584,4 +583,3 @@ const char* lwqq_date_to_str(time_t date);
 long lwqq_time();
 
 #endif /* LWQQ_TYPE_H */
-
