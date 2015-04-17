@@ -15,17 +15,18 @@
 #define JS_VER "10120"
 
 #define WEBQQ_LOGIN_UI_HOST "https://ui.ptlogin2.qq.com"
-#define WEBQQ_CAPTCHA_HOST  "https://ssl.captcha.qq.com"
-#define WEBQQ_LOGIN_HOST    "https://ssl.ptlogin2.qq.com"
-#define WEBQQ_CHECK_HOST    WEBQQ_LOGIN_HOST
-#define WEBQQ_S_HOST        "http://s.web2.qq.com"
-#define WEBQQ_HOST          "http://web2.qq.com"
-#define WQQ_HOST            "http://w.qq.com"
+#define WEBQQ_CAPTCHA_HOST "https://ssl.captcha.qq.com"
+#define WEBQQ_LOGIN_HOST "https://ssl.ptlogin2.qq.com"
+#define WEBQQ_CHECK_HOST WEBQQ_LOGIN_HOST
+#define WEBQQ_S_HOST "http://s.web2.qq.com"
+#define WEBQQ_HOST "http://web2.qq.com"
+#define WQQ_HOST "http://w.qq.com"
 
-#define WEBQQ_S_REF_URL     WEBQQ_S_HOST"/proxy.html?v="WEBQQ_VERSION"&callback=1&id=1"
-#define WEBQQ_LOGIN_REF_URL WEBQQ_LOGIN_HOST"/proxy.html"
-#define WEBQQ_VERSION_URL   WEBQQ_LOGIN_UI_HOST"/cgi-bin/ver"
-#define WEBQQ_VERSION_URL   WEBQQ_LOGIN_UI_HOST"/cgi-bin/ver"
+#define WEBQQ_S_REF_URL                                                        \
+   WEBQQ_S_HOST "/proxy.html?v=" WEBQQ_VERSION "&callback=1&id=1"
+#define WEBQQ_LOGIN_REF_URL WEBQQ_LOGIN_HOST "/proxy.html"
+#define WEBQQ_VERSION_URL WEBQQ_LOGIN_UI_HOST "/cgi-bin/ver"
+#define WEBQQ_VERSION_URL WEBQQ_LOGIN_UI_HOST "/cgi-bin/ver"
 #define WEBQQ_LOGIN_LONG_REF_URL(buf)                                          \
    (snprintf(buf, sizeof(buf), WEBQQ_LOGIN_UI_HOST                             \
              "/cgi-bin/login?daid=164&target=self&style=5&mibao_css=m_webqq"   \
@@ -148,11 +149,10 @@ int lwqq__process_simple_response(LwqqHttpRequest* req);
    if (sub)                                                                    \
       sub = sub->child;
 
-//json function expand
+// json function expand
 json_t* json_find_first_label_all(const json_t* json, const char* text_label);
 char* json_parse_simple_value(json_t* json, const char* key);
 char* json_unescape_s(char* str);
 
 #endif
 
-// vim: ts=3 sw=3 sts=3 noet

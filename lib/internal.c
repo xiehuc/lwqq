@@ -8,167 +8,169 @@
 #include <string.h>
 #include <assert.h>
 
-
-static int request_captcha_back(LwqqHttpRequest* req,LwqqVerifyCode* code)
+static int request_captcha_back(LwqqHttpRequest* req, LwqqVerifyCode* code)
 {
-	int err = 0;
-	if(req->http_code!=200){
-		err = -1;
-		goto done;
-	}
-	LwqqClient* lc = req->lc;
-	code->data = req->response;
-	code->size = req->resp_len;
-	req->response = NULL;
-	lc->args->vf_image = code;
-	vp_do_repeat(lc->events->need_verify, NULL);
+   int err = 0;
+   if (req->http_code != 200) {
+      err = -1;
+      goto done;
+   }
+   LwqqClient* lc = req->lc;
+   code->data = req->response;
+   code->size = req->resp_len;
+   req->response = NULL;
+   lc->args->vf_image = code;
+   vp_do_repeat(lc->events->need_verify, NULL);
 done:
-	lwqq_http_request_free(req);
-	return err;
+   lwqq_http_request_free(req);
+   return err;
 }
 
-LwqqAsyncEvent* lwqq__request_captcha(LwqqClient* lc,LwqqVerifyCode* c)
+LwqqAsyncEvent* lwqq__request_captcha(LwqqClient* lc, LwqqVerifyCode* c)
 {
-	if(!lc||!c) return NULL;
-	char url[512];
-	c->lc = lc;
+   if (!lc || !c)
+      return NULL;
+   char url[512];
+   c->lc = lc;
 
-	srand48(time(NULL));
-	double random = drand48();
-	snprintf(url,sizeof(url),"%s/getimage?"
-			"aid="WQQ_APPID"&%.16lf",
-			"http://captcha.qq.com",random);
-	lwqq_puts(url);
-	LwqqHttpRequest* req = lwqq_http_create_default_request(lc,url,NULL);
-	req->set_header(req,"Referer","http://web2.qq.com/");
-	req->set_header(req,"Connection","keep-alive");
-	return req->do_request_async(req,0,NULL,_C_(2p_i,request_captcha_back,req,c));
+   srand48(time(NULL));
+   double random = drand48();
+   snprintf(url, sizeof(url), "%s/getimage?"
+                              "aid=" WQQ_APPID "&%.16lf",
+            "http://captcha.qq.com", random);
+   lwqq_puts(url);
+   LwqqHttpRequest* req = lwqq_http_create_default_request(lc, url, NULL);
+   req->set_header(req, "Referer", "http://web2.qq.com/");
+   req->set_header(req, "Connection", "keep-alive");
+   return req->do_request_async(req, 0, NULL,
+                                _C_(2p_i, request_captcha_back, req, c));
 }
 
-
-json_t *lwqq__parse_retcode_result(json_t *json,int* retcode)
+json_t* lwqq__parse_retcode_result(json_t* json, int* retcode)
 {
-	//{"retcode":0,"result":......}
+   //{"retcode":0,"result":......}
 
-	/**
-	 * Frist, we parse retcode that indicate whether we get
-	 * correct response from server
-	 */
-	char* value = json_parse_simple_value(json, "retcode");
-	if(!value){
-		*retcode = LWQQ_EC_ERROR;
-		return NULL;
-	}
+   /**
+    * Frist, we parse retcode that indicate whether we get
+    * correct response from server
+    */
+   char* value = json_parse_simple_value(json, "retcode");
+   if (!value) {
+      *retcode = LWQQ_EC_ERROR;
+      return NULL;
+   }
 
-	*retcode = s_atoi(value,LWQQ_EC_ERROR);
+   *retcode = s_atoi(value, LWQQ_EC_ERROR);
 
-	/**
-	 * Second, Check whether there is a "result" key in json object
-	 * if success it would return result;
-	 * if failed it would return NULL;
-	 */
-	json_t* result = json_find_first_label_all(json, "result");
-	if(result == NULL) return NULL;
-	return result->child;
+   /**
+    * Second, Check whether there is a "result" key in json object
+    * if success it would return result;
+    * if failed it would return NULL;
+    */
+   json_t* result = json_find_first_label_all(json, "result");
+   if (result == NULL)
+      return NULL;
+   return result->child;
 }
 int lwqq__get_retcode_from_str(const char* str)
 {
-	if(!str) return LWQQ_EC_ERROR;
-	const char* beg = strstr(str,"retcode");
-	if(beg == NULL) return LWQQ_EC_ERROR;
-	beg+=strlen("retcode:\"");
-	int ret = 0;
-	char* end;
-	ret = strtoul(beg, &end,10);
-	if(end == beg) return LWQQ_EC_ERROR;
-	return ret;
+   if (!str)
+      return LWQQ_EC_ERROR;
+   const char* beg = strstr(str, "retcode");
+   if (beg == NULL)
+      return LWQQ_EC_ERROR;
+   beg += strlen("retcode:\"");
+   int ret = 0;
+   char* end;
+   ret = strtoul(beg, &end, 10);
+   if (end == beg)
+      return LWQQ_EC_ERROR;
+   return ret;
 }
 
-json_t *json_find_first_label_all (const json_t * json, const char *text_label)
+json_t* json_find_first_label_all(const json_t* json, const char* text_label)
 {
-	json_t *cur, *tmp;
+   json_t* cur, *tmp;
 
-	assert (json != NULL);
-	assert (text_label != NULL);
+   assert(json != NULL);
+   assert(text_label != NULL);
 
-	if(json -> text != NULL && strcmp(json -> text, text_label) == 0){
-		return (json_t *)json;
-	}
+   if (json->text != NULL && strcmp(json->text, text_label) == 0) {
+      return (json_t*)json;
+   }
 
-	for(cur = json -> child; cur != NULL; cur = cur -> next){
-		tmp = json_find_first_label_all(cur, text_label);
-		if(tmp != NULL){
-			return tmp;
-		}
-	}
+   for (cur = json->child; cur != NULL; cur = cur->next) {
+      tmp = json_find_first_label_all(cur, text_label);
+      if (tmp != NULL) {
+         return tmp;
+      }
+   }
 
-	return NULL;
+   return NULL;
 }
 /**
  * Parse value from json object whose value is a simle string
  * Caller dont need to free the returned string.
- * 
+ *
  * @param json Json object setup by json_parse_document()
  * @param key the key you want to search
- * 
+ *
  * @return Key whose value will be searched
  */
-char *json_parse_simple_value(json_t *json, const char *key)
+char* json_parse_simple_value(json_t* json, const char* key)
 {
-	json_t *val;
+   json_t* val;
 
-	if (!json || !key)
-		return NULL;
+   if (!json || !key)
+      return NULL;
 
-	val = json_find_first_label_all(json, key);
-	if (val && val->child && val->child->text) {
-		return val->child->text;
-	}
+   val = json_find_first_label_all(json, key);
+   if (val && val->child && val->child->text) {
+      return val->child->text;
+   }
 
-	return NULL;
+   return NULL;
 }
-char *json_unescape_s(char* str)
+char* json_unescape_s(char* str)
 {
-	if(str==NULL) return NULL;
-	return json_unescape(str);
-}
-
-
-struct str_list_* str_list_prepend(struct str_list_* list,const char* str)
-{
-	struct str_list_* ret = s_malloc0(sizeof(struct str_list_));
-	ret->str = s_strdup(str);
-	ret->next = list;
-	return ret;
+   if (str == NULL)
+      return NULL;
+   return json_unescape(str);
 }
 
+struct str_list_* str_list_prepend(struct str_list_* list, const char* str)
+{
+   struct str_list_* ret = s_malloc0(sizeof(struct str_list_));
+   ret->str = s_strdup(str);
+   ret->next = list;
+   return ret;
+}
 
 int lwqq__process_empty(LwqqHttpRequest* req)
 {
-	lwqq_http_request_free(req);
-	return 0;
+   lwqq_http_request_free(req);
+   return 0;
 }
-
 
 /**
  * this process simple result;
  */
 int lwqq__process_simple_response(LwqqHttpRequest* req)
 {
-	//{"retcode":0,"result":{"ret":0}}
-	int err = 0;
-	json_t *root = NULL;
-	lwqq__jump_if_http_fail(req,err);
-	lwqq__jump_if_json_fail(root,req->response,err);
-	int retcode = s_atoi(json_parse_simple_value(root, "retcode"),LWQQ_EC_ERROR);
-	if(retcode != LWQQ_EC_OK){
-		err = retcode;
-	}
-	lwqq_verbose(3, "%s", req->response);
+   //{"retcode":0,"result":{"ret":0}}
+   int err = 0;
+   json_t* root = NULL;
+   lwqq__jump_if_http_fail(req, err);
+   lwqq__jump_if_json_fail(root, req->response, err);
+   int retcode
+       = s_atoi(json_parse_simple_value(root, "retcode"), LWQQ_EC_ERROR);
+   if (retcode != LWQQ_EC_OK) {
+      err = retcode;
+   }
+   lwqq_verbose(3, "%s", req->response);
 done:
-	lwqq__log_if_error(err, req);
-	lwqq__clean_json_and_req(root,req);
-	return err;
+   lwqq__log_if_error(err, req);
+   lwqq__clean_json_and_req(root, req);
+   return err;
 }
 
-// vim: ts=3 sw=3 sts=3 noet

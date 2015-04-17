@@ -3,19 +3,18 @@
 #include "lwqq-config.h"
 
 typedef struct lwqq_js_t lwqq_js_t;
-typedef void   lwqq_jso_t;
+typedef void lwqq_jso_t;
 
 lwqq_js_t* lwqq_js_init();
 void lwqq_js_close(lwqq_js_t* js);
 #ifdef WITH_MOZJS
-lwqq_jso_t* lwqq_js_load(lwqq_js_t* js,const char* file);
-void lwqq_js_load_buffer(lwqq_js_t* js,const char* content);
-void lwqq_js_unload(lwqq_js_t* js,lwqq_jso_t* obj);
+lwqq_jso_t* lwqq_js_load(lwqq_js_t* js, const char* file);
+void lwqq_js_load_buffer(lwqq_js_t* js, const char* content);
+void lwqq_js_unload(lwqq_js_t* js, lwqq_jso_t* obj);
 #endif
 
-
-char* lwqq_js_hash(const char* uin,const char* ptwebqq,lwqq_js_t* js);
-char* lwqq_js_enc_pwd(const char* pwd, const char* salt, const char*  vcode, lwqq_js_t* js);
+char* lwqq_js_hash(const char* uin, const char* ptwebqq, lwqq_js_t* js);
+char* lwqq_js_enc_pwd(const char* pwd, const char* salt, const char* vcode,
+                      lwqq_js_t* js);
 #endif
 
-// vim: ts=3 sw=3 sts=3 noet

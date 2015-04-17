@@ -5,39 +5,38 @@
  *
  * @brief  The Encode and Decode helper is based on
  * code where i download from http://www.geekhideout.com/urlcode.shtml
- * 
- * 
+ *
+ *
  */
 
 #ifndef LWQQ_URL_H
 #define LWQQ_URL_H
 
-/** 
+/**
  * NB: be sure to free() the returned string after use
- * 
+ *
  * @return A url-encoded version of str
  */
-char *url_encode(char *str);
+char* url_encode(char* str);
 /**
  * encode str inplace with beg
- * @example: 
+ * @example:
  *		  snprintf(post,sizeof(post),"r={......}");
  *		  urlencode(post,2);
  */
-void urlencode(char* str,int beg);
+void urlencode(char* str, int beg);
 
-/** 
+/**
  * NB: be sure to free() the returned string after use
- * 
- * @param str 
- * 
+ *
+ * @param str
+ *
  * @return A url-decoded version of str
  */
-char *url_decode(char *str);
-char *url_whole_encode(char *str);
+char* url_decode(char* str);
+char* url_whole_encode(char* str);
 
-//char* to_gbk(const char* utf8);
+// char* to_gbk(const char* utf8);
 
-#endif  /* LWQQ_URL_H */
+#endif /* LWQQ_URL_H */
 
-// vim: ts=3 sw=3 sts=3 noet
