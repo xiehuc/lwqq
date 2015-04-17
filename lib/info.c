@@ -233,10 +233,12 @@ static void do_modify_category(LwqqAsyncEvent* ev, LwqqBuddy* b, int cate)
 }
 static void dispatch_poll_lost(LwqqClient* lc)
 {
+   if(!lwqq_client_valid(lc)) return;
    vp_do_repeat(lc->events->poll_lost, NULL);
 }
 static void do_change_status(LwqqAsyncEvent* ev, LwqqClient* lc, LwqqStatus s)
 {
+   if (!lwqq_client_valid(lc)) return;
    if (ev->result == 108)
       lwqq_client_dispatch(lc, _C_(p, dispatch_poll_lost, lc));
    if (ev->result != LWQQ_EC_OK)
