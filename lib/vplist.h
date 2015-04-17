@@ -55,7 +55,9 @@ void vp_do_repeat(vp_command cmd, void* retval);
  *  @return   <- an id used to unlink
  */
 const vp_command* vp_link(vp_command* head, vp_command* elem);
+/** remove elem and release it */
 void vp_unlink(vp_command* head, const vp_command* elem);
+/** clean out command's data (doesn't free it) */
 void vp_cancel(vp_command);
 // cancel and clear memory to pass vp_do
 #define vp_cancel0(cmd)                                                        \

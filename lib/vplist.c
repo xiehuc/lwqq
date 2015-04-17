@@ -118,12 +118,13 @@ void vp_unlink(vp_command* head, const vp_command* elem)
    while (*p_cmd) {
       if (*p_cmd == elem) {
          *p_cmd = elem->next;
-         break;
+         ((vp_command*)elem)->next = NULL;
+         vp_cancel(*elem);
+         free((void*)elem);
+         return;
       }
       p_cmd = &(*p_cmd)->next;
    }
-   vp_cancel(*elem);
-   free((void*)elem);
 }
 
 LWQQ_EXPORT
@@ -318,4 +319,3 @@ void vp_func_3p_i(VP_CALLBACK func, vp_list* vp, void* q)
    if (q)
       *(int*)q = ret;
 }
-
