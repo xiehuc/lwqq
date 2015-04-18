@@ -25,7 +25,7 @@
 #ifdef WITH_LIBUV
 #include "async_libuv.c"
 #endif
-#undef lwqq_async_evset_unref
+//#undef lwqq_async_evset_unref
 
 typedef struct LwqqAsyncEntry {
    void* func;
@@ -139,7 +139,7 @@ static void _lwqq_async_evset_free(LwqqAsyncEvset* set)
    s_free(evset_);
 }
 
-static void lwqq_async_evset_unref(LwqqAsyncEvset* set)
+void lwqq_async_evset_unref(LwqqAsyncEvset* set)
 {
    int flag = 0;
    if (!set)
@@ -255,7 +255,6 @@ void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset, LwqqCommand cmd)
       set_->cmd = cmd;
    else
       vp_link(&set_->cmd, &cmd);
-   lwqq_async_evset_unref(evset);
 #if 0
 	if(set_->ref_count == 0){
 		_lwqq_async_evset_free(evset);

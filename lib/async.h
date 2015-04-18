@@ -53,8 +53,8 @@ LwqqAsyncEvset* lwqq_async_evset_new();
  * give up your own reference count, so it would be freed when reference count
  * down to zero.
  */
-#define lwqq_async_evset_unref(set)
-// void lwqq_async_evset_unref(LwqqAsyncEvset* set);
+//#define lwqq_async_evset_unref(set)
+void lwqq_async_evset_unref(LwqqAsyncEvset* set);
 
 /**
  * create a new event.
