@@ -986,17 +986,6 @@ static int parse_system_message(json_t* json, void* opaque, void* _lc)
    } else if (system->type == VERIFY_PASS || system->type == VERIFY_PASS_ADD) {
       system->verify_pass.group_id
           = s_strdup(json_parse_simple_value(json, "group_id"));
-      /*LwqqBuddy* buddy = lwqq_buddy_new();
-        buddy->uin = s_strdup(system->from_uin);
-        buddy->cate_index = s_strdup(system->verify_pass.group_id);
-
-        LwqqAsyncEvset *set = lwqq_async_evset_new();
-        LwqqAsyncEvent *ev;
-        ev = lwqq_info_get_friend_detail_info(lc,buddy);
-        lwqq_async_evset_add_event(set,ev);
-        ev = lwqq_info_get_friend_qqnumber(lc,buddy);
-        lwqq_async_evset_add_event(set,ev);
-        lwqq_async_add_evset_listener(set,_C_(2p,confirm_friend_request_notify,lc,buddy));*/
    }
    return 0;
 }
@@ -1418,7 +1407,6 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc, LwqqMsgMessage* msg,
          lwqq_async_evset_add_event(set, event);
          lwqq_async_add_evset_listener(set,
                                        _C_(3p, add_passerby, lc, buddy, g));
-         lwqq_async_evset_unref(set);
          msg->buddy.from = buddy;
       } else {
          msg->buddy.from = buddy;
@@ -1442,7 +1430,6 @@ static void lwqq_msg_message_bind_buddy(LwqqClient* lc, LwqqMsgMessage* msg,
          lwqq_async_evset_add_event(set, event);
          lwqq_async_add_evset_listener(set,
                                        _C_(3p, add_passerby, lc, buddy, g));
-         lwqq_async_evset_unref(set);
          msg->group.from = g;
       } else {
          msg->group.from = g;
