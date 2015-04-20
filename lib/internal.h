@@ -154,5 +154,8 @@ json_t* json_find_first_label_all(const json_t* json, const char* text_label);
 char* json_parse_simple_value(json_t* json, const char* key);
 char* json_unescape_s(char* str);
 
+// =================== http.h ===============================
+LwqqFeatures lwqq__http_check_feature();
+
 #endif
 

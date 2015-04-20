@@ -49,15 +49,7 @@ typedef int (*LwqqProgressFunc)(void* data, size_t now, size_t total);
  * there are some old LWQQ head that should be WEBQQ
  */
 
-typedef enum {
-   LWQQ_WITH_LIBEV = 1 << 0,
-   LWQQ_WITH_LIBUV = 1 << 1,
-   LWQQ_WITH_SQLITE = 1 << 2,
-   LWQQ_WITH_MOZJS = 1 << 3,
-   LWQQ_WITH_SSL = 1 << 4
-} LwqqFeatures;
-
-extern const LwqqFeatures lwqq_features;
+extern const LwqqFeatures lwqq_features();
 extern const char* lwqq_version;
 
 typedef enum {

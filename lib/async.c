@@ -52,6 +52,43 @@ typedef struct LwqqAsyncEvent_ {
    LwqqAsyncEvent* chained;
 } LwqqAsyncEvent_;
 
+LwqqAsyncImplList lwqq__async_impl_list_ = LIST_HEAD_INITIALIZER();
+LwqqAsyncImpl* lwqq__async_impl_ = NULL;
+
+LWQQ_EXPORT
+void lwqq_async_implement(LwqqAsyncImpl* i) { 
+   lwqq__async_impl_ = i; 
+// if we doesn't need async,
+// we don't check default settings
+#ifndef WITHOUT_ASYNC
+   // check async_impl
+   assert(LWQQ__ASYNC_IMPL(loop_create) && "need implement loop_create");
+   assert(LWQQ__ASYNC_IMPL(io_new)      && "need implement io_new");
+   assert(LWQQ__ASYNC_IMPL(timer_new)   && "need implement timer_new");
+#endif
+}
+
+void lwqq_async_global_init()
+{
+   static int initialized=0;
+   if(initialized) return;
+#ifdef WITH_LIBUV
+   LIST_INSERT_HEAD(&lwqq__async_impl_list_, &impl_libuv, entries);
+#endif
+#ifdef WITH_LIBEV
+   LIST_INSERT_HEAD(&lwqq__async_impl_list_, &impl_libev, entries);
+#endif
+   initialized = 1;
+}
+
+void lwqq_async_init(LwqqClient* lc)
+{
+   lwqq_async_global_init();
+   lc->dispatch = lwqq_async_dispatch_delay;
+   if(lwqq__async_impl_ == NULL)
+      lwqq__async_impl_ = LIST_FIRST(&lwqq__async_impl_list_);
+}
+
 static void dispatch_wrap(LwqqAsyncTimerHandle timer, void* p)
 {
    async_dispatch_data* data = (async_dispatch_data*)p;
@@ -76,25 +113,6 @@ void lwqq_async_dispatch_delay(LwqqCommand cmd, unsigned long timeout)
    lwqq_async_timer_watch(data->timer, timeout, dispatch_wrap, data);
 #else
    vp_do(cmd, NULL);
-#endif
-}
-
-void lwqq_async_init(LwqqClient* lc)
-{
-   lc->dispatch = lwqq_async_dispatch_delay;
-#ifdef WITH_LIBEV
-   LWQQ_ASYNC_IMPLEMENT(impl_libev);
-#endif
-#ifdef WITH_LIBUV
-   LWQQ_ASYNC_IMPLEMENT(impl_libuv);
-#endif
-// if we doesn't need async,
-// we don't check default settings
-#ifndef WITHOUT_ASYNC
-   // check async_impl
-   assert(LWQQ__ASYNC_IMPL(loop_create));
-   assert(LWQQ__ASYNC_IMPL(io_new));
-   assert(LWQQ__ASYNC_IMPL(timer_new));
 #endif
 }
 
@@ -409,14 +427,9 @@ void lwqq_async_timer_repeat(LwqqAsyncTimerHandle timer)
 {
    LWQQ__ASYNC_IMPL(timer_again)(timer);
 }
-LwqqAsyncImpl lwqq__async_impl_ = { 0 };
-
-LWQQ_EXPORT
-void lwqq_async_implement(LwqqAsyncImpl* i) { lwqq__async_impl_ = *i; }
 
 void lwqq_free_extension(LwqqClient* lc, LwqqExtension* ext)
 {
    ext->remove(lc, ext);
    s_free(ext);
 }
-

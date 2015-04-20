@@ -45,5 +45,14 @@
 #define LWQQ_RETRY_VALUE 3
 #define LWQQ_CACHE_DIR "/tmp/lwqq"
 
+typedef enum {
+   LWQQ_WITH_LIBEV     = 1 << 0,
+   LWQQ_WITH_LIBUV     = 1 << 1,
+   LWQQ_WITH_SQLITE    = 1 << 2,
+   LWQQ_WITH_MOZJS     = 1 << 3,
+   LWQQ_WITH_SSL       = 1 << 4,
+   LWQQ_WITH_ASYNCHDNS = 1 << 5
+} LwqqFeatures;
+
 #endif /* __CONFIG_H__ */
 

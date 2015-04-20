@@ -23,23 +23,32 @@
 #include "utility.h"
 
 LWQQ_EXPORT
-const LwqqFeatures lwqq_features = 0
+const LwqqFeatures lwqq_features()
+{
+   static int initialized = 0;
+   static LwqqFeatures feature = 0;
+   if(initialized) return feature;
+
+   feature = feature
 #ifdef WITH_LIBEV
-                                   | LWQQ_WITH_LIBEV
+                                 | LWQQ_WITH_LIBEV
 #endif
 #ifdef WITH_LIBUV
-                                   | LWQQ_WITH_LIBUV
+                                 | LWQQ_WITH_LIBUV
 #endif
 #ifdef WITH_SQLITE
-                                   | LWQQ_WITH_SQLITE
+                                 | LWQQ_WITH_SQLITE
 #endif
 #ifdef WITH_MOZJS
-                                   | LWQQ_WITH_MOZJS
+                                 | LWQQ_WITH_MOZJS
 #endif
 #ifdef SSL
-                                   | LWQQ_WITH_SSL
+                                 | LWQQ_WITH_SSL
 #endif
-    ;
+       ;
+   feature |= lwqq__http_check_feature();
+   return feature;
+}
 
 LWQQ_EXPORT
 const char* lwqq_version = LWQQ_VERSION;
@@ -673,4 +682,3 @@ const LwqqHashEntry* lwqq_hash_get_last(LwqqClient* lc)
    LwqqClient_* lc_ = (LwqqClient_*)lc;
    return lc_->hash_idx;
 }
-

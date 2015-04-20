@@ -102,6 +102,8 @@ static void(timer_again)(void* t)
 }
 
 static LwqqAsyncImpl impl_libev = {
+   .name = "libev",
+   .flags = USE_THREAD,
    .loop_create = loop_create,
    .loop_run = loop_run,
    .loop_stop = loop_stop,

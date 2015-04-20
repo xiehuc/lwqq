@@ -169,6 +169,10 @@ void lwqq_async_dispatch(LwqqCommand cmd);
  * @param timeout: delay timeout ms, default 0 means a small delay
  */
 void lwqq_async_dispatch_delay(LwqqCommand cmd, unsigned long timeout);
+// initialize global internal async_impl
+// you call this before you want to select another impl
+// then, you can handel impl list
+void lwqq_async_global_init();
 // initialize lwqq client with default dispatch function
 void lwqq_async_init(LwqqClient* lc);
 /**

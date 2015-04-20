@@ -22,6 +22,7 @@
 #include "logger.h"
 #include "queue.h"
 #include "utility.h"
+#include "async_impl.h"
 #include "internal.h"
 
 //#define LWQQ_HTTP_USER_AGENT "Mozilla/5.0 (X11; Linux x86_64; rv:10.0)
@@ -115,6 +116,7 @@ static TABLE_BEGIN(proxy_map, long, 0) TR(LWQQ_HTTP_PROXY_HTTP, CURLPROXY_HTTP)
 
     static GLOBAL global = { 0 };
 static pthread_cond_t async_cond = PTHREAD_COND_INITIALIZER;
+static pthread_cond_t ev_block_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t async_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t add_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -151,6 +153,14 @@ int lwqq_gdb_whats_running()
    return num;
 }
 #endif
+
+LwqqFeatures lwqq__http_check_feature()
+{
+   return (curl_version_info(CURLVERSION_NOW)->features
+           & CURL_VERSION_ASYNCHDNS)
+              ? LWQQ_WITH_ASYNCHDNS
+              : 0;
+}
 
 #ifndef HAVE_OPEN_MEMSTREAM
 static size_t write_content(const char* ptr, size_t size, size_t nmemb,
@@ -1060,6 +1070,7 @@ void lwqq_http_global_init()
       lwqq_async_io_watch(global.add_listener, global.pipe_fd[0],
                           LWQQ_ASYNC_READ, delay_add_handle_cb, NULL);
 #endif
+
 #endif
    }
 }
@@ -1076,22 +1087,32 @@ static void safe_remove_link(LwqqClient* lc)
       curl_easy_pause(easy, CURLPAUSE_ALL);
       curl_multi_remove_handle(global.multi, easy);
    }
-   pthread_cond_signal(&async_cond);
+   if(LWQQ__ASYNC_IMPL(flags) & USE_THREAD){
+      pthread_mutex_lock(&async_lock);
+      // notify main thread have done jobs
+      pthread_cond_signal(&async_cond);
+      // wait and block sub thread to prevent do curl event
+      // because this time main thread do curl clean job
+      pthread_mutex_unlock(&async_lock);
+
+      pthread_mutex_lock(&async_lock);
+      pthread_cond_wait(&ev_block_cond, &async_lock);
+      pthread_mutex_unlock(&async_lock);
+   }
 }
 
 LWQQ_EXPORT
 void lwqq_http_global_free(LwqqCleanUp cleanup)
 {
-   struct timespec wait_time;
    if (global.multi) {
-      if (!TAILQ_EMPTY(&global.conn_link)) {
-         lwqq_async_dispatch(_C_(p, safe_remove_link, NULL));
+      if(LWQQ__ASYNC_IMPL(flags) & USE_THREAD){
          pthread_mutex_lock(&async_lock);
-         wait_time.tv_sec = 60;
-         wait_time.tv_nsec = 0;
-         pthread_cond_timedwait(&async_cond, &async_lock, &wait_time);
+         lwqq_async_dispatch(_C_(p, safe_remove_link, NULL));
+         // wait sub thread remove all curl handle
+         pthread_cond_wait(&async_cond, &async_lock);
          pthread_mutex_unlock(&async_lock);
-      }
+      }else
+         lwqq_async_dispatch(_C_(p, safe_remove_link, NULL));
 
       D_ITEM* item, *tvar;
       TAILQ_FOREACH_SAFE(item, &global.conn_link, entries, tvar)
@@ -1117,26 +1138,31 @@ void lwqq_http_global_free(LwqqCleanUp cleanup)
       lwqq_async_timer_free(global.timer_event);
       curl_global_cleanup();
       global.conn_length = 0;
+
+      if(LWQQ__ASYNC_IMPL(flags) & USE_THREAD){
+         pthread_mutex_lock(&async_lock);
+         // notify sub thread we have already done curl clean job
+         pthread_cond_signal(&ev_block_cond);
+         pthread_mutex_unlock(&async_lock);
+      }
    }
 }
 
 LWQQ_EXPORT
 void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
 {
-   struct timespec wait_time = { 0 };
    if (lc && global.multi) {
       /**must dispatch safe_remove_link first
        * then vp_do(item->cmd) because vp_do might release memory
        */
-      if (!TAILQ_EMPTY(&global.conn_link)) {
-         lwqq_async_dispatch(_C_(p, safe_remove_link, lc));
+      if(LWQQ__ASYNC_IMPL(flags) & USE_THREAD){
          pthread_mutex_lock(&async_lock);
-         wait_time.tv_sec = 60;
-         wait_time.tv_nsec = 0;
-         // must use cond wait because timedcond might not trigger dispatch
-         pthread_cond_timedwait(&async_cond, &async_lock, &wait_time);
+         lwqq_async_dispatch(_C_(p, safe_remove_link, lc));
+         // wait sub thread remove all curl handles
+         pthread_cond_wait(&async_cond, &async_lock);
          pthread_mutex_unlock(&async_lock);
-      }
+      }else
+         lwqq_async_dispatch(_C_(p, safe_remove_link, lc));
 
       D_ITEM* item, *tvar;
       TAILQ_FOREACH_SAFE(item, &global.conn_link, entries, tvar)
@@ -1152,6 +1178,12 @@ void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
             lwqq_async_event_finish(item->event);
          }
          s_free(item);
+      }
+      if(LWQQ__ASYNC_IMPL(flags) & USE_THREAD){
+         pthread_mutex_lock(&async_lock);
+         // notify sub thread have done all curl clean job
+         pthread_cond_signal(&ev_block_cond);
+         pthread_mutex_unlock(&async_lock);
       }
    }
 }
