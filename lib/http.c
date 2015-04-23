@@ -480,6 +480,7 @@ LwqqHttpRequest* lwqq_http_request_new(const char* uri)
    curl_easy_setopt(request->req, CURLOPT_SSL_VERIFYPEER, 0);
    curl_easy_setopt(request->req, CURLOPT_SSL_VERIFYHOST, 0);
    curl_easy_setopt(request->req, CURLOPT_DEBUGFUNCTION, curl_debug_redirect);
+   curl_easy_setopt(request->req, CURLOPT_DNS_CACHE_TIMEOUT, -1);
    curl_easy_setopt(request->req, CURLOPT_SSLVERSION,
                     CURL_SSLVERSION_TLSv1); // force using tls v1.1
    request->do_request = lwqq_http_do_request;
@@ -1411,12 +1412,15 @@ int lwqq_http_is_synced(LwqqHttpRequest* req)
 
 static void read_cookie(LwqqClient* lc, struct CookieExt* ext)
 {
+   // we just want pass cookie to curl, so we didn't need it do real network
+   // request
    LwqqHttpRequest* req = lwqq_http_create_default_request(lc, WQQ_HOST, 0);
    curl_easy_setopt(req->req, CURLOPT_COOKIEFILE, ext->cookie_file);
+   curl_easy_setopt(req->req, CURLOPT_CONNECT_ONLY, 1L);
+   curl_easy_setopt(req->req, CURLOPT_CONNECTTIMEOUT_MS, 100L);
    lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 1);
    req->retry = 0;
-   req->do_request(req, 0, "");
-   lwqq_http_request_free(req);
+   req->do_request_async(req, 0, "", _C_(p, lwqq_http_request_free, req));
 }
 
 static void write_cookie(LwqqClient* lc, struct CookieExt* ext)
