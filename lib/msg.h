@@ -127,9 +127,6 @@ typedef enum {
    LWQQ_FONT_UNDERLINE = 1 << 0,
 } LwqqFontStyle;
 
-#define lwqq_bit_set(var, bit, value) (var = (value) ? var | bit : var & ~bit)
-#define lwqq_bit_get(var, bit) ((var & bit) > 0)
-
 typedef struct LwqqMsgMessage {
    LwqqMsgSeq super;
    time_t time;

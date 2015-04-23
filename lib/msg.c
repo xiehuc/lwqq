@@ -36,6 +36,9 @@
 #define USE_MSG_THREAD 1
 #endif
 
+#define bit_set(var, bit, value) (var = (value) ? var | bit : var & ~bit)
+#define bit_get(var, bit) ((var & bit) > 0)
+
 static void* start_poll_msg(void* msg_list);
 static json_t* get_result_json_object(json_t* json);
 static int parse_recvmsg_from_json(LwqqRecvMsgList* list, const char* str);
@@ -151,9 +154,9 @@ static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
                sb = 0;
                sc = 0;
             }
-            lwqq_bit_set(msg->f_style, LWQQ_FONT_BOLD, sa);
-            lwqq_bit_set(msg->f_style, LWQQ_FONT_ITALIC, sb);
-            lwqq_bit_set(msg->f_style, LWQQ_FONT_UNDERLINE, sc);
+            bit_set(msg->f_style, LWQQ_FONT_BOLD, sa);
+            bit_set(msg->f_style, LWQQ_FONT_ITALIC, sb);
+            bit_set(msg->f_style, LWQQ_FONT_UNDERLINE, sc);
          } else if (!strcmp(buf, "face")) {
             /* ["face", 107] */
             /* FIXME: ensure NULL access */
@@ -1369,9 +1372,9 @@ static void lwqq_msg_request_picture(LwqqClient* lc, LwqqMsgMessage* msg,
                                            msg->super.from, c);
          else {
             if ((msg->super.super.type == LWQQ_MS_GROUP_MSG
-                 && lwqq_bit_get(list->flags, POLL_AUTO_DOWN_GROUP_PIC))
+                 && bit_get(list->flags, POLL_AUTO_DOWN_GROUP_PIC))
                 | (msg->super.super.type == LWQQ_MS_DISCU_MSG
-                   && lwqq_bit_get(list->flags, POLL_AUTO_DOWN_DISCU_PIC)))
+                   && bit_get(list->flags, POLL_AUTO_DOWN_DISCU_PIC)))
                event = request_content_cface(lc, msg->group.group_code,
                                              msg->group.send,
                                              msg->super.super.type, c);
@@ -1900,9 +1903,9 @@ static struct ds content_parse_string(LwqqMsgMessage* msg, int msg_type,
            "%d") "," KEY("style") ":[%d,%d,%d]," KEY("color") ":" KEY("%s") "}]"
                                                                             "]"
                                                                             "\"",
-       msg->f_name, msg->f_size, lwqq_bit_get(msg->f_style, LWQQ_FONT_BOLD),
-       lwqq_bit_get(msg->f_style, LWQQ_FONT_ITALIC),
-       lwqq_bit_get(msg->f_style, LWQQ_FONT_UNDERLINE), msg->f_color);
+       msg->f_name, msg->f_size, bit_get(msg->f_style, LWQQ_FONT_BOLD),
+       bit_get(msg->f_style, LWQQ_FONT_ITALIC),
+       bit_get(msg->f_style, LWQQ_FONT_UNDERLINE), msg->f_color);
    ds_cat(str, buf);
    return str;
 }
