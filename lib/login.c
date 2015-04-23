@@ -492,9 +492,9 @@ LwqqErrorCode lwqq_logout(LwqqClient* lc, unsigned wait_time)
    if(lc->stat == LWQQ_STATUS_LOGOUT) return LWQQ_EC_OK;
    lc->stat = LWQQ_STATUS_LOGOUT;
    LWQQ_SYNC_BEGIN(lc);
-   LwqqAsyncEvent* ev = lwqq_info_change_status(lc, LWQQ_STATUS_OFFLINE);
+   lwqq_info_change_status(lc, LWQQ_STATUS_OFFLINE);
    LWQQ_SYNC_END(lc);
-   return ev->result;
+   return lc->sync_result;
 }
 #if 0
 LWQQ_EXPORT

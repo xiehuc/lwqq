@@ -50,6 +50,7 @@ typedef struct LwqqAsyncEvent_ {
    LwqqCommand cmd;
    LwqqHttpRequest* req;
    LwqqAsyncEvent* chained;
+   unsigned char is_synced;
 } LwqqAsyncEvent_;
 
 LwqqAsyncImplList lwqq__async_impl_list_ = LIST_HEAD_INITIALIZER();
@@ -122,6 +123,7 @@ LwqqAsyncEvent* lwqq_async_event_new(void* req)
    LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
    internal->req = req;
    event->lc = req ? internal->req->lc : NULL;
+   internal->is_synced = req ? lwqq_http_is_synced(req) : 0;
    event->result = LWQQ_EC_OK;
    return event;
 }
@@ -231,7 +233,7 @@ void lwqq_async_add_event_listener(LwqqAsyncEvent* event, LwqqCommand cmd)
       event_->cmd = cmd;
    else
       vp_link(&event_->cmd, &cmd);
-   if (event_->req && lwqq_http_is_synced(event_->req))
+   if (event_->is_synced)
       lwqq_async_event_finish(event);
 }
 static void on_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called)

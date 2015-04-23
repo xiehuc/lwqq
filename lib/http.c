@@ -917,10 +917,12 @@ static LwqqAsyncEvent* lwqq_http_do_request_async(LwqqHttpRequest* request,
    LwqqClient* lc = request->lc;
 
    if (LWQQ_SYNC_ENABLED(lc)) {
+      LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) request;
+      req_->bits |= HTTP_SYNCED;
       LwqqAsyncEvent* ev = lwqq_async_event_new(request);
       int err = lwqq_http_do_request(request, method, body);
       vp_do(command, &err);
-      ev->result = err;
+      lc->sync_result = ev->result = err;
       return ev;
    }
 

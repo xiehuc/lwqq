@@ -311,6 +311,7 @@ struct LwqqClient {
    char* gface_key; /** < use at cface */
    char* gface_sig; /** < use at cfage */
    char* login_sig;
+   LwqqErrorCode sync_result; /** < a safe place to get last sync event->result **/
    char* error_description;
    // char *new_ptwebqq;     /** < this only used when relogin */
    struct {
