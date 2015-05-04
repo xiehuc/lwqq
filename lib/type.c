@@ -202,6 +202,7 @@ void lwqq_client_free(LwqqClient* client)
    if (!client)
       return;
 
+   client->magic = 0;
    // important remove all http request
    lwqq_http_cleanup(client, LWQQ_CLEANUP_WAITALL);
    lwqq_http_handle_free(lc_->http);
@@ -225,6 +226,7 @@ void lwqq_client_free(LwqqClient* client)
    // remove all extensions
    vp_do_repeat(client->events->ext_clean, NULL);
 
+   vp_cancel(client->events->start_login);
    vp_cancel(client->events->login_complete);
    vp_cancel(client->events->poll_msg);
    vp_cancel(client->events->poll_lost);
@@ -237,6 +239,7 @@ void lwqq_client_free(LwqqClient* client)
    vp_cancel(client->events->ext_clean);
    vp_cancel(client->events->friend_chg);
    vp_cancel(client->events->group_chg);
+   vp_cancel(client->events->start_logout);
    s_free(client->events);
    s_free(client->args);
 
@@ -269,7 +272,6 @@ void lwqq_client_free(LwqqClient* client)
 
    /* Free msg_list */
    lwqq_msglist_close(client->msg_list);
-   client->magic = 0;
    s_free(client);
 }
 
