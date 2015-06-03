@@ -395,7 +395,7 @@ void lwqq_msg_content_clean(LwqqMsgContent* c);
 // atmost set 5 param, NULL to end
 LwqqMsgContent* lwqq_msg_fill_ext(const char* name, ...);
 #define LWQQ_CONTENT_EXT_IMG(url) lwqq_msg_fill_ext("img", url, 0)
-#define LWQQ_CONTENT_EXT_FILE(url) lwqq_msg_fill_ext("file", url, 0)
+#define LWQQ_CONTENT_EXT_FILE(url, name) lwqq_msg_fill_ext("file", url, name, 0)
 void lwqq_msg_ext_to_string(LwqqMsgContent* C, char* buf, size_t size);
 
 /**

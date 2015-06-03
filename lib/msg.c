@@ -238,7 +238,7 @@ static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
             for(i=0;i<5;++i){
                extension += para_beg;
                para_beg = 0;
-               if (sscanf(extension, "`%8191[^` ]`%n", field,
+               if (sscanf(extension, "`%8191[^`]`%n", field,
                           &para_beg) == 1
                    && para_beg > 0) // has param and param length > 0
                   c->data.ext.param[i] = s_strdup(field);
@@ -269,28 +269,6 @@ static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
             TAILQ_INSERT_TAIL(&msg->content, c, entries);
          }
          s_free(buffer);
-         /*
-         if(text[0] == ':'){
-            char* extension = text;
-            unsigned read = 0, i = 0;
-            c->type = LWQQ_CONTENT_EXTENSION;
-            if(sscanf(extension, ":%31s:%n", field, &read)==1){
-               c->data.ext.name = s_strdup(field);
-               }
-               if(c->data.ext.param[0]==NULL){// there are no param
-                  lwqq_msg_content_clean(c);
-                  goto extension_fail;
-               }
-               TAILQ_INSERT_TAIL(&msg->content, c, entries);
-               continue;
-            }
-         }
-
-extension_fail:
-         c->type = LWQQ_CONTENT_STRING;
-         c->data.str = text;
-         TAILQ_INSERT_TAIL(&msg->content, c, entries);
-         */
       }
    }
 
