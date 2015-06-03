@@ -75,7 +75,8 @@ typedef enum {
    LWQQ_CONTENT_FACE,
    LWQQ_CONTENT_OFFPIC,
    // custom face :this can send/recv picture
-   LWQQ_CONTENT_CFACE
+   LWQQ_CONTENT_CFACE,
+   LWQQ_CONTENT_EXTENSION // a special content string
 } LwqqContentType;
 
 typedef struct LwqqMsg {
@@ -92,7 +93,6 @@ typedef struct LwqqMsgSeq {
 
 typedef struct LwqqMsgContent {
    LwqqContentType type;
-   TAILQ_ENTRY(LwqqMsgContent) entries;
    union {
       int face;
       char* str;
@@ -102,9 +102,9 @@ typedef struct LwqqMsgContent {
          char* name;
          char* data;
          size_t size;
-         int success;
          char* file_path;
          char* url;
+         int success;
       } img;
       struct {
          char* name;
@@ -112,11 +112,16 @@ typedef struct LwqqMsgContent {
          size_t size;
          char* file_id;
          char* key;
+         char* url;
          char serv_ip[24];
          char serv_port[8];
-         char* url;
       } cface;
+      struct {
+         char* name;
+         char* param[5];
+      } ext;
    } data;
+   TAILQ_ENTRY(LwqqMsgContent) entries;
 } LwqqMsgContent;
 
 typedef TAILQ_HEAD(LwqqMsgContentHead, LwqqMsgContent) LwqqMsgContentHead;
@@ -386,6 +391,12 @@ void lwqq_historymsg_free(LwqqHistoryMsgList* list);
 // insert msg content
 #define lwqq_msg_content_append(msg, c)                                        \
    TAILQ_INSERT_TAIL(&msg->content, c, entries)
+void lwqq_msg_content_clean(LwqqMsgContent* c);
+// atmost set 5 param, NULL to end
+LwqqMsgContent* lwqq_msg_fill_ext(const char* name, ...);
+#define LWQQ_CONTENT_EXT_IMG(url) lwqq_msg_fill_ext("img", url, 0)
+#define LWQQ_CONTENT_EXT_FILE(url) lwqq_msg_fill_ext("file", url, 0)
+void lwqq_msg_ext_to_string(LwqqMsgContent* C, char* buf, size_t size);
 
 /**
  *
@@ -440,8 +451,7 @@ void lwqq_msg_check_member_chg(LwqqClient* lc, LwqqMsg** p_msg, LwqqGroup* g);
 
 /* LwqqRecvMsg API end */
 //
-//-----------------------------LWQQ MSG UPLOAD
-//API---------------------------------///
+//-------------------------LWQQ MSG UPLOAD API-----------------------------///
 // helper function : fill a msg content with upload cface
 // then add it to LwqqMsgMessage::content
 LwqqMsgContent* lwqq_msg_fill_upload_cface(const char* filename,
@@ -512,4 +522,3 @@ LwqqAsyncEvent* lwqq_msg_group_history(LwqqClient* lc, LwqqGroup* g,
 /*  LwqqSendMsg API */
 
 #endif /* LWQQ_MSG_H */
-

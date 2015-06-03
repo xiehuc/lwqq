@@ -103,6 +103,34 @@ static void group_member_has_chged(LwqqClient* lc, LwqqGroup* g)
    vp_do_repeat(lc->events->group_member_chg, NULL);
 }
 
+void lwqq_msg_content_clean(LwqqMsgContent* c)
+{
+   unsigned i;
+   switch (c->type) {
+      case LWQQ_CONTENT_STRING:
+         s_free(c->data.str);
+         break;
+      case LWQQ_CONTENT_OFFPIC:
+         s_free(c->data.img.file_path);
+         s_free(c->data.img.name);
+         s_free(c->data.img.data);
+         s_free(c->data.img.url);
+         break;
+      case LWQQ_CONTENT_CFACE:
+         s_free(c->data.cface.data);
+         s_free(c->data.cface.name);
+         s_free(c->data.cface.file_id);
+         s_free(c->data.cface.key);
+         s_free(c->data.cface.url);
+         break;
+      case LWQQ_CONTENT_EXTENSION:
+         s_free(c->data.ext.name);
+         for(i=0;i<5;i++)
+            s_free(c->data.ext.param[i]);
+      default:
+         break;
+   }
+}
 static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
 {
    json_t* tmp, *ctent;
@@ -197,10 +225,72 @@ static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
             TAILQ_INSERT_TAIL(&msg->content, c, entries);
          }
       } else if (ctent->type == JSON_STRING) {
-         LwqqMsgContent* c = s_malloc0(sizeof(*c));
+         LwqqMsgContent* c;
+         char* text, *extension, *buffer;
+         char field[8192];
+         unsigned ext_beg, para_beg, i;
+         text = buffer = json_unescape(ctent->text);
+         while((extension = strchr(text, ':')) && sscanf(extension, ":%31[^:]:%n`", field, &para_beg)==1){
+            ext_beg = extension - text;
+            c = s_malloc0(sizeof(*c));
+            c->type = LWQQ_CONTENT_EXTENSION;
+            c->data.ext.name = s_strdup(field);
+            for(i=0;i<5;++i){
+               extension += para_beg;
+               para_beg = 0;
+               if (sscanf(extension, "`%8191[^` ]`%n", field,
+                          &para_beg) == 1
+                   && para_beg > 0) // has param and param length > 0
+                  c->data.ext.param[i] = s_strdup(field);
+               else
+                  break;
+            }
+            if(c->data.ext.param[0]==NULL){// there are no param
+               lwqq_msg_content_clean(c);
+               s_free(c);
+               ext_beg = extension - text;
+            }
+            if(ext_beg > 0){
+               LwqqMsgContent* txt = s_malloc0(sizeof(*txt));
+               txt->type = LWQQ_CONTENT_STRING;
+               txt->data.str = strndup(text, ext_beg);
+               TAILQ_INSERT_TAIL(&msg->content, txt, entries);
+               text += ext_beg;
+            }
+            if(c){
+               TAILQ_INSERT_TAIL(&msg->content, c, entries);
+               text = extension;
+            }
+         }
+         if(strlen(text)){
+            c = s_malloc(sizeof(*c));
+            c->type = LWQQ_CONTENT_STRING;
+            c->data.str = s_strdup(text);
+            TAILQ_INSERT_TAIL(&msg->content, c, entries);
+         }
+         s_free(buffer);
+         /*
+         if(text[0] == ':'){
+            char* extension = text;
+            unsigned read = 0, i = 0;
+            c->type = LWQQ_CONTENT_EXTENSION;
+            if(sscanf(extension, ":%31s:%n", field, &read)==1){
+               c->data.ext.name = s_strdup(field);
+               }
+               if(c->data.ext.param[0]==NULL){// there are no param
+                  lwqq_msg_content_clean(c);
+                  goto extension_fail;
+               }
+               TAILQ_INSERT_TAIL(&msg->content, c, entries);
+               continue;
+            }
+         }
+
+extension_fail:
          c->type = LWQQ_CONTENT_STRING;
-         c->data.str = json_unescape(ctent->text);
+         c->data.str = text;
          TAILQ_INSERT_TAIL(&msg->content, c, entries);
+         */
       }
    }
 
@@ -601,6 +691,7 @@ LwqqMsg* lwqq_msg_new(LwqqMsgType msg_type)
    return msg;
 }
 
+
 static void msg_message_free(LwqqMsg* opaque)
 {
    LwqqMsgMessage* msg = (LwqqMsgMessage*)opaque;
@@ -627,26 +718,7 @@ static void msg_message_free(LwqqMsg* opaque)
    LwqqMsgContent* t;
    TAILQ_FOREACH_SAFE(c, &msg->content, entries, t)
    {
-      switch (c->type) {
-      case LWQQ_CONTENT_STRING:
-         s_free(c->data.str);
-         break;
-      case LWQQ_CONTENT_OFFPIC:
-         s_free(c->data.img.file_path);
-         s_free(c->data.img.name);
-         s_free(c->data.img.data);
-         s_free(c->data.img.url);
-         break;
-      case LWQQ_CONTENT_CFACE:
-         s_free(c->data.cface.data);
-         s_free(c->data.cface.name);
-         s_free(c->data.cface.file_id);
-         s_free(c->data.cface.key);
-         s_free(c->data.cface.url);
-         break;
-      default:
-         break;
-      }
+      lwqq_msg_content_clean(c);
       s_free(c);
    }
 }
@@ -1844,6 +1916,17 @@ static void parse_unescape(char* source, struct ds* dest)
 #define RIGHT "\\\""
 #define KEY(key) "\\\"" key "\\\""
 
+void lwqq_msg_ext_to_string(LwqqMsgContent* c, char* buf, size_t size)
+{
+   unsigned i;
+   snprintf(buf, size, ":%s:", c->data.ext.name);
+   for (i=0;i<5;++i) {
+      const char* param = c->data.ext.param[i];
+      if(param == NULL) break;
+      snprintf(buf + strlen(buf), size - strlen(buf), "`%s`", param);
+   }
+}
+
 static struct ds content_parse_string(LwqqMsgMessage* msg, int msg_type,
                                       int* has_cface)
 {
@@ -1889,6 +1972,14 @@ static struct ds content_parse_string(LwqqMsgMessage* msg, int msg_type,
          notext = 0;
          ds_cat(str, LEFT);
          parse_unescape(c->data.str, &str);
+         ds_cat(str, RIGHT ",");
+         break;
+      case LWQQ_CONTENT_EXTENSION:
+         notext = 0;
+         snprintf(buf, sizeof(buf), LEFT":%s:", c->data.ext.name);
+         ds_cat(str, LEFT);
+         lwqq_msg_ext_to_string(c, buf, sizeof(buf));
+         parse_unescape(buf, &str);
          ds_cat(str, RIGHT ",");
          break;
       }
@@ -2598,6 +2689,24 @@ LwqqAsyncEvent* lwqq_msg_upload_file(LwqqClient* lc, LwqqMsgOffFile* file,
 }
 
 LWQQ_EXPORT
+LwqqMsgContent* lwqq_msg_fill_ext(const char* name, ...)
+{
+   LwqqMsgContent* c = s_malloc0(sizeof(*c));
+   c->type = LWQQ_CONTENT_EXTENSION;
+   c->data.ext.name = s_strdup(name);
+   unsigned count = 0;
+   const char* param;
+   va_list list;
+   va_start(list, name);
+   while((param = va_arg(list, const char*))){
+      c->data.ext.param[count++] = s_strdup(param);
+      if (count > 5) break;
+   }
+   va_end(list);
+   return c;
+}
+
+LWQQ_EXPORT
 LwqqMsgContent* lwqq_msg_fill_upload_cface(const char* filename,
                                            const void* buffer, size_t buf_size)
 {
@@ -2726,4 +2835,3 @@ LwqqAsyncEvent* lwqq_msg_remove_uploaded_cface(LwqqClient* lc,
    return req->do_request_async(req, lwqq__hasnot_post(),
                                 _C_(p_i, lwqq__process_empty, req));
 }
-
