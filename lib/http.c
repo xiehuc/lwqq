@@ -65,8 +65,9 @@ typedef struct GLOBAL {
 
 typedef enum {
    HTTP_UNEXPECTED_RECV = 1 << 0,
-   HTTP_FORCE_CANCEL = 1 << 1,
-   HTTP_SYNCED = 1 << 2
+   HTTP_FORCE_CANCEL    = 1 << 1,
+   HTTP_SYNCED          = 1 << 2,
+   HTTP_FILE_MODE       = 1 << 3
 } HttpBits;
 
 struct trunk_entry {
@@ -104,17 +105,22 @@ struct CookieExt {
    char* cookie_file;
 };
 
-static TABLE_BEGIN(proxy_map, long, 0) TR(LWQQ_HTTP_PROXY_HTTP, CURLPROXY_HTTP)
-    TR(LWQQ_HTTP_PROXY_SOCKS4, CURLPROXY_SOCKS4)
-    TR(LWQQ_HTTP_PROXY_SOCKS5, CURLPROXY_SOCKS5) TABLE_END()
+static TABLE_BEGIN(proxy_map, long, 0) 
+TR(LWQQ_HTTP_PROXY_HTTP, CURLPROXY_HTTP);
+TR(LWQQ_HTTP_PROXY_SOCKS4, CURLPROXY_SOCKS4);
+TR(LWQQ_HTTP_PROXY_SOCKS5, CURLPROXY_SOCKS5);
+TABLE_END();
 
-    static TABLE_BEGIN(errno_map, LwqqErrorCode, LWQQ_EC_ERROR)
-    TR(CURLE_OK, LWQQ_EC_OK) TR(CURLE_OPERATION_TIMEDOUT, LWQQ_EC_TIMEOUT_OVER)
-    TR(CURLE_ABORTED_BY_CALLBACK, LWQQ_EC_CANCELED)
-    TR(CURLE_TOO_MANY_REDIRECTS, LWQQ_EC_OK)
-    TR(CURLE_SSL_CONNECT_ERROR, LWQQ_EC_SSL_ERROR) TABLE_END()
+static TABLE_BEGIN(errno_map, LwqqErrorCode, LWQQ_EC_ERROR)
+TR(CURLE_OK, LWQQ_EC_OK);
+TR(CURLE_OPERATION_TIMEDOUT, LWQQ_EC_TIMEOUT_OVER);
+TR(CURLE_ABORTED_BY_CALLBACK, LWQQ_EC_CANCELED);
+TR(CURLE_WRITE_ERROR, LWQQ_EC_CANCELED);
+TR(CURLE_TOO_MANY_REDIRECTS, LWQQ_EC_OK);
+TR(CURLE_SSL_CONNECT_ERROR, LWQQ_EC_SSL_ERROR);
+TABLE_END();
 
-    static GLOBAL global = { 0 };
+static GLOBAL global = { 0 };
 static pthread_cond_t async_cond = PTHREAD_COND_INITIALIZER;
 static pthread_cond_t ev_block_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t async_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -653,6 +659,8 @@ static void curl_network_begin(LwqqHttpRequest* req)
    curl_easy_setopt(req->req, CURLOPT_WRITEDATA, req_->mem_buf);
 #else
    SIMPLEQ_INIT(&req_->trunks);
+   if(req_->bits & HTTP_FILE_MODE)
+      return;
    curl_easy_setopt(req->req, CURLOPT_WRITEFUNCTION, write_content);
    curl_easy_setopt(req->req, CURLOPT_WRITEDATA, req);
 #endif
@@ -1305,6 +1313,7 @@ void lwqq_http_set_option(LwqqHttpRequest* req, LwqqHttpOption opt, ...)
    case LWQQ_HTTP_SAVE_FILE:
       curl_easy_setopt(req->req, CURLOPT_WRITEFUNCTION, NULL);
       curl_easy_setopt(req->req, CURLOPT_WRITEDATA, va_arg(args, FILE*));
+      req_->bits |= HTTP_FILE_MODE;
       break;
    case LWQQ_HTTP_RESET_URL:
       curl_easy_setopt(req->req, CURLOPT_URL, va_arg(args, const char*));
@@ -1337,6 +1346,7 @@ void lwqq_http_cancel(LwqqHttpRequest* req)
    LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
    req_->retry_ = 0;
    req_->bits |= HTTP_FORCE_CANCEL;
+   req->err = LWQQ_EC_CANCELED;
 }
 LwqqHttpHandle* lwqq_http_handle_new()
 {
