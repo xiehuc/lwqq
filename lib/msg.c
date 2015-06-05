@@ -228,9 +228,11 @@ static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
          LwqqMsgContent* c;
          char* text, *extension, *buffer;
          char field[8192];
-         unsigned ext_beg, para_beg, i;
+         unsigned ext_beg, para_beg = 0, i;
          text = buffer = json_unescape(ctent->text);
-         while((extension = strchr(text, ':')) && sscanf(extension, ":%31[^:]:%n`", field, &para_beg)==1){
+         while ((extension = strchr(text, ':'))
+                && sscanf(extension, ":%31[^:]:%n`", field, &para_beg) == 1
+                && para_beg > 0) {
             ext_beg = extension - text;
             c = s_malloc0(sizeof(*c));
             c->type = LWQQ_CONTENT_EXTENSION;
@@ -261,6 +263,7 @@ static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
                TAILQ_INSERT_TAIL(&msg->content, c, entries);
                text = extension;
             }
+            para_beg = 0;
          }
          if(strlen(text)){
             c = s_malloc(sizeof(*c));
