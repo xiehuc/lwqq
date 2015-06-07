@@ -130,33 +130,6 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called);
 #endif
 /**======================EVSET API END==================================**/
 
-/**======================  QUEUE API  ==================================**/
-/**
- * async queue is used for some heavy http request.need much time to receive
- *complete data.
- * and last http request is still running, but call info api to make another
- *http request.
- * which makes network traffic crowd.
- *
- * then need async queue. in function first search queue if there is already a
- *request running.
- * if have return it and append eventlistener after it.
- * if not continue and makes a new request. this would create a event. then add
- *it to queue,
- * for next time search
- */
-/**
- * find a async event with specified function
- * @param func : just a identifier, most time it is a function pointer
- */
-LwqqAsyncEvent* lwqq_async_queue_find(LwqqAsyncQueue* queue, void* func);
-/** add a event and function to a queue */
-void lwqq_async_queue_add(LwqqAsyncQueue* queue, void* func,
-                          LwqqAsyncEvent* ev);
-/** when request is finished, need remove identifier from queue */
-void lwqq_async_queue_rm(LwqqAsyncQueue* queue, void* func);
-/**======================QUEUE API END==================================**/
-
 /**
  * the default dispatch within libev event loop
  * @see LwqqClient::dispatch

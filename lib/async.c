@@ -185,20 +185,6 @@ void lwqq_async_event_finish(LwqqAsyncEvent* event)
    }
    s_free(event);
 }
-#if 0
-void lwqq_async_evset_wait(LwqqAsyncEvset* set)
-{
-	if(!set) return;
-	LwqqAsyncEvset_* evset_ = (LwqqAsyncEvset_*) set;
-	if(evset_->ref_count == 0) vp_do(evset_->cmd,NULL);
-	else{
-		evset_->cond_waiting = 1;
-		pthread_cond_wait(&evset_->cond, &evset_->lock);
-		vp_do(evset_->cmd,NULL);
-	}
-	_lwqq_async_evset_free(set);
-}
-#endif
 
 LWQQ_EXPORT
 void lwqq_async_evset_add_event(LwqqAsyncEvset* host, LwqqAsyncEvent* handle)
@@ -265,45 +251,6 @@ void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset, LwqqCommand cmd)
       set_->cmd = cmd;
    else
       vp_link(&set_->cmd, &cmd);
-#if 0
-	if(set_->ref_count == 0){
-		_lwqq_async_evset_free(evset);
-		vp_do(cmd, NULL);
-	}
-#endif
-}
-
-LWQQ_EXPORT
-LwqqAsyncEvent* lwqq_async_queue_find(LwqqAsyncQueue* queue, void* func)
-{
-   if (!queue || !func)
-      return NULL;
-   LwqqAsyncEntry* entry;
-   LIST_FOREACH(entry, queue, entries)
-   {
-      if (entry->func == func)
-         return entry->ev;
-   }
-   return NULL;
-}
-void lwqq_async_queue_add(LwqqAsyncQueue* queue, void* func, LwqqAsyncEvent* ev)
-{
-   LwqqAsyncEntry* entry = s_malloc0(sizeof(*entry));
-   entry->func = func;
-   entry->ev = ev;
-   LIST_INSERT_HEAD(queue, entry, entries);
-}
-void lwqq_async_queue_rm(LwqqAsyncQueue* queue, void* func)
-{
-   LwqqAsyncEntry* entry;
-   LIST_FOREACH(entry, queue, entries)
-   {
-      if (entry->func == func) {
-         LIST_REMOVE(entry, entries);
-         s_free(entry);
-         return;
-      }
-   }
 }
 
 //### global data area ###//

@@ -25,7 +25,6 @@ struct LwqqMsg;
 
 typedef struct LwqqClient LwqqClient;
 typedef struct LwqqHttpRequest LwqqHttpRequest;
-typedef LIST_HEAD(, LwqqAsyncEntry) LwqqAsyncQueue;
 typedef VP_DISPATCH DISPATCH_FUNC;
 typedef VP_CALLBACK CALLBACK_FUNC;
 typedef vp_command LwqqCommand;
@@ -277,7 +276,6 @@ Discu: (with lwdb) the only one and stable key reference
 
    LIST_ENTRY(LwqqGroup) entries;
    LIST_HEAD(, LwqqSimpleBuddy) members; /** < QQ Group members */
-   LwqqAsyncQueue ev_queue;
 } LwqqGroup;
 #define lwqq_member_is_founder(member, group)                                  \
    (strcmp(member->uin, group->owner) == 0)
@@ -337,7 +335,6 @@ struct LwqqClient {
    LIST_HEAD(, LwqqGroup) groups; /** < QQ groups */
    LIST_HEAD(, LwqqGroup) discus; /** < QQ discus */
 
-   LwqqAsyncQueue ev_queue;
    //-- non data area --//
    void* data; /** < user defined data*/
    int magic; /** < 0x4153 **/

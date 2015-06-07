@@ -1481,11 +1481,6 @@ LwqqAsyncEvent* lwqq_info_get_group_detail_info(LwqqClient* lc,
       return NULL;
    }
 
-   LwqqAsyncEvent* ev = lwqq_async_queue_find(&group->ev_queue,
-                                              lwqq_info_get_group_detail_info);
-   if (ev)
-      return ev;
-
    if (group->type == LWQQ_GROUP_QUN) {
       /* Make sure we know code. */
       if (!group->code) {
@@ -1515,10 +1510,8 @@ LwqqAsyncEvent* lwqq_info_get_group_detail_info(LwqqClient* lc,
       return NULL;
    lwqq_http_set_option(req, LWQQ_HTTP_TIMEOUT, 120L);
 
-   ev = req->do_request_async(req, lwqq__hasnot_post(),
+   return req->do_request_async(req, lwqq__hasnot_post(),
                               _C_(3p_i, group_detail_back, req, lc, group));
-   lwqq_async_queue_add(&group->ev_queue, lwqq_info_get_group_detail_info, ev);
-   return ev;
 }
 
 static void check_member_info_complection(LwqqGroup* group)
@@ -1534,7 +1527,6 @@ static void check_member_info_complection(LwqqGroup* group)
 static int group_detail_back(LwqqHttpRequest* req, LwqqClient* lc,
                              LwqqGroup* group)
 {
-   lwqq_async_queue_rm(&group->ev_queue, lwqq_info_get_group_detail_info);
    if (group->type == LWQQ_GROUP_DISCU) {
       return get_discu_detail_info_back(req, lc, group);
    }
