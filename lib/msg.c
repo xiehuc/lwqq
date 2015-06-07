@@ -130,6 +130,7 @@ void lwqq_msg_content_clean(LwqqMsgContent* c)
       default:
          break;
    }
+   c->type = LWQQ_CONTENT_INVALID;
 }
 static int parse_content(json_t* json, const char* key, LwqqMsgMessage* opaque)
 {
