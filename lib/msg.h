@@ -71,6 +71,7 @@ typedef enum {
 } LwqqPollOption;
 
 typedef enum {
+   LWQQ_CONTENT_INVALID = 0, 
    LWQQ_CONTENT_STRING,
    LWQQ_CONTENT_FACE,
    LWQQ_CONTENT_OFFPIC,

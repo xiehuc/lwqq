@@ -1963,6 +1963,8 @@ static struct ds content_parse_string(LwqqMsgMessage* msg, int msg_type,
          parse_unescape(buf, &str);
          ds_cat(str, RIGHT ",");
          break;
+      default:
+         break;
       }
    }
    // it looks like webqq server need at list one string
