@@ -112,8 +112,6 @@ void lwqq_async_add_evset_listener(LwqqAsyncEvset* evset, LwqqCommand cmd);
  * so you can make a chain very long to create some complicate behavior
  */
 void lwqq_async_add_event_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called);
-/** this return the http request */
-LwqqHttpRequest* lwqq_async_event_get_conn(LwqqAsyncEvent* ev);
 
 /**
  * begin a sync area, must end with sync end

@@ -48,7 +48,6 @@ typedef struct LwqqAsyncEvent_ {
    LwqqAsyncEvent parent;
    LwqqAsyncEvset* host_lock;
    LwqqCommand cmd;
-   LwqqHttpRequest* req;
    LwqqAsyncEvent* chained;
    unsigned char is_synced;
 } LwqqAsyncEvent_;
@@ -121,20 +120,11 @@ LwqqAsyncEvent* lwqq_async_event_new(void* req)
 {
    LwqqAsyncEvent* event = s_malloc0(sizeof(LwqqAsyncEvent_));
    LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
-   internal->req = req;
-   event->lc = req ? internal->req->lc : NULL;
-   internal->is_synced = req ? lwqq_http_is_synced(req) : 0;
+   LwqqHttpRequest* request = req;
+   event->lc = req ? request->lc : NULL;
+   internal->is_synced = req ? lwqq_http_is_synced(request) : 0;
    event->result = LWQQ_EC_OK;
    return event;
-}
-
-LWQQ_EXPORT
-LwqqHttpRequest* lwqq_async_event_get_conn(LwqqAsyncEvent* ev)
-{
-   if (!ev)
-      return NULL;
-   LwqqAsyncEvent_* in = (LwqqAsyncEvent_*)ev;
-   return in->req;
 }
 
 LWQQ_EXPORT
@@ -254,7 +244,7 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called)
       vp_cancel0(chained_->cmd);
    }
    called_->chained = caller;
-   if (caller_->req && lwqq_http_is_synced(caller_->req)) {
+   if (caller_->is_synced) {
       // when sync enabled, caller and called must finished already.
       // so free caller ,and do not trigger anything
       called->result = caller->result;
