@@ -49,7 +49,6 @@ typedef struct LwqqAsyncEvent_ {
    LwqqAsyncEvset* host_lock;
    LwqqCommand cmd;
    LwqqAsyncEvent* chained;
-   unsigned char is_synced;
 } LwqqAsyncEvent_;
 
 LwqqAsyncImplList lwqq__async_impl_list_ = LIST_HEAD_INITIALIZER();
@@ -119,10 +118,8 @@ void lwqq_async_dispatch_delay(LwqqCommand cmd, unsigned long timeout)
 LwqqAsyncEvent* lwqq_async_event_new(void* req)
 {
    LwqqAsyncEvent* event = s_malloc0(sizeof(LwqqAsyncEvent_));
-   LwqqAsyncEvent_* internal = (LwqqAsyncEvent_*)event;
    LwqqHttpRequest* request = req;
-   event->lc = req ? request->lc : NULL;
-   internal->is_synced = req ? lwqq_http_is_synced(request) : 0;
+   event->lc = req ? LWQQ_HTTP_EV(request)->lc : NULL;
    event->result = LWQQ_EC_OK;
    return event;
 }
@@ -201,16 +198,19 @@ void lwqq_async_evset_add_event(LwqqAsyncEvset* host, LwqqAsyncEvent* handle)
 LWQQ_EXPORT
 void lwqq_async_add_event_listener(LwqqAsyncEvent* event, LwqqCommand cmd)
 {
-   LwqqAsyncEvent_* event_ = (LwqqAsyncEvent_*)event;
    if (event == NULL) {
       vp_do(cmd, NULL);
       return;
-   } else if (event_->cmd.func == NULL)
+   }
+   if (event->lc && lwqq_get_http_handle(event->lc)->synced){
+      vp_do(cmd, NULL);
+      return;
+   }
+   LwqqAsyncEvent_* event_ = (LwqqAsyncEvent_*)event;
+   if (event_->cmd.func == NULL)
       event_->cmd = cmd;
    else
       vp_link(&event_->cmd, &cmd);
-   if (event_->is_synced)
-      lwqq_async_event_finish(event);
 }
 static void on_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called)
 {
@@ -222,7 +222,6 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called)
 {
    /**indeed caller->lc may be NULL when recursor */
    called->lc = caller->lc;
-   LwqqAsyncEvent_* caller_ = (LwqqAsyncEvent_*)caller;
    LwqqAsyncEvent_* called_ = (LwqqAsyncEvent_*)called;
    // cancel previous chained event
    if (called_->chained) {
@@ -230,7 +229,7 @@ void lwqq_async_add_event_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called)
       vp_cancel0(chained_->cmd);
    }
    called_->chained = caller;
-   if (caller_->is_synced) {
+   if (caller->lc && lwqq_get_http_handle(caller->lc)->synced) {
       // when sync enabled, caller and called must finished already.
       // so free caller ,and do not trigger anything
       called->result = caller->result;

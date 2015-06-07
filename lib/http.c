@@ -80,6 +80,7 @@ typedef struct LwqqHttpRequest_ {
    LwqqHttpRequest parent;
    char* cookie; // cookie used in current request
    HttpBits bits; // store http internal status
+   LwqqAsyncEvent ev;
    short retry_;
    short timeout; // timeout orginal
    short tmo_inc; // timeout increment
@@ -626,7 +627,7 @@ LwqqHttpRequest* lwqq_http_create_default_request(LwqqClient* lc,
    LwqqHttpHandle_* h_ = (LwqqHttpHandle_*)h;
    curl_easy_setopt(req->req, CURLOPT_SHARE, h_->share);
    lwqq_http_proxy_apply(h, req);
-   req->lc = lc;
+   LWQQ_HTTP_EV(req)->lc = lc;
    return req;
 }
 
@@ -694,18 +695,16 @@ static void curl_network_complete(LwqqHttpRequest* req)
 static void async_complete(D_ITEM* conn)
 {
    LwqqHttpRequest* request = conn->req;
+   LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)conn->req;
 
    curl_network_complete(request);
 
-   if (!lwqq_client_valid(request->lc))
+   if (!lwqq_client_valid(LWQQ_HTTP_EV(request)->lc))
       goto cleanup;
    int res = 0;
-   // record error when network communication
-   if (conn->req)
-      conn->req->err = conn->event->result;
    vp_do(conn->cmd, &res);
    // copy out error code internal
-   conn->event->result = res;
+   *conn->event = req_->ev;
    lwqq_async_event_finish(conn->event);
 cleanup:
    s_free(conn);
@@ -725,6 +724,8 @@ static int set_error_code(LwqqHttpRequest* req, CURLcode err, LwqqErrorCode* ec)
    if (req_->retry_ >= 0)
       return 1;
    *ec = errno_map(err);
+   req_->ev.err = *ec;
+   req_->ev.conn_err = err;
    return 0;
 }
 static void check_multi_info(GLOBAL* g)
@@ -733,7 +734,6 @@ static void check_multi_info(GLOBAL* g)
    int msgs_left;
    D_ITEM* conn;
    LwqqHttpRequest* req;
-   LwqqAsyncEvent* ev;
    CURL* easy;
    CURLcode ret;
 
@@ -747,7 +747,6 @@ static void check_multi_info(GLOBAL* g)
          curl_easy_getinfo(easy, CURLINFO_PRIVATE, &pridat);
          conn = (D_ITEM*)pridat;
          req = conn->req;
-         ev = conn->event;
          if (ret != CURLE_OK) {
             lwqq_log(LOG_WARNING, "async retcode:%d %s\n", ret,
                      curl_easy_strerror(ret));
@@ -763,7 +762,6 @@ static void check_multi_info(GLOBAL* g)
                         ((LwqqHttpRequest_*)req)->retry_);
                continue;
             }
-            ev->result = ec;
          }
 
          curl_multi_remove_handle(g->multi, easy);
@@ -771,7 +769,7 @@ static void check_multi_info(GLOBAL* g)
 
          global.conn_length--;
 
-         LwqqClient* lc = conn->req->lc;
+         LwqqClient* lc = LWQQ_HTTP_EV(conn->req)->lc;
 
          //执行完成时候的回调
          if (lwqq_client_valid(lc))
@@ -922,16 +920,14 @@ static LwqqAsyncEvent* lwqq_http_do_request_async(LwqqHttpRequest* request,
 {
    if (!request->req)
       return NULL;
-   LwqqClient* lc = request->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(request)->lc;
 
    if (LWQQ_SYNC_ENABLED(lc)) {
       LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) request;
       req_->bits |= HTTP_SYNCED;
-      LwqqAsyncEvent* ev = lwqq_async_event_new(request);
       int err = lwqq_http_do_request(request, method, body);
       vp_do(command, &err);
-      lc->sync_result = ev->result = err;
-      return ev;
+      return LWQQ_HTTP_EV(request);
    }
 
    /* Clear off last response */
@@ -1004,7 +1000,6 @@ retry:
       if (set_error_code(request, ret, &ec)) {
          goto retry;
       }
-      request->err = ec;
       return ec;
    }
 
@@ -1092,7 +1087,7 @@ static void safe_remove_link(LwqqClient* lc)
    CURL* easy;
    TAILQ_FOREACH_SAFE(item, &global.conn_link, entries, tvar)
    {
-      if (lc && (item->req->lc != lc))
+      if (lc && (LWQQ_HTTP_EV(item->req)->lc != lc))
          continue;
       easy = item->req->req;
       curl_easy_pause(easy, CURLPAUSE_ALL);
@@ -1130,7 +1125,7 @@ void lwqq_http_global_free(LwqqCleanUp cleanup)
       {
          TAILQ_REMOVE(&global.conn_link, item, entries);
          // let callback delete data
-         item->req->err = item->event->result = LWQQ_EC_CANCELED;
+         LWQQ_HTTP_EV(item->req)->err = item->event->result = LWQQ_EC_CANCELED;
          vp_do(item->cmd, NULL);
          if (cleanup == LWQQ_CLEANUP_WAITALL)
             lwqq_async_event_finish(item->event);
@@ -1178,10 +1173,10 @@ void lwqq_http_cleanup(LwqqClient* lc, LwqqCleanUp cleanup)
       D_ITEM* item, *tvar;
       TAILQ_FOREACH_SAFE(item, &global.conn_link, entries, tvar)
       {
-         if (item->req->lc != lc)
+         if (LWQQ_HTTP_EV(item->req)->lc != lc)
             continue;
          TAILQ_REMOVE(&global.conn_link, item, entries);
-         item->req->err = item->event->result = LWQQ_EC_CANCELED;
+         LWQQ_HTTP_EV(item->req)->err = item->event->result = LWQQ_EC_CANCELED;
          // let callback delete data
          vp_do(item->cmd, NULL);
          // XXX if cleanup == IGNORE, this would cause mem leak
@@ -1346,7 +1341,7 @@ void lwqq_http_cancel(LwqqHttpRequest* req)
    LwqqHttpRequest_* req_ = (LwqqHttpRequest_*)req;
    req_->retry_ = 0;
    req_->bits |= HTTP_FORCE_CANCEL;
-   req->err = LWQQ_EC_CANCELED;
+   req_->ev.err = LWQQ_EC_CANCELED;
 }
 LwqqHttpHandle* lwqq_http_handle_new()
 {
@@ -1472,4 +1467,15 @@ LwqqExtension* lwqq_make_cookie_extension(LwqqClient* lc, const char* filename)
    ext->super.remove = cookie_remove;
    ext->cookie_file = s_strdup(filename);
    return (LwqqExtension*)ext;
+}
+
+const char* lwqq_http_impl_errstr(int errno)
+{
+   return curl_easy_strerror(errno);
+}
+
+LwqqAsyncEvent* lwqq_http_get_as_ev(LwqqHttpRequest* req)
+{
+   LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;
+   return &req_->ev;
 }

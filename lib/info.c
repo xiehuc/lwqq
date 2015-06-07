@@ -850,7 +850,7 @@ static int get_friends_info_back(LwqqHttpRequest* req, LwqqAsyncEvent* called)
    int ret = 0;
    int err = 0;
    int retcode = 0;
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
 
    if (req->http_code != 200) {
       err = LWQQ_EC_HTTP_ERROR;
@@ -1150,7 +1150,7 @@ static int get_group_name_list_back(LwqqHttpRequest* req,
    json_t* json = NULL, *json_tmp;
    int ret = 0;
    int err = 0;
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
 
    if (req->http_code != 200) {
       err = LWQQ_EC_HTTP_ERROR;

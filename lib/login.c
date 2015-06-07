@@ -101,8 +101,9 @@ static LwqqAsyncEvent* check_need_verify(LwqqClient* lc, struct LoginStage* s)
 static int check_need_verify_cb(LwqqHttpRequest* req, struct LoginStage* s)
 {
    int err = LWQQ_EC_OK;
-   LwqqClient* lc = req->lc;
-   if (req->err != LWQQ_EC_OK) {
+   LwqqAsyncEvent* ev = LWQQ_HTTP_EV(req);
+   LwqqClient* lc = ev->lc;
+   if (ev->err != LWQQ_EC_OK) {
       err = LWQQ_EC_NETWORK_ERROR;
       goto done;
    }
@@ -171,7 +172,7 @@ static int get_verify_image_cb(LwqqHttpRequest* req, struct LoginStage* s)
 {
    int err = 0;
    lwqq__jump_if_http_fail(req, err);
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
 
    lwqq_override(lc->session.pt_verifysession,
                  lwqq_http_get_cookie(req, "verifysession"));
@@ -255,7 +256,7 @@ static LwqqAsyncEvent* do_login(LwqqClient* lc, struct LoginStage* s)
 
 static int do_login_cb(LwqqHttpRequest* req, struct LoginStage* s)
 {
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
    int err = LWQQ_EC_OK;
    const char* response;
    char error_desc[512];
@@ -429,7 +430,7 @@ static LwqqAsyncEvent* set_online_status(LwqqClient* lc, struct LoginStage* s)
 static int set_online_status_cb(LwqqHttpRequest* req, struct LoginStage* s)
 {
    int err = 0;
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
    json_t* root = NULL, *result;
    lwqq__jump_if_http_fail(req, err);
    lwqq__jump_if_json_fail(root, req->response, err);
@@ -576,7 +577,7 @@ static int process_login2(LwqqHttpRequest* req)
     * {"retcode":0,"result":{"uin":2501542492,"cip":3396791469,"index":1075,"port":49648,"status":"online","vfwebqq":"8e6abfdb20f9436be07e652397a1197553f49fabd3e67fc88ad7ee4de763f337e120fdf7036176c9","psessionid":"8368046764001d636f6e6e7365727665725f77656271714031302e3133392e372e31363000003bce00000f8a026e04005c821a956d0000000a407646664c41737a42416d000000288e6abfdb20f9436be07e652397a1197553f49fabd3e67fc88ad7ee4de763f337e120fdf7036176c9","user_state":0,"f":0}}
     */
    int err = 0;
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
    json_t* root = NULL, *result;
    lwqq__jump_if_http_fail(req, err);
    lwqq__jump_if_json_fail(root, req->response, err);

@@ -15,7 +15,7 @@ static int request_captcha_back(LwqqHttpRequest* req, LwqqVerifyCode* code)
       err = -1;
       goto done;
    }
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
    code->data = req->response;
    code->size = req->resp_len;
    req->response = NULL;

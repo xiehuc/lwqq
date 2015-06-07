@@ -439,7 +439,7 @@ static int process_msg_list(LwqqHttpRequest* req, char* serv_id,
    lwqq__json_parse_child(root, "chatlogs", log);
    if (log)
       log = log->child_end;
-   const char* me = ((LwqqClient*)req->lc)->myself->uin;
+   const char* me = LWQQ_HTTP_EV(req)->lc->myself->uin;
    while (log) {
       LwqqMsgMessage* msg = (LwqqMsgMessage*)lwqq_msg_new(LWQQ_MS_BUDDY_MSG);
       msg->time = lwqq__json_get_long(log, "time", 0);
@@ -1701,10 +1701,10 @@ void check_connection_lost(LwqqAsyncEvent* ev)
 
 static int process_poll_message_cb(LwqqHttpRequest* req)
 {
-   LwqqClient* lc = req->lc;
+   LwqqAsyncEvent* ev = LWQQ_HTTP_EV(req);
+   LwqqClient* lc = ev->lc;
    LwqqRecvMsgList* list = lc->msg_list;
-   LwqqAsyncEvent* ev = NULL;
-   LwqqErrorCode ret = req->err;
+   LwqqErrorCode ret = ev->err;
    if (ret == LWQQ_EC_CANCELED) // cancel by user, so no need notify user
       return LWQQ_EC_ERROR;
    if (!lwqq_client_logined(lc)) // client not valid, no way to notify user
@@ -1764,7 +1764,7 @@ static void try_restart_poll(LwqqClient* lc)
 static void receive_poll_message(LwqqHttpRequest* req, char* post)
 {
    if (process_poll_message_cb(req) == LWQQ_EC_ERROR) {
-      LwqqClient* lc = req->lc;
+      LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
       lwqq_http_request_free(req);
       LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)lc->msg_list;
       list_->req = NULL;
@@ -2051,7 +2051,7 @@ static int upload_offline_pic_back(LwqqHttpRequest* req, LwqqMsgContent* c,
    c->data.img.size = atol(json_parse_simple_value(json, "filesize"));
    lwqq_override(c->data.img.file_path, lwqq__json_get_value(json, "filepath"));
    if (!strcmp(c->data.img.file_path, "")) {
-      LwqqClient* lc = req->lc;
+      LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
       lc->args->serv_id = to;
       lc->args->content = c;
       lc->args->err = LWQQ_EC_ERROR;
@@ -2069,7 +2069,7 @@ static int process_gface_sig(LwqqHttpRequest* req)
    json_t* json = NULL;
    lwqq__jump_if_http_fail(req, err);
    lwqq__jump_if_json_fail(json, req->response, err);
-   LwqqClient* lc = req->lc;
+   LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
 
    lc->gface_key = s_strdup(json_parse_simple_value(json, "gface_key"));
    lc->gface_sig = s_strdup(json_parse_simple_value(json, "gface_sig"));
@@ -2137,7 +2137,7 @@ static int upload_cface_back(LwqqHttpRequest* req, LwqqMsgContent* c,
 
 done:
    if (err) {
-      LwqqClient* lc = req->lc;
+      LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
       lc->args->serv_id = to;
       lc->args->content = c;
       lc->args->err = err;

@@ -37,7 +37,11 @@ typedef struct LwqqAsyncEvent {
     *  >0: errno form webqq server
     *  <0: errno from lwqq inner
     */
-   int result;
+   union {
+      LwqqErrorCode result;
+      LwqqErrorCode err;
+   };
+   int conn_err; // a more detailed errno in request process
    // LwqqCallbackCode failcode; ///< would be depreciate
    LwqqClient* lc;
 } LwqqAsyncEvent;

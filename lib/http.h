@@ -38,7 +38,6 @@ typedef enum {
  */
 typedef struct LwqqHttpRequest {
    void* req;
-   void* lc;
    void* header; // read and write.
    void* recv_head;
    void* form_start;
@@ -50,7 +49,6 @@ typedef struct LwqqHttpRequest {
     */
    short http_code;
    short retry;
-   LwqqErrorCode err;
 
    /* Server response, used when do async request */
    // char *location;
@@ -155,6 +153,13 @@ LwqqHttpRequest* lwqq_http_request_new(const char* uri);
 LwqqHttpRequest* lwqq_http_create_default_request(LwqqClient* lc,
                                                   const char* url,
                                                   LwqqErrorCode* err);
+
+// get a fake event from request, only used to get errno. shouldn't use
+// lwqq_async function on it
+LwqqAsyncEvent* lwqq_http_get_as_ev(LwqqHttpRequest*);
+#define LWQQ_HTTP_EV(req) lwqq_http_get_as_ev(req)
+/** return a string based on impl errno */
+const char* lwqq_http_impl_errstr(int);
 
 void lwqq_http_global_init();
 void lwqq_http_global_free(LwqqCleanUp cleanup);
