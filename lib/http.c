@@ -705,6 +705,10 @@ static void async_complete(D_ITEM* conn)
    vp_do(conn->cmd, &res);
    // copy out error code internal
    *conn->event = req_->ev;
+   // req's ev.result is http status, only used in internal, req only exists in
+   // internal
+   // conn's ev.result is up level status, used out of library
+   conn->event->result = res;
    lwqq_async_event_finish(conn->event);
 cleanup:
    s_free(conn);
@@ -926,8 +930,15 @@ static LwqqAsyncEvent* lwqq_http_do_request_async(LwqqHttpRequest* request,
       LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) request;
       req_->bits |= HTTP_SYNCED;
       int err = lwqq_http_do_request(request, method, body);
+      LwqqAsyncEvent* ev_ret = s_malloc0(sizeof(*ev_ret));
+      *ev_ret = req_->ev;
+      // in this, it should free req.
       vp_do(command, &err);
-      return LWQQ_HTTP_EV(request);
+      // it would used out of library, so set up lovel err
+      ev_ret->result = err;
+      // delete ev_ret after 1 seconds
+      lc->dispatch(_C_(p, free, ev_ret), 1000);
+      return ev_ret;
    }
 
    /* Clear off last response */
