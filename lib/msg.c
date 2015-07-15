@@ -1768,6 +1768,7 @@ static void receive_poll_message(LwqqHttpRequest* req, char* post)
       LwqqClient* lc = LWQQ_HTTP_EV(req)->lc;
       lwqq_http_request_free(req);
       LwqqRecvMsgList_* list_ = (LwqqRecvMsgList_*)lc->msg_list;
+      if(list_==NULL) return;
       list_->req = NULL;
       s_free(post);
       lwqq_puts("quit the msg_thread");
