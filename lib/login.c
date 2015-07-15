@@ -159,7 +159,7 @@ static LwqqAsyncEvent* get_verify_image(LwqqClient* lc, struct LoginStage* s)
    double random = drand48();
 
    snprintf(url, sizeof(url),
-            WEBQQ_CAPTCHA_HOST "/getimage?aid=" WQQ_APPID "&uin=%s&%.16f&cap_cd=%s",
+            WEBQQ_CAPTCHA_HOST "/getimage?aid=" WQQ_APPID "&uin=%s&r=%.16f&cap_cd=%s",
             lc->username, random, s->vcode);
    req = lwqq_http_create_default_request(lc, url, &err);
    req->set_header(req, "Referer", WQQ_LOGIN_LONG_REF_URL(buf));
@@ -201,8 +201,9 @@ static LwqqAsyncEvent* do_login(LwqqClient* lc, struct LoginStage* s)
    char* js_txt = lwqq_util_load_res("encrypt.js", 1);
    lwqq_js_t* js = lwqq_js_init();
    lwqq_js_load_buffer(js, js_txt);
-   replace(s->salt, '\\', '-');
-   char* enc = lwqq_js_enc_pwd(lc->password, s->salt, s->vcode, js);
+   //replace(s->salt, '\\', '-');
+   char* enc = lwqq_js_enc_pwd(lc->password, s->salt,
+       lc->args->vf_image ? lc->args->vf_image->str : s->vcode, js);
    s_free(js_txt);
    lwqq_js_close(js);
 
