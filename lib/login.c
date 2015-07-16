@@ -199,6 +199,10 @@ static LwqqAsyncEvent* do_login(LwqqClient* lc, struct LoginStage* s)
 {
    // caculate password
    char* js_txt = lwqq_util_load_res("encrypt.js", 1);
+   if(js_txt == NULL){
+      lwqq_override(lc->error_description, s_strdup("Could not found encrypt.js"));
+      return NULL;
+   }
    lwqq_js_t* js = lwqq_js_init();
    lwqq_js_load_buffer(js, js_txt);
    //replace(s->salt, '\\', '-');
@@ -675,6 +679,10 @@ static void do_login_stage(LwqqClient* lc, struct LoginStage* s)
    }
 
    s->ev = login_seq[s->stage](lc, s);
+   if(s->ev == NULL){ // internal error
+      err = LWQQ_EC_ERROR;
+      goto onfail;
+   }
    lwqq_async_add_event_listener(s->ev, _C_(2p, do_login_stage, lc, s));
    return;
 onfail:
