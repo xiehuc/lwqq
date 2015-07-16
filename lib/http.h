@@ -159,7 +159,7 @@ LwqqHttpRequest* lwqq_http_create_default_request(LwqqClient* lc,
 LwqqAsyncEvent* lwqq_http_get_as_ev(LwqqHttpRequest*);
 #define LWQQ_HTTP_EV(req) lwqq_http_get_as_ev(req)
 /** return a string based on impl errno */
-const char* lwqq_http_impl_errstr(int);
+const char* lwqq_http_impl_errstr(int errno);
 
 void lwqq_http_global_init();
 void lwqq_http_global_free(LwqqCleanUp cleanup);

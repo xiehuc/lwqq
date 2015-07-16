@@ -18,6 +18,26 @@ double drand48(void)
 
 void srand48(unsigned int i) { seed = (((long long int)i) << 16) | rand(); }
 
+char *
+strndup (const char *s, size_t size)
+{
+  char *r;
+  char *end = memchr(s, 0, size);
+  
+  if (end)
+    /* Length + 1 */
+    size = end - s + 1;
+  
+  r = malloc(size);
+
+  if (size)
+    {
+      memcpy(r, s, size-1);
+      r[size-1] = '\0';
+    }
+  return r;
+}
+
 #ifdef WITH_LIBEV
 #include <ev.h>
 int ev_pipe(int filedes[2])

@@ -1471,6 +1471,7 @@ static void cookie_remove(LwqqClient* lc, LwqqExtension* ext)
    s_free(ext_->cookie_file);
 }
 
+LWQQ_EXPORT
 LwqqExtension* lwqq_make_cookie_extension(LwqqClient* lc, const char* filename)
 {
    struct CookieExt* ext = s_malloc0(sizeof(*ext));
@@ -1480,11 +1481,13 @@ LwqqExtension* lwqq_make_cookie_extension(LwqqClient* lc, const char* filename)
    return (LwqqExtension*)ext;
 }
 
+LWQQ_EXPORT
 const char* lwqq_http_impl_errstr(int errno)
 {
    return curl_easy_strerror(errno);
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_http_get_as_ev(LwqqHttpRequest* req)
 {
    LwqqHttpRequest_* req_ = (LwqqHttpRequest_*) req;

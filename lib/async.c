@@ -52,6 +52,7 @@ typedef struct LwqqAsyncEvent_ {
 } LwqqAsyncEvent_;
 
 LwqqAsyncImplList lwqq__async_impl_list_ = LIST_HEAD_INITIALIZER();
+LWQQ_EXPORT
 LwqqAsyncImpl* lwqq__async_impl_ = NULL;
 
 LWQQ_EXPORT
@@ -67,6 +68,7 @@ void lwqq_async_implement(LwqqAsyncImpl* i) {
 #endif
 }
 
+LWQQ_EXPORT
 void lwqq_async_global_init()
 {
    static int initialized=0;
@@ -115,6 +117,7 @@ void lwqq_async_dispatch_delay(LwqqCommand cmd, unsigned long timeout)
 #endif
 }
 
+LWQQ_EXPORT
 LwqqAsyncEvent* lwqq_async_event_new(void* req)
 {
    LwqqAsyncEvent* event = s_malloc0(sizeof(LwqqAsyncEvent_));
@@ -146,6 +149,7 @@ static void _lwqq_async_evset_free(LwqqAsyncEvset* set)
    s_free(evset_);
 }
 
+LWQQ_EXPORT
 void lwqq_async_evset_unref(LwqqAsyncEvset* set)
 {
    int flag = 0;

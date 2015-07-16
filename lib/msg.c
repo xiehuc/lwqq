@@ -103,6 +103,7 @@ static void group_member_has_chged(LwqqClient* lc, LwqqGroup* g)
    vp_do_repeat(lc->events->group_member_chg, NULL);
 }
 
+LWQQ_EXPORT
 void lwqq_msg_content_clean(LwqqMsgContent* c)
 {
    unsigned i;
@@ -1899,6 +1900,7 @@ static void parse_unescape(char* source, struct ds* dest)
 #define RIGHT "\\\""
 #define KEY(key) "\\\"" key "\\\""
 
+LWQQ_EXPORT
 void lwqq_msg_ext_to_string(LwqqMsgContent* c, char* buf, size_t size)
 {
    unsigned i;
