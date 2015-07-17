@@ -218,9 +218,7 @@ void lwqq_async_add_event_listener(LwqqAsyncEvent* event, LwqqCommand cmd)
 }
 static void on_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called)
 {
-   called->result = caller->result;
-   called->conn_err = caller->conn_err;
-   called->lc = caller->lc;
+   *called = *caller;
    lwqq_async_event_finish(called);
 }
 void lwqq_async_add_event_chain(LwqqAsyncEvent* caller, LwqqAsyncEvent* called)

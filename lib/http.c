@@ -702,9 +702,9 @@ static void async_complete(D_ITEM* conn)
    if (!lwqq_client_valid(LWQQ_HTTP_EV(request)->lc))
       goto cleanup;
    int res = 0;
-   vp_do(conn->cmd, &res);
    // copy out error code internal
    *conn->event = req_->ev;
+   vp_do(conn->cmd, &res); // req would be free in here
    // req's ev.result is http status, only used in internal, req only exists in
    // internal
    // conn's ev.result is up level status, used out of library
